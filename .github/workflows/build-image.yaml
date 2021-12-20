@@ -49,7 +49,7 @@ jobs:
           username: _json_key
           password: ${{ secrets.gcp_json }}
 
-      - name: "Build & push"
+      - name: "Build & push to GCR"
         uses: docker/build-push-action@v2
         with:
           file: ${{ inputs.file }}
@@ -59,6 +59,14 @@ jobs:
             gcr.io/janus-156310/${{ inputs.app }}:latest
             gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
             gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+
+      - name: "Build & push to GAR [${{ inputs.region }}]"
+        uses: docker/build-push-action@v2
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          tags: |
             ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
             ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}
             ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
