@@ -8,17 +8,17 @@ on:
         type: string
         description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
       type:
-        required: true
+        required: false
         default: 'GCR'
         type: string
         description: 'Type of GCP registry to login (default: GCR)'
 
 jobs:
   docker_login:
-    runs_on: ubuntu-20.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Login to Google Container Registry
-        if: ${{ type == 'GCR'}}
+        if: ${{ inputs.type == 'GCR'}}
         uses: docker/login-action@v1
         with:
           registry: gcr.io
@@ -26,7 +26,7 @@ jobs:
           password: ${{ secrets.GCLOUD_KEY }}
 
       - name: Login to Google Artifact Registry
-        if: ${{ type == 'GAR' }}
+        if: ${{ inputs.type == 'GAR' }}
         uses: docker/login-action@v1
         with:
           registry: ${{ inputs.region }}-docker.pkg.dev
