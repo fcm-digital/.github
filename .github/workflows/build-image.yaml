@@ -24,7 +24,7 @@ on:
         required: true
 
 jobs:
-  docker_login:
+  build-and-push:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
