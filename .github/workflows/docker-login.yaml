@@ -12,6 +12,9 @@ on:
         default: 'GCR'
         type: string
         description: 'Type of GCP registry to login (default: GCR)'
+    secrets:
+      gcp_json:
+        required: true
 
 jobs:
   docker_login:
@@ -23,7 +26,7 @@ jobs:
         with:
           registry: gcr.io
           username: _json_key
-          password: ${{ secrets.GCLOUD_KEY }}
+          password: ${{ secrets.gcp_json }}
 
       - name: Login to Google Artifact Registry
         if: ${{ inputs.type == 'GAR' }}
@@ -31,4 +34,4 @@ jobs:
         with:
           registry: ${{ inputs.region }}-docker.pkg.dev
           username: _json_key
-          password: ${{ secrets.GCP_GITHUB_SA_KEY }}
+          password: ${{ secrets.gcp_json }}
