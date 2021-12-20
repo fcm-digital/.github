@@ -1,0 +1,45 @@
+---
+name: Run make.rb
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: 'Command for execute in `./make.rb` (default: help)'
+        required: false
+        default: 'help'
+        type: string
+
+      environment:
+        description: 'Target environment (default: auto)'
+        required: false
+        default: 'auto'
+        type: string
+    secrets:
+      gcp_json:
+        required: true
+
+jobs:
+  run-make-rb:
+    name: 'Run make.rb'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+          bundler-cache: true
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.gcp_json }}
+
+      - name: 'Run make.rb'
+        id: 'run-ruby-maker'
+        run: |
+          ./make.rb \
+          -e "${{ inputs.environment }}" \
+          ${{ inputs.command }}
