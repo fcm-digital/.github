@@ -1,0 +1,64 @@
+---
+on:
+  workflow_call:
+    inputs:
+      file:
+        type: string
+        default: 'Dockerfile'
+        description: 'Path to Dockerfile (default: Dockerfile'
+      context:
+        type: string
+        default: './'
+        description: 'Context to build image (default: ./)'
+      app:
+        required: true
+        type: string
+        description: 'Name of the app, to use for the registry'
+      region:
+        required: false
+        default: 'europe-west1'
+        type: string
+        description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
+    secrets:
+      gcp_json:
+        required: true
+
+jobs:
+  docker_login:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Set some ENV
+        run: |
+          echo "TIME=$( date -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+          echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+
+      - name: Login to Google Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.gcp_json }}
+
+      - name: Login to Google Artifact Registry [${{ inputs.region }}]
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ inputs.region }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.gcp_json }}
+
+      - name: "Build & push"
+        uses: docker/build-push-action@v2
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          tags: |
+            gcr.io/janus-156310/${{ inputs.app }}:latest
+            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
+            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
+            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}
+            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
