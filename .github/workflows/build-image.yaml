@@ -3,10 +3,12 @@ on:
   workflow_call:
     inputs:
       file:
+        required: false
         type: string
         default: 'Dockerfile'
         description: 'Path to Dockerfile (default: Dockerfile'
       context:
+        required: false
         type: string
         default: './'
         description: 'Context to build image (default: ./)'
