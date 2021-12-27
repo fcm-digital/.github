@@ -6,10 +6,6 @@ inputs:
     type: string
     default: master
     description: 'main branch name (default: master)'
-  branch:
-    type: string
-    required: false
-    description: 'Name of the branch to extract environment'
   valid_envs:
     description: "List of allowed environments"
     type: string
@@ -24,6 +20,7 @@ runs:
   using: 'composite'
   steps:
     - shell: bash
+      name: "Get environment from branch name"
       id: get-env
       run: |
         if [[ "${{ github.ref_name }}" != "${{ inputs.main_branch }}" ]]
@@ -41,6 +38,6 @@ runs:
             fi
           done
         else
-          echo "ERROR: Wrong branch name: ${github.ref_name}"
+          echo "ERROR: Wrong branch name: ${{ github.ref_name }}"
           exit 1
         fi
