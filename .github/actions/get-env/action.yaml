@@ -26,17 +26,17 @@ runs:
         if [[ "${{ github.ref_name }}" != "${{ inputs.main_branch }}" ]]
         then
           filter=$( cut -d '-' -f 1 <<< ${{ github.ref_name }} )
-          valid_envs="${{ inputs.valid_envs }}"
-          for tmp in ${valid_envs[@]}
+          read -ra valid_envs <<< "${{ inputs.valid_envs }}"
+          for tmp in "${valid_envs[@]}"
           do
-            if [[ "${tmp}" == ${filter} ]]
+            if [[ "${tmp}" == "${filter}" ]]
             then
               echo "::set-output name=env::$(echo $tmp)"
-            else
-              echo "Invalid environment: ${filter}"
-              exit 1
+              exit 0
             fi
           done
+          echo "Invalid environment: ${filter}"
+          exit 1
         else
           echo "ERROR: Wrong branch name: ${{ github.ref_name }}"
           exit 1
