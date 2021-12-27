@@ -1,0 +1,46 @@
+---
+name: 'Get environment'
+description: 'Return a valid testing environment.'
+inputs:
+  main_branch:
+    type: string
+    default: master
+    description: 'main branch name (default: master)'
+  branch:
+    type: string
+    required: false
+    description: 'Name of the branch to extract environment'
+  valid_envs:
+    description: "List of allowed environments"
+    type: string
+    require: false
+    default: "abc ath bcn bne lhr mad mjv qa svq syd"
+outputs:
+  env:
+    description: 'Name of the environment'
+    value: ${{ steps.get-env.outputs.env }}
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      id: get-env
+      run: |
+        if [[ "${{ github.ref_name }}" != "${{ inputs.main_branch }}" ]]
+        then
+          filter=$( cut -d '-' -f 1 <<< ${{ github.ref_name }} )
+          valid_envs="${{ inputs.valid_envs }}"
+          for tmp in ${valid_envs[@]}
+          do
+            if [[ "${tmp}" == ${filter} ]]
+            then
+              echo "::set-output name=env::$(echo $tmp)"
+            else
+              echo "Invalid environment: ${filter}"
+              exit 1
+            fi
+          done
+        else
+          echo "ERROR: Wrong branch name: ${github.ref_name}"
+          exit 1
+        fi
