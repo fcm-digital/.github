@@ -15,6 +15,13 @@ on:
         required: false
         default: 'auto'
         type: string
+
+      gcp_project:
+        description: 'Google Cloud project where the resource are (PRO: fcm-platform-pro-9b1e, STG: fcm-platform-stg-a3dc'
+        required: false
+        default: 'fcm-platform-stg-a3dc'
+        type: string
+
     secrets:
       gcp_json:
         required: true
@@ -36,6 +43,7 @@ jobs:
         uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: ${{ secrets.gcp_json }}
+          project_id: ${{ inputs.gcp_project }}
 
       - name: 'Run make.rb'
         id: 'run-ruby-maker'
