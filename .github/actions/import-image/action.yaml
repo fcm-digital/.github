@@ -1,0 +1,19 @@
+---
+name: 'Import Docker image'
+description: 'Import a Docker image from a GitHub Artifact.'
+inputs:
+  name:
+    type: string
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: docker/setup-buildx-action@v1
+    - uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.name }}
+        path: /tmp
+    - shell: bash
+      run: |
+        docker load --input /tmp/${{ inputs.name }}.tar
