@@ -99,25 +99,11 @@ jobs:
           tags: |
             ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
 
-      - name: "Create image artifact"
-        uses: docker/build-push-action@v2
-        if: ${{ inputs.export }}
+      - if: ${{ inputs.export }}
+        name: "Export Docker image as Github Artifact"
+        uses: 3mundi/.github/.github/actions/export-image@main
         with:
+          app: ${{ inputs.app }}
           file: ${{ inputs.file }}
           context: ${{ inputs.context }}
-          tags: |
-            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
-            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
-            gcr.io/janus-156310/${{ inputs.app }}:latest
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
-          outputs: type=docker,dest=/tmp/${{ inputs.app }}.tar
-
-      - name: "Export image artifact"
-        uses: actions/upload-artifact@v2
-        if: ${{ inputs.export }}
-        with:
-          name: ${{ inputs.app }}
-          path: /tmp/${{ inputs.app }}.tar
-          retention-days: 1
+          region: ${{ inputs.region }}
