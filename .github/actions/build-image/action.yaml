@@ -1,0 +1,49 @@
+---
+name: 'Build Docker image'
+description: 'Build a Docker image using default tags.'
+inputs:
+  file:
+    required: false
+    type: string
+    default: 'Dockerfile'
+    description: 'Path to Dockerfile (default: Dockerfile'
+  context:
+    required: false
+    type: string
+    default: './'
+    description: 'Context to build image (default: ./)'
+  app:
+    required: true
+    type: string
+    description: 'Name of the app, to use for the registry'
+  region:
+    required: false
+    default: 'europe-west1'
+    type: string
+    description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
+  push:
+    required: false
+    default: true
+    type: bool
+    description: 'Whether to push image to registry, or build locally.'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: docker/setup-buildx-action@v1
+    - run: |
+        echo "TIME=$( date -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+      shell: bash
+    - uses: docker/build-push-action@v2
+      with:
+        push: ${{ inputs.push }}
+        file: ${{ inputs.file }}
+        context: ${{ inputs.context }}
+        tags: |
+          gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
+          gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          gcr.io/janus-156310/${{ inputs.app }}:latest
+          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}
+          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
