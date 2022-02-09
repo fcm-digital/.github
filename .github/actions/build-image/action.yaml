@@ -31,7 +31,8 @@ runs:
   using: 'composite'
   steps:
     - run: |
-        echo "TIME=$( date -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+        export COMMIT_TIME=$(git show -s --format=%ct)
+        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
         echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
       shell: bash
 
