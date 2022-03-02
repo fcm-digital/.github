@@ -28,6 +28,12 @@ on:
         type: string
         description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
 
+      ruby:
+        required: false
+        default: "3.1.0"
+        type: string
+        description: "Ruby version to use with make.rb (default: 3.1.0)"
+
     secrets:
       gcp_json:
         required: true
@@ -41,7 +47,7 @@ jobs:
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7.2
+          ruby-version: ${{ inputs.ruby }}
           bundler-cache: true
 
       - id: 'auth'
