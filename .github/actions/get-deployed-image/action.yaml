@@ -1,0 +1,32 @@
+---
+name: 'Get deployed image'
+description: 'Export deployed image for an application'
+inputs:
+  deployment_name:
+    type: string
+    require: true
+    description: 'main branch name (default: master)'
+  environment:
+    description: "environment to get deployed tag"
+    type: string
+    require: true
+    default: "pro"
+outputs:
+  deployed_image:
+    description: 'Image deployed'
+    value: ${{ steps.get-image.outputs.image-tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      name: "Get image deployed on an environment"
+      id: get-image
+      run: |
+        if [[ "${{ inputs.environment }}" != "pro" ]]; then
+          context=gke_fcm-platform-stg-a3dc_europe-west1_fcm-platform-stg-euw1
+        else
+          context=gke_fcm-platform-pro-9b1e_europe-west1_fcm-platform-pro-euw1
+        fi
+        tmp=$( kubectl --context=${context} --namespace=${environment} get deployment --output yaml ${{ inputs.deployment_name }} | grep "image:.*${{ inputs.deployment_name }}.*" | awk '{print $2}' )
+        echo "::set-output name=image-tag::$(echo $tmp)"
