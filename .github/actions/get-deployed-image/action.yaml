@@ -30,5 +30,8 @@ runs:
           context="gke_fcm-platform-pro-9b1e_europe-west1_fcm-platform-pro-euw1"
           namespace="fcm-platform"
         fi
-        tmp=$( kubectl --context=${context} --namespace=${namespace} get deployment --output yaml ${{ inputs.deployment_name }} | grep "image:.*${{ inputs.deployment_name }}.*" | awk '{print $2}' )
+        tmp=$( kubectl --context=${context} --namespace=${namespace} get deployment ${{ inputs.deployment_name }} --output yaml \
+          | grep -o "image: .*/fcm-platform-artifacts-ceba/.*:.*" \
+          | awk '\{print $2\}' ) \
+          | head -1
         echo "::set-output name=image-tag::$(echo $tmp)"
