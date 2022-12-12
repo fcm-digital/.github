@@ -37,7 +37,7 @@ runs:
       shell: bash
 
     - name: "Build & push Docker image [branch tag]"
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
@@ -49,7 +49,7 @@ runs:
           ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
     - name: "Build Docker image [latest tag]"
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       with:
         push: false
         file: ${{ inputs.file }}
@@ -59,7 +59,7 @@ runs:
           gcr.io/janus-156310/${{ inputs.app }}:latest
 
     - name: "Build & push Docker image [latest tag]"
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       if: ${{ endsWith(github.ref, '/master') }}
       with:
         push: ${{ inputs.push }}
