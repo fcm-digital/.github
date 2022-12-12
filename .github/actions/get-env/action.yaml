@@ -31,7 +31,7 @@ runs:
           do
             if [[ "${tmp}" == "${filter}" ]]
             then
-              echo "::set-output name=env::$(echo $tmp)"
+              echo "env=$(echo $tmp)" >> $GITHUB_OUTPUT
               exit 0
             fi
           done
