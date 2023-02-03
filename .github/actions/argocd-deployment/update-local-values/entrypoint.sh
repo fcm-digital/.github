@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
+    echo "The current Branch Name is not allowed. It must NOT start with 'prod'"
+    exit 1
+fi
+
+if [[ "$ENV_TO_DEPLOY" == "master" && github.ref != 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref != 'refs/heads/main' ]]; then
+    echo "The current Branch Name is not allowed. It must NOT start with 'master' or 'main'"
+    exit 1
+fi
+
+cd kube/values/$APP_NAME
+
+if [[ "$ENV_TO_DEPLOY" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" ]]; \ 
+   then VALUES_FILE="values-prod.yaml"; else VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"; fi
+
+echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
+
+git config user.name github-actions
+git config user.email github-actions@github.com
+git pull
+git add .
+git commit -m "$COMMIT_MSG ($APP_NAME) - $IMAGE_TAG for $ENV_TO_DEPLOY environment"
+git push
