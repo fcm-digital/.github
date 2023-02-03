@@ -1,3 +1,4 @@
+---
 name: 'Local-Checkout-ArgoCD'
 description: 'Checkout local repository and init env variables for ArgoCD deployment.'
 
@@ -9,8 +10,8 @@ runs:
       uses: actions/checkout@v3
       shell: bash
       run: |
-          export COMMIT_TIME=$( git show -s --format=%ct )
-          echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
-          echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
-          echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$GITHUB_REF_NAME" )" >> $GITHUB_ENV
-          echo "BRANCH_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+        export COMMIT_TIME=$( git show -s --format=%ct )
+        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$GITHUB_REF_NAME" )" >> $GITHUB_ENV
+        echo "BRANCH_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
