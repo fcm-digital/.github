@@ -1,0 +1,26 @@
+---
+name: 'GCP Environment ArgoCD'
+description: 'Install tools & Configure Google Cloud environment for ArgoCD deployment.'
+
+runs:
+  using: "composite"
+  steps:
+    - id: setup-gcp-credentials
+      name: 'Set Up Google Credentials'
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_GITHUB_SA_KEY }}
+
+    - id: install-gcp-sdk
+      name: 'Install Cloud SDK and its dependencies'
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        install_components: 'gke-gcloud-auth-plugin'
+
+    - id: login-gcp-artifact
+      name: 'Login to Google Artifact Registry'
+      uses: docker/login-action@v2
+      with:
+        registry: europe-west1-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_GITHUB_SA_KEY }}

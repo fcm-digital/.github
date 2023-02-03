@@ -1,12 +1,12 @@
 ---
-name: 'Local-Checkout-ArgoCD'
+name: 'Local Checkout ArgoCD'
 description: 'Checkout local repository and init env variables for ArgoCD deployment.'
 
 runs:
   using: "composite"
   steps:
     - id: checkout
-      name: Checkout Local Repository
+      name: 'Checkout Local Repository'
       uses: actions/checkout@v3
       shell: bash
       run: |
