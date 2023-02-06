@@ -19,17 +19,15 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
     for env_file in values-*; do
         [[ -e "$env_file" ]] || break
         if [[ $env_file != *"prod.yaml" ]]; then
-            sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
+            cp -f $env_file ../../../helm-chart-template/$APP_NAME/$env_file
         fi
     done
 else
     if [[ "$ENV_TO_DEPLOY" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" ]]; then \
         VALUES_FILE="values-prod.yaml"; else VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"; fi
 
-    echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-    sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
+    cp -f $env_file ../../../helm-chart-template/$APP_NAME/$env_file
 fi
-
 
 git config user.name github-actions
 git config user.email github-actions@github.com
