@@ -1,0 +1,17 @@
+---
+name: 'ArgoCD CLI Sync App'
+description: 'ArgoCD CLI commands for App force syncing.'
+
+inputs:
+  argocd_app_name:
+    required: true
+    type: string
+    description: 'ArgoCD app's name to be synchronized.'
+
+runs:
+  using: "composite"
+  steps:
+    - id: argocd-cli-sync-app
+      name: 'ArgoCD CLI Sync app'
+      shell: bash
+      run: argocd app sync ${{ inputs.argocd_app_name }}

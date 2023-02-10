@@ -1,0 +1,39 @@
+---
+name: 'ArgoCD CLI Installacion & Login'
+description: 'ArgoCD CLI commands for installation & login with a non-admin user.'
+
+inputs:
+  argocd_url:
+    required: false
+    type: string
+    default: 'argocd.fcm.digital'
+    description: 'ArgoCD URL (default: argocd.fcm.digital).'
+  argocd_cli_version:
+    required: false
+    type: string
+    default: '5.13.6'
+    description: 'ArgoCD CLI version (default: 5.13.6).'
+  argocd_cli_version:
+    required: true
+    type: string
+    description: 'ArgoCD user with sync permissions.'
+  argocd_cli_version:
+    required: true
+    type: string
+    description: 'ArgoCD sync user's password.'
+
+runs:
+  using: "composite"
+  steps:
+    - id: argocd-cli-install
+      name: 'ArgoCD CLI Install'
+      shell: bash
+      run: |
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
+        install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
+
+    - id: argocd-cli-login
+      name: 'ArgoCD CLI Login'
+      shell: bash
+      run: argocd login ${{ inputs.argocd_url }} --username ${{ inputs.argocd_user }} --password ${{ inputs.argocd_pwd }}
