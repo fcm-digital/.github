@@ -6,7 +6,7 @@ inputs:
   argocd_app_name:
     required: true
     type: string
-    description: 'ArgoCD app's name to be synchronized.'
+    description: 'ArgoCD app name to be synchronized.'
 
 runs:
   using: "composite"
