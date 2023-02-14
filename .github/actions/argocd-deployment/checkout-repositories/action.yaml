@@ -1,12 +1,16 @@
 ---
-name: 'Checkout Local Repository'
-description: 'Checkout local repository and init all variables needed for Argocd deployment.'
+name: 'Checkout Repositories (Local & helm-chart-template)'
+description: 'Checkout repositories and init all variables needed for Argocd deployment.'
 
 inputs:
   github_ref_name:
     required: true
     type: string
     description: 'The branch or tag name that triggered the workflow run.'
+  github_token_checkout:
+    required: true
+    type: string
+    description: 'The GitHub token to checkout helm_chart_template repository'
 
 runs:
   using: "composite"
@@ -19,5 +23,13 @@ runs:
         echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "${{ inputs.github_ref_name }}" )" >> $GITHUB_ENV
         echo "BRANCH_NAME=${{ inputs.github_ref_name }}" >> $GITHUB_ENV
       shell: bash
+    
+    - uses: actions/checkout@v3
+      with:
+        repository: fcm-digital/helm-chart-template
+        token: ${{ inputs.github_token_checkout }}
+        ref: master
+        path: helm-chart-template
+
     - run: printenv
       shell: bash
