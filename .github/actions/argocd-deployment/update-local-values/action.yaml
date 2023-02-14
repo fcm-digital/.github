@@ -1,0 +1,37 @@
+---
+name: 'Update local values'
+description: 'Update current_tag value locally and commit changes.'
+
+inputs:
+  app_name:
+    required: true
+    type: string
+    description: >
+      The application name that will be deployed.
+      The allowed values are:
+      - front
+      - storybook
+      - bigbrother
+      - bff
+      - itinerarycore
+  env_to_deploy:
+    required: true
+    type: string
+    description: >
+      Environment where the Image will be deployed.
+      If it value is 'ALL_ENV', then all environments will be updated with
+      the new image deployed in the current environment.
+  image_tag:
+    required: true
+    type: string
+    description: 'The image tag that will be deployed.'
+
+runs:
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+      shell: bash

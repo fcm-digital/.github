@@ -16,24 +16,29 @@ if [[ "$ENV_TO_DEPLOY" == "master" && github.ref != 'refs/heads/master' ]] || [[
 fi
 
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
-    for env_file in values-*; do
-        [[ -e "$env_file" ]] || break
-        if [[ $env_file != *"prod.yaml" ]]; then
-            sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
-        fi
-    done
+    if [[ github.ref == 'refs/heads/master' ]] || [[ github.ref == 'refs/heads/main' ]]; then
+        for env_file in values-*; do
+            [[ -e "$env_file" ]] || break
+            if [[ $env_file != *"prod.yaml" ]]; then
+                sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
+            fi
+        done
+    fi
 else
-    if [[ "$ENV_TO_DEPLOY" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" ]]; then \
-        VALUES_FILE="values-prod.yaml"; else VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"; fi
-
+    if [[ "$ENV_TO_DEPLOY" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" ]]; then
+        if [[ github.ref == 'refs/heads/master' ]] || [[ github.ref == 'refs/heads/main' ]]; then
+            VALUES_FILE="values-prod.yaml"
+    else
+        VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"
+    fi
     echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
 fi
 
-
-git config user.name github-actions
-git config user.email github-actions@github.com
-git pull
-git add .
-git commit -m "$COMMIT_MSG ($APP_NAME) - $IMAGE_TAG for $ENV_TO_DEPLOY environment"
-git push
+cat $VALUES_FILE
+# git config user.name github-actions
+# git config user.email github-actions@github.com
+# git pull
+# git add .
+# git commit -m "$COMMIT_MSG ($APP_NAME) - $IMAGE_TAG for $ENV_TO_DEPLOY environment"
+# git push
