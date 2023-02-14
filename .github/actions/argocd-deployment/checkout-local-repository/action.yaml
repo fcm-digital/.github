@@ -19,3 +19,5 @@ runs:
         echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "${{ inputs.github_ref_name }}" )" >> $GITHUB_ENV
         echo "BRANCH_NAME=${{ inputs.github_ref_name }}" >> $GITHUB_ENV
       shell: bash
+    - run: printenv
+      shell: bash
