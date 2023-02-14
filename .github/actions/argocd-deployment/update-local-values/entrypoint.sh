@@ -28,6 +28,7 @@ else
     if [[ "$ENV_TO_DEPLOY" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" ]]; then
         if [[ github.ref == 'refs/heads/master' ]] || [[ github.ref == 'refs/heads/main' ]]; then
             VALUES_FILE="values-prod.yaml"
+        fi
     else
         VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"
     fi
