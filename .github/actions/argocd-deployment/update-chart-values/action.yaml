@@ -14,6 +14,13 @@ inputs:
       - bigbrother
       - bff
       - itinerarycore
+  deployment_type:
+    required: True
+    type: string
+    description: >
+      It can take two values:
+      - local: update the local repository values
+      - remote: sync the helm-chart-template values
   env_to_deploy:
     required: true
     type: string
@@ -29,9 +36,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ${{ github.action_path }}/entrypoint.sh
+    - id: local-values-update
+      name: Local Values Update (current_tag)
+      run: ${{ github.action_path }}/entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
+        DEPLOYMENT_TYPE: "local"
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
       shell: bash
+    
+    # - id: remote-values-sync
+    #   name: Sync Remote Values with Local Values
+    #   run: ${{ github.action_path }}/entrypoint.sh
+    #   env:
+    #     APP_NAME: ${{ inputs.app_name }}
+    #     DEPLOYMENT_TYPE: "remote"
+    #     ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+    #     IMAGE_TAG: ${{ inputs.image_tag }}
+    #   shell: bash
