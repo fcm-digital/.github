@@ -3,7 +3,9 @@
 set -euo pipefail
 
 if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
+    echo $DEPLOYMENT_TYPE
     cd kube/values/$APP_NAME
+    pwd
 elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
     cd helm-chart-template/$APP_NAME
 else
@@ -47,6 +49,7 @@ else
     if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
         echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
         sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
+        echo "HERE I AM!"
     elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
         cp -f ../../kube/values/$APP_NAME/$VALUES_FILE $APP_NAME/$VALUES_FILE
     else
@@ -54,4 +57,5 @@ else
     fi
 fi
 
+echo $VALUES_FILE
 git status
