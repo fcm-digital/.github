@@ -13,6 +13,8 @@ fi
 CURRENT_REPO=$(git remote get-url origin)
 CURRENT_REPO_NAME=$(echo $CURRENT_REPO | cut -d "/" -f 2 | cut -d "." -f 1)
 
+echo "Repository INFO:"
+echo $CURRENT_REPO
 echo $CURRENT_REPO_NAME
 
 
