@@ -30,7 +30,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
                 if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
                     sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
                 elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
-                    cp -f ../../kube/values/$APP_NAME/$env_file $APP_NAME/$env_file
+                    cp -f ../../kube/values/$APP_NAME/$env_file $env_file
                 else
                     exit 1
                 fi
@@ -49,7 +49,7 @@ else
         sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
     elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
         cat $VALUES_FILE
-        cp -f ../../kube/values/$APP_NAME/$VALUES_FILE $APP_NAME/$VALUES_FILE
+        cp -f ../../kube/values/$APP_NAME/$VALUES_FILE $VALUES_FILE
         cat $VALUES_FILE
     else
         exit 1
