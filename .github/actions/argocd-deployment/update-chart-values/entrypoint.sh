@@ -13,6 +13,8 @@ fi
 CURRENT_REPO=$(git remote get-url origin)
 CURRENT_REPO_NAME=$(echo $CURRENT_REPO | cut -d "/" -f 2 | cut -d "." -f 1)
 
+echo $CURRENT_REPO_NAME
+
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
     echo "The current Branch Name is not allowed. It must NOT start with 'prod'"
@@ -30,7 +32,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
         for env_file in "values-"*; do
             [[ -e "$env_file" ]] || break
             if [[ $env_file != *"prod.yaml" ]]; then
-                if [[ "$DEPLOYMENT_TYPE" == "local"]]; then
+                if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
                     sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
                 elif [[ "$DEPLOYMENT_TYPE" == "remote" && "$CURRENT_REPO_NAME" == "helm-chart-template" ]]; then
                     cp -f ../../kube/values/$APP_NAME/$env_file $env_file
