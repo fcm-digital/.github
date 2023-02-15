@@ -34,7 +34,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
             if [[ $env_file != *"prod.yaml" ]]; then
                 if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
                     sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
-                elif [[ "$DEPLOYMENT_TYPE" == "remote" && "$CURRENT_REPO_NAME" == "helm-chart-template" ]]; then
+                elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
                     cp -f ../../kube/values/$APP_NAME/$env_file $env_file
                 else
                     exit 1
@@ -52,12 +52,9 @@ else
     if [[ "$DEPLOYMENT_TYPE" == "local" ]]; then
         echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
         sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
-    elif [[ "$DEPLOYMENT_TYPE" == "remote" && "$CURRENT_REPO_NAME" == "helm-chart-template" ]]; then
+    elif [[ "$DEPLOYMENT_TYPE" == "remote" ]]; then
         cp -f ../../kube/values/$APP_NAME/$VALUES_FILE $VALUES_FILE
     else
         exit 1
     fi
 fi
-
-git status
-git remote get-url origin
