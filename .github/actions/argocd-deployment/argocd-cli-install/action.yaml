@@ -1,6 +1,6 @@
 ---
-name: 'ArgoCD CLI Installacion & Login'
-description: 'ArgoCD CLI commands for installation & login with a non-admin user.'
+name: 'ArgoCD CLI Installation'
+description: 'ArgoCD commands for its CLI installation.'
 
 inputs:
   argocd_cli_version:
