@@ -12,7 +12,7 @@ inputs:
     type: string
     default: 'argocd.fcm.digital'
     description: 'ArgoCD URL (default: argocd.fcm.digital).'
-  auth_token:
+  argocd_auth_token:
     required: true
     type: string
     description: 'ArgoCD auth token with get/sync permissions over apps.'
@@ -23,4 +23,4 @@ runs:
     - id: argocd-cli-sync-app
       name: 'ArgoCD CLI Sync app'
       shell: bash
-      run: argocd app sync ${{ inputs.argocd_app_name }} --server ${{ inputs.argocd_url }} --auth-token ${{ inputs.auth_token }}
+      run: argocd app sync ${{ inputs.argocd_app_name }} --server ${{ inputs.argocd_url }} --auth-token ${{ inputs.argocd_auth_token }}
