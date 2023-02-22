@@ -22,5 +22,9 @@ runs:
   steps:
     - id: argocd-cli-sync-app
       name: 'ArgoCD CLI Sync app'
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        ARGOCD_APP_NAME: ${{ inputs.argocd_app_name }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
       shell: bash
-      run: argocd app sync ${{ inputs.argocd_app_name }} --server ${{ inputs.argocd_url }} --auth-token ${{ inputs.argocd_auth_token }} --retry-limit 10 --retry-backoff-duration 10s --retry-backoff-factor 2
