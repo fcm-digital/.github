@@ -19,4 +19,4 @@ runs:
         curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
         install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
         rm argocd-linux-amd64
-        argocd version
+        ls -la /usr/local/bin/
