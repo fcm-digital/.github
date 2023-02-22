@@ -6,8 +6,8 @@ inputs:
   argocd_cli_version:
     required: false
     type: string
-    default: '5.13.6'
-    description: 'ArgoCD CLI version (default: 5.13.6).'
+    default: 'v2.6.2'
+    description: 'ArgoCD CLI version (default: v2.6.2).'
 
 runs:
   using: "composite"
@@ -16,6 +16,6 @@ runs:
       name: 'ArgoCD CLI Install'
       shell: bash
       run: |
-        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
-        chmod +x /usr/local/bin/argocd
-        echo "/usr/local/bin" >> $GITHUB_PATH
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
+        install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
