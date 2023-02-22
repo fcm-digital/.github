@@ -23,4 +23,4 @@ runs:
     - id: argocd-cli-sync-app
       name: 'ArgoCD CLI Sync app'
       shell: bash
-      run: argocd app sync ${{ inputs.argocd_app_name }} --server ${{ inputs.argocd_url }} --auth-token ${{ inputs.argocd_auth_token }}
+      run: argocd app sync ${{ inputs.argocd_app_name }} --server ${{ inputs.argocd_url }} --auth-token ${{ inputs.argocd_auth_token }} --retry-limit 10 --retry-backoff-duration 10s --retry-backoff-factor 2
