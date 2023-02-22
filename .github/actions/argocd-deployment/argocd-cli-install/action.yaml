@@ -16,7 +16,5 @@ runs:
       name: 'ArgoCD CLI Install'
       shell: bash
       run: |
-        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
-        install -m 777 argocd-linux-amd64 /usr/local/bin/argocd
-        rm argocd-linux-amd64
-        ls -la /usr/local/bin/
+        curl -sSL argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64 -o /usr/local/bin/argocd
+        argocd version
