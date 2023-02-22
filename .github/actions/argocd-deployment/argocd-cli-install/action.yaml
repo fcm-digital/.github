@@ -18,4 +18,4 @@ runs:
       run: |
         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
         chmod +x /usr/local/bin/argocd
-        echo "/usr/local/bin/argocd" >> $GITHUB_PATH
+        echo "/usr/local/bin" >> $GITHUB_PATH
