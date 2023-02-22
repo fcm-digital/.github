@@ -17,3 +17,4 @@ runs:
       shell: bash
       run: |
         curl -sSL https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64 -o /usr/local/bin/argocd
+        chmod 555 /usr/local/bin/argocd
