@@ -14,13 +14,6 @@ inputs:
       - bigbrother
       - bff
       - itinerarycore
-  deployment_type:
-    required: True
-    type: string
-    description: >
-      It can take two values:
-      - local: update the local repository values
-      - remote: sync the helm-chart-template values
   env_to_deploy:
     required: true
     type: string
@@ -32,6 +25,11 @@ inputs:
     required: true
     type: string
     description: 'The image tag that will be deployed.'
+  rollout:
+    required: false
+    default: false
+    type: boolean
+    description: 'If 'true', the commit message will specify that is a Rollout.'
 
 runs:
   using: "composite"
@@ -44,6 +42,7 @@ runs:
         DEPLOYMENT_TYPE: local
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
+        ROLLOUT: ${{ inputs.rollout }}
       shell: bash
 
     - id: remote-values-sync
@@ -55,4 +54,5 @@ runs:
         DEPLOYMENT_TYPE: remote
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
+        ROLLOUT: ${{ inputs.rollout }}
       shell: bash
