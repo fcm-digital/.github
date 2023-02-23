@@ -29,7 +29,7 @@ inputs:
     required: false
     default: false
     type: boolean
-    description: 'If 'true', the commit message will specify that is a Rollout.'
+    description: 'If true, the commit message will specify that is a Rollout.'
 
 runs:
   using: "composite"
