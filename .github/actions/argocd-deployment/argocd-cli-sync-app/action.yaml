@@ -6,16 +6,24 @@ inputs:
   argocd_app_name:
     required: true
     type: string
-    description: 'ArgoCD app name to be synchronized.'
+    description: 'ArgoCD app name.'
+  argocd_current_env:
+    required: true
+    type: string
+    description: 'ArgoCD current env.'
+  argocd_app_region:
+    required: true
+    type: string
+    description: 'ArgoCD current app region.'
+  argocd_auth_token:
+    required: true
+    type: string
+    description: 'ArgoCD auth token with get/sync permissions over apps.'
   argocd_url:
     required: false
     type: string
     default: 'argocd.fcm.digital'
     description: 'ArgoCD URL (default: argocd.fcm.digital).'
-  argocd_auth_token:
-    required: true
-    type: string
-    description: 'ArgoCD auth token with get/sync permissions over apps.'
 
 runs:
   using: "composite"
@@ -25,6 +33,8 @@ runs:
       run: ${{ github.action_path }}/entrypoint.sh
       env:
         ARGOCD_APP_NAME: ${{ inputs.argocd_app_name }}
-        ARGOCD_URL: ${{ inputs.argocd_url }}
+        ARGOCD_CURRENT_ENV: ${{ inputs.argocd_current_env }}
+        ARGOCD_APP_REGION: ${{ inputs.argocd_app_region }}
         ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
       shell: bash
