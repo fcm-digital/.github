@@ -36,7 +36,7 @@ runs:
   steps:
     - id: local-values-update
       name: Local Values Update (current_tag)
-      run: ${{ github.action_path }}/entrypoint.sh
+      run: ${{ github.action_path }}/local-entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
         DEPLOYMENT_TYPE: local
@@ -48,7 +48,7 @@ runs:
     - id: remote-values-sync
       name: Sync Remote Values with Local Values
       if: steps.local-values-update.outputs.exit_code == 0
-      run: ${{ github.action_path }}/entrypoint.sh
+      run: ${{ github.action_path }}/remote-entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
         DEPLOYMENT_TYPE: remote
