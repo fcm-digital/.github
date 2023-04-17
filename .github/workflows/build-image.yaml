@@ -81,7 +81,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: "Build & push to GCR"
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         if: ${{ inputs.gcr }}
         with:
           file: ${{ inputs.file }}
@@ -92,7 +92,7 @@ jobs:
             gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
       - name: "Build & push to GAR [${{ inputs.region }}]"
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         if: ${{ inputs.gar }}
         with:
           file: ${{ inputs.file }}
@@ -103,7 +103,7 @@ jobs:
             ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ env.REPO_URI }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
       - name: "Build & push to GCR latest tag"
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         if: ${{ endsWith(github.ref, '/master')  && inputs.gcr }}
         with:
           file: ${{ inputs.file }}
@@ -113,7 +113,7 @@ jobs:
             gcr.io/janus-156310/${{ inputs.app }}:latest
 
       - name: "Build & push to GAR [${{ inputs.region }}] latest tag"
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         if: ${{ endsWith(github.ref, '/master') && inputs.gar }}
         with:
           file: ${{ inputs.file }}
