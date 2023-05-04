@@ -21,7 +21,7 @@ fi
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' ]]; then
     for env_file in "values-stg-"*; do
         [[ -e "$env_file" ]] || break
-        if [[ $env_file != *"-prod.yaml" || $env_file != *"-pro.yaml"]]; then # Only in staging environments.
+        if [[ $env_file != *"prod.yaml" ]]; then # Only in staging environments.
             sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
         fi
     done
