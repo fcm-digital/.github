@@ -19,24 +19,23 @@ fi
 
 # Iter over all values-*.yaml files in order to update their current_tag value with the new deployment tag.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' ]]; then
-    for env_file in "values-"*; do
+    for env_file in "values-stg-"*; do
         [[ -e "$env_file" ]] || break
-        if [[ $env_file != *"prod.yaml" ]]; then # Only in staging environments.
+        if [[ $env_file != *"-prod.yaml" || $env_file != *"-pro.yaml"]]; then # Only in staging environments.
             sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $env_file
         fi
     done
-fi
-
-if [[ "$ENV_TO_DEPLOY" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref == 'refs/heads/main' ]]; then
-    VALUES_FILE="values-prod.yaml"
 else
-    VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"
+    if [[ "$ENV_TO_DEPLOY" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref == 'refs/heads/main' ]]; then
+        VALUES_FILE="values-prod.yaml"
+    else
+        VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"
+    fi
+    # Store the current_tag value before the deployment for rollout undo (just in case).
+    echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+    # Replace current_tag value in the current environment
+    sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
 fi
-
-# Store the current_tag value before the deployment for rollout undo (just in case).
-echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-# Replace current_tag value in the current environment
-sed -i '{n;s/current_tag:.*/current_tag: '$IMAGE_TAG'/;}' $VALUES_FILE
 
 git config user.name github-actions
 git config user.email github-actions@github.com
