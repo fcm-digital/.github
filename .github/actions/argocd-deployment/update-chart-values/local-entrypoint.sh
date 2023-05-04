@@ -29,7 +29,7 @@ else
     if [[ "$ENV_TO_DEPLOY" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref == 'refs/heads/main' ]]; then
         VALUES_FILE="values-prod.yaml"
     else
-        VALUES_FILE="values-$ENV_TO_DEPLOY.yaml"
+        VALUES_FILE="values-stg-$ENV_TO_DEPLOY.yaml"
     fi
     # Store the current_tag value before the deployment for rollout undo (just in case).
     echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep current_tag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
