@@ -22,7 +22,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' |
     for env_file in "values-stg-"*; do
         [[ -e "$env_file" ]] || break
         if [[ $env_file != *"prod.yaml" ]]; then # Only in staging environments.
-            sed -i '{n;s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}' $env_file
+            sed -i '{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}' $env_file
         fi
     done
 else
@@ -34,7 +34,7 @@ else
     # Store the currentTag value before the deployment for rollout undo (just in case).
     echo "OLD_IMAGE_TAG=$(cat $VALUES_FILE | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     # Replace currentTag value in the current environment
-    sed -i '{n;s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}' $VALUES_FILE
+    sed -i '{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}' $VALUES_FILE
 fi
 
 git config user.name github-actions
