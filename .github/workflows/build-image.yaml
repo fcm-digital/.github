@@ -16,7 +16,7 @@ on:
         required: false
         type: string
         default: 'Dockerfile'
-        description: 'Path to Dockerfile (default: Dockerfile'
+        description: 'Path to Dockerfile'
       context:
         required: false
         type: string
@@ -30,7 +30,7 @@ on:
         required: false
         default: 'europe-west1'
         type: string
-        description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
+        description: 'Region or zone for Google Artifact Registry'
       export:
         required: false
         default: false
@@ -53,12 +53,13 @@ jobs:
 
       - name: Set some ENV
         run: |
-          echo "TIME=$( date -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+          export COMMIT_TIME=$(git show -s --format=%ct)
+          echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
           echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
           if [[ -z "${{ inputs.repo }}" ]]; then
-            echo "REPO_URI=${{ inputs.app }}/${{ inputs.app }}" >> $GITHUB_ENV
+            echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}" >> $GITHUB_ENV
           else
-            echo "REPO_URI=${{ inputs.repo }}/${{ inputs.app }}" >> $GITHUB_ENV
+            echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.repo }}/${{ inputs.app }}" >> $GITHUB_ENV
           fi
 
       - name: Login to Google Container Registry
@@ -99,8 +100,8 @@ jobs:
           context: ${{ inputs.context }}
           push: true
           tags: |
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ env.REPO_URI }}:${{ github.ref_name }}
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ env.REPO_URI }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+            ${{ env.REPO_URL }}:${{ github.ref_name }}
+            ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
       - name: "Build & push to GCR latest tag"
         uses: docker/build-push-action@v4
@@ -120,11 +121,11 @@ jobs:
           context: ${{ inputs.context }}
           push: true
           tags: |
-            ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ env.REPO_URI }}:latest
+            ${{ env.REPO_URL }}:latest
 
       - if: ${{ inputs.export }}
         name: "Export Docker image as Github Artifact"
-        uses: 3mundi/.github/.github/actions/export-image@main
+        uses: fcm-digital/.github/.github/actions/export-image@main
         with:
           app: ${{ inputs.app }}
           file: ${{ inputs.file }}

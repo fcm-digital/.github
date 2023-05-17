@@ -1,12 +1,12 @@
 ---
 name: 'Build Docker image'
-description: 'Build a Docker image using default tags.'
+description: 'Build a Docker image using default tags'
 inputs:
   file:
     required: false
     type: string
     default: 'Dockerfile'
-    description: 'Path to Dockerfile (default: Dockerfile'
+    description: 'Path to Dockerfile'
   context:
     required: false
     type: string
@@ -15,12 +15,16 @@ inputs:
   app:
     required: true
     type: string
-    description: 'Name of the app, to use for the registry'
+    description: 'Name of the app, to use for the registry: ${url}/${repo}/${app}'
   region:
     required: false
-    default: 'europe-west1'
+    default: 'europe'
     type: string
-    description: 'Region or zone for Google Artifact Registry (default: europe-west1)'
+    description: 'Region or zone for Google Artifact Registry'
+  repo:
+    required: false
+    type: string
+    description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
   push:
     required: false
     default: true
@@ -30,41 +34,42 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: |
+    - run: |-
         export COMMIT_TIME=$(git show -s --format=%ct)
         echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
         echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+        if [[ -z "${{ inputs.repo }}" ]]; then
+          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}" >> $GITHUB_ENV
+        else
+          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.repo }}/${{ inputs.app }}" >> $GITHUB_ENV
+        fi
       shell: bash
 
     - name: "Build & push Docker image [branch tag]"
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
-        tags: |
-          gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
-          gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
-          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}
-          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+        tags: |-
+          ${{ env.REPO_URL }}:${{ github.ref_name }}
+          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
     - name: "Build Docker image [latest tag]"
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         push: false
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
-        tags: |
-          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
-          gcr.io/janus-156310/${{ inputs.app }}:latest
+        tags: |-
+          ${{ env.REPO_URL }}:latest
 
     - name: "Build & push Docker image [latest tag]"
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       if: ${{ endsWith(github.ref, '/master') }}
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
-        tags: |
-          ${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}:latest
-          gcr.io/janus-156310/${{ inputs.app }}:latest
+        tags: |-
+          ${{ env.REPO_URL }}:latest
