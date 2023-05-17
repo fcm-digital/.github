@@ -5,12 +5,12 @@ inputs:
   main_branch:
     type: string
     default: master
-    description: 'main branch name (default: master)'
+    description: 'main branch name'
   valid_envs:
     description: "List of allowed environments"
     type: string
     require: false
-    default: "abc ath bcn bne bos lhr mad mjv qa svq syd"
+    default: "abc ath bcn bne bos lhr mad mjv qa sfo svq syd"
 outputs:
   env:
     description: 'Name of the environment'
