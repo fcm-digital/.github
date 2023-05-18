@@ -12,13 +12,13 @@ if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
 fi
 
 # The branch name can only start with 'master' or 'main' if the branch is MASTER/MAIN ref.
-if [[ "$ENV_TO_DEPLOY" == "master" && github.ref != 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref != 'refs/heads/main' ]]; then
+if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" != "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" != "main" ]]; then
     echo "The current Branch Name is not allowed. It must NOT start with 'master' or 'main'"
     exit 1
 fi
 
 # Iter over all values-*.yaml files in order to update their currentTag value with the new deployment tag.
-if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' ]]; then
+if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     for env_file in "values-stg-"*; do
         [[ -e "$env_file" ]] || break
         if [[ $env_file != *"prod.yaml" ]]; then # Only in staging environments.
@@ -26,7 +26,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' |
         fi
     done
 else
-    if [[ "$ENV_TO_DEPLOY" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref == 'refs/heads/main' ]]; then
+    if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
         VALUES_FILE="values-prod.yaml"
     else
         VALUES_FILE="values-stg-$ENV_TO_DEPLOY.yaml"

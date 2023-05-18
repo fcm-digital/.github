@@ -4,32 +4,28 @@ description: 'Update current_tag value locally and commit changes.'
 
 inputs:
   app_name:
+    description: 'The application name that will be deployed.'
     required: true
     type: string
-    description: >
-      The application name that will be deployed.
-      The allowed values are:
-      - front
-      - storybook
-      - bigbrother
-      - bff
-      - itinerarycore
+  branch_name:
+    description: 'Current branch name.'
+    required: true
+    type: string
   env_to_deploy:
-    required: true
-    type: string
     description: >
-      Environment where the Image will be deployed.
-      If it value is 'ALL_ENV', then all environments will be updated with
-      the new image deployed in the current environment.
-  image_tag:
+      Environment where the image will be deployed.
+      If the value is 'ALL_ENV', then all environments will be updated.
     required: true
     type: string
+  image_tag:
     description: 'The image tag that will be deployed.'
+    required: true
+    type: string
   rollout:
-    required: false
-    default: false
-    type: boolean
     description: 'If true, the commit message will specify that is a Rollout.'
+    required: false
+    type: boolean
+    default: false
 
 runs:
   using: "composite"
@@ -45,14 +41,14 @@ runs:
         ROLLOUT: ${{ inputs.rollout }}
       shell: bash
 
-    - id: remote-values-sync
-      name: Sync Remote Values with Local Values
-      if: steps.local-values-update.outputs.exit_code == 0
-      run: ${{ github.action_path }}/remote-entrypoint.sh
-      env:
-        APP_NAME: ${{ inputs.app_name }}
-        DEPLOYMENT_TYPE: remote
-        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-        IMAGE_TAG: ${{ inputs.image_tag }}
-        ROLLOUT: ${{ inputs.rollout }}
-      shell: bash
+    # - id: remote-values-sync
+    #   name: Sync Remote Values with Local Values
+    #   if: steps.local-values-update.outputs.exit_code == 0
+    #   run: ${{ github.action_path }}/remote-entrypoint.sh
+    #   env:
+    #     APP_NAME: ${{ inputs.app_name }}
+    #     DEPLOYMENT_TYPE: remote
+    #     ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+    #     IMAGE_TAG: ${{ inputs.image_tag }}
+    #     ROLLOUT: ${{ inputs.rollout }}
+    #   shell: bash

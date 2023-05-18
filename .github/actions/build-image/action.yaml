@@ -59,7 +59,7 @@ runs:
         context: ${{ inputs.context }}
         tags: |-
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}-${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
           ${{ env.REPO_URL }}:latest
 
     - name: "Build & push Docker image [branch tag]"
@@ -71,5 +71,5 @@ runs:
         context: ${{ inputs.context }}
         tags: |-
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}-${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
