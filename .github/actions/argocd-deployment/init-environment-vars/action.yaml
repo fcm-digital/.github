@@ -7,12 +7,13 @@ runs:
   steps:
     - run: |-
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-          export BRANCH_NAME_LOCAL=$( env.GITHUB_HEAD_REF )
+          export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
         elif [[ '${{ github.event_name }}' == 'push' ]]; then
-          export BRANCH_NAME_LOCAL=$( env.GITHUB_REF )
+          export BRANCH_NAME_LOCAL=$( echo $GITHUB_REF )
         else
           exit 1
         fi
+        printenv
         echo "BRANCH_NAME=$( $BRANCH_NAME_LOCAL )" >> $GITHUB_ENV
         echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_ENV
         export COMMIT_TIME=$( git show -s --format=%ct )
