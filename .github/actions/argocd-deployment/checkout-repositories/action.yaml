@@ -25,7 +25,7 @@ runs:
     #     path: helm-chart-template
 
     - uses: actions/checkout@v3
-      if: github.ref == 'refs/heads/master' or github.ref == 'refs/heads/main'
+      if: (github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
@@ -33,7 +33,7 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values
 
     - uses: actions/checkout@v3
-      if: github.ref != 'refs/heads/master' and github.ref != 'refs/heads/main'
+      if: (github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
