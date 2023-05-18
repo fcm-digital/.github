@@ -49,6 +49,8 @@ runs:
         else
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
+
+        printenv
       shell: bash
 
     - name: "Build & push Docker image [branch tag] + [latest tag]"
