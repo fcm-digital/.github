@@ -1,35 +1,41 @@
 ---
-name: 'Checkout Repositories (Local & helm-chart-template)'
-description: 'Checkout repositories and init all variables needed for Argocd deployment.'
+name: 'Checkout Repositories'
+description: 'Checkout repositories (Local & helm-chart-app-values) for ArgoCD deployment.'
 
 inputs:
-  github_ref_name:
+  app_name:
+    description: 'Name of the app to deploy.'
     required: true
     type: string
-    description: 'The branch or tag name that triggered the workflow run.'
   github_token_checkout:
+    description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
     type: string
-    description: 'The GitHub token to checkout helm_chart_template repository'
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
-    - run: |
-        export COMMIT_TIME=$( git show -s --format=%ct )
-        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
-        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
-        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "${{ inputs.github_ref_name }}" )" >> $GITHUB_ENV
-        echo "BRANCH_NAME=${{ inputs.github_ref_name }}" >> $GITHUB_ENV
-      shell: bash
-    
+
+    # - uses: actions/checkout@v3
+    #   with:
+    #     repository: fcm-digital/helm-chart-template
+    #     token: ${{ inputs.github_token_checkout }}
+    #     ref: ${{ inputs.helm_chart_template_branch }}
+    #     path: helm-chart-template
+
     - uses: actions/checkout@v3
+      if: github.ref == 'refs/heads/master' or github.ref == 'refs/heads/main'
       with:
-        repository: fcm-digital/helm-chart-template
+        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: master
-        path: helm-chart-template
+        path: helm-chart-${{ inputs.app_name }}-values
 
-    - run: printenv
-      shell: bash
+    - uses: actions/checkout@v3
+      if: github.ref != 'refs/heads/master' and github.ref != 'refs/heads/main'
+      with:
+        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.github_token_checkout }}
+        ref: staging
+        path: helm-chart-${{ inputs.app_name }}-values

@@ -2,51 +2,70 @@
 name: 'Build Docker image'
 description: 'Build a Docker image using default tags'
 inputs:
-  file:
+  app_name:
+    description: 'Name of the app to deploy.'
+    required: true
+    type: string
+  artifact_region:
+    description: 'Region or zone for Google Artifact Registry.'
     required: false
     type: string
-    default: 'Dockerfile'
-    description: 'Path to Dockerfile'
+    default: 'europe'
+  artifact_repository_name:
+    description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
+    required: false
+    type: string
   context:
+    description: 'Context to build image (default: ./)'
     required: false
     type: string
     default: './'
-    description: 'Context to build image (default: ./)'
-  app:
+  file:
+    description: 'Path to Dockerfile'
+    required: false
+    type: string
+    default: 'Dockerfile'
+  github_ref_name:
+    description: 'The branch or tag name that triggered the workflow run.'
     required: true
     type: string
-    description: 'Name of the app, to use for the registry: ${url}/${repo}/${app}'
-  region:
-    required: false
-    default: 'europe'
-    type: string
-    description: 'Region or zone for Google Artifact Registry'
-  repo:
-    required: false
-    type: string
-    description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
   push:
-    required: false
-    default: true
-    type: bool
     description: 'Whether to push image to registry, or build locally.'
+    required: false
+    type: bool
+    default: true
 
 runs:
   using: 'composite'
   steps:
     - run: |-
-        export COMMIT_TIME=$(git show -s --format=%ct)
+        export COMMIT_TIME=$( git show -s --format=%ct )
         echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
         echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
-        if [[ -z "${{ inputs.repo }}" ]]; then
-          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}" >> $GITHUB_ENV
+        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "${{ inputs.github_ref_name }}" )" >> $GITHUB_ENV
+        echo "BRANCH_NAME=${{ inputs.github_ref_name }}" >> $GITHUB_ENV
+        if [[ -z "${{ inputs.artifact_repository_name }}" ]]; then
+          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         else
-          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.repo }}/${{ inputs.app }}" >> $GITHUB_ENV
+          echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
       shell: bash
 
+    - name: "Build & push Docker image [branch tag] + [latest tag]"
+      uses: docker/build-push-action@v4
+      if: github.ref == 'refs/heads/master' or github.ref == 'refs/heads/main'
+      with:
+        push: ${{ inputs.push }}
+        file: ${{ inputs.file }}
+        context: ${{ inputs.context }}
+        tags: |-
+          ${{ env.REPO_URL }}:${{ github.ref_name }}
+          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ env.REPO_URL }}:latest
+
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v4
+      if: github.ref != 'refs/heads/master' and github.ref != 'refs/heads/main'
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
@@ -55,21 +74,3 @@ runs:
           ${{ env.REPO_URL }}:${{ github.ref_name }}
           ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
-    - name: "Build Docker image [latest tag]"
-      uses: docker/build-push-action@v4
-      with:
-        push: false
-        file: ${{ inputs.file }}
-        context: ${{ inputs.context }}
-        tags: |-
-          ${{ env.REPO_URL }}:latest
-
-    - name: "Build & push Docker image [latest tag]"
-      uses: docker/build-push-action@v4
-      if: ${{ endsWith(github.ref, '/master') }}
-      with:
-        push: ${{ inputs.push }}
-        file: ${{ inputs.file }}
-        context: ${{ inputs.context }}
-        tags: |-
-          ${{ env.REPO_URL }}:latest

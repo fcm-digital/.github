@@ -25,9 +25,11 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ github.ref == 'refs/heads/master' |
             cp -f ../../kube/values/$APP_NAME/$env_file $env_file
         fi
     done
+    cp -f ../../kube/values/$APP_NAME/values-stg.yaml values-stg.yaml
 else
     if [[ "$ENV_TO_DEPLOY" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ENV_TO_DEPLOY" == "main" && github.ref == 'refs/heads/main' ]]; then
         cp -f ../../kube/values/$APP_NAME/values.yaml values.yaml
+        cp -f ../../kube/values/$APP_NAME/values-stg.yaml values-stg.yaml
         VALUES_FILE="values-prod.yaml"
     else
         VALUES_FILE="values-stg-$ENV_TO_DEPLOY.yaml"

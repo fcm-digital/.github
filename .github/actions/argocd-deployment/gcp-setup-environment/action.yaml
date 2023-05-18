@@ -3,10 +3,15 @@ name: 'GCP Environment ArgoCD'
 description: 'Install tools & Configure Google Cloud environment for ArgoCD deployment.'
 
 inputs:
-  gcp_github_sa_key:
+  gcp_json:
+    description: 'The Service Account that contains the permissions to GCP.'
     required: true
     type: string
-    description: 'The Service Account that contains the permissions to GCP.'
+  artifact_region:
+    description: 'Region or zone for Google Artifact Registry.'
+    required: false
+    type: string
+    default: 'europe'
 
 runs:
   using: "composite"
@@ -15,18 +20,18 @@ runs:
       name: 'Set Up Google Credentials'
       uses: google-github-actions/auth@v0
       with:
-        credentials_json: ${{ inputs.gcp_github_sa_key }}
+        credentials_json: ${{ inputs.gcp_json }}
 
-    - id: install-gcp-sdk
-      name: 'Install Cloud SDK and its dependencies'
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        install_components: 'gke-gcloud-auth-plugin'
+    # - id: install-gcp-sdk
+    #   name: 'Install Cloud SDK and its dependencies'
+    #   uses: google-github-actions/setup-gcloud@v1
+    #   with:
+    #     install_components: 'gke-gcloud-auth-plugin'
 
     - id: login-gcp-artifact
       name: 'Login to Google Artifact Registry'
       uses: docker/login-action@v2
       with:
-        registry: europe-west1-docker.pkg.dev
+        registry: ${{ inputs.artifact_region }}-docker.pkg.dev
         username: _json_key
-        password: ${{ inputs.gcp_github_sa_key }}
+        password: ${{ inputs.gcp_json }}
