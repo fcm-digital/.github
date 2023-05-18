@@ -61,8 +61,8 @@ runs:
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
         tags: |-
-          ${{ env.REPO_URL }}:${{ github.ref_name }}
-          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ env.REPO_URL }}:${{ env.BRANCH_NAME }}
+          ${{ env.REPO_URL }}:${{ env.BRANCH_NAME }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
           ${{ env.REPO_URL }}:latest
 
     - name: "Build & push Docker image [branch tag]"
@@ -73,6 +73,6 @@ runs:
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
         tags: |-
-          ${{ env.REPO_URL }}:${{ github.ref_name }}
-          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ env.REPO_URL }}:${{ env.BRANCH_NAME }}
+          ${{ env.REPO_URL }}:${{ env.BRANCH_NAME }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
