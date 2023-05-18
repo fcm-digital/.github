@@ -17,15 +17,8 @@ runs:
   steps:
     - uses: actions/checkout@v3
 
-    # - uses: actions/checkout@v3
-    #   with:
-    #     repository: fcm-digital/helm-chart-template
-    #     token: ${{ inputs.github_token_checkout }}
-    #     ref: ${{ inputs.helm_chart_template_branch }}
-    #     path: helm-chart-template
-
     - uses: actions/checkout@v3
-      if: (github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/main')
+      if: ('${{ env.GITHUB_HEAD_REF}}' == 'master') || ('${{env.GITHUB_HEAD_REF}} == 'refs/heads/main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}

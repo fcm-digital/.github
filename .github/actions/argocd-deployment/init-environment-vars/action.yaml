@@ -1,0 +1,18 @@
+---
+name: 'Init Environment Vars'
+description: 'Init environment variables for ArgoCD deployment.'
+
+runs:
+  using: "composite"
+  steps:
+    - run: |-
+        if [[ (-v '${{ env.GITHUB_HEAD_REF }}') && ( '${{ github.event_name }}' == 'pull_request') ]]; then
+          echo "BRANCH_NAME=${{ env.GITHUB_HEAD_REF }}" >> $GITHUB_ENV
+        elfi [[ (-z '${{ env.GITHUB_HEAD_REF }}') && ( '${{ github.event_name }}' == 'push') ]]; then
+          echo "BRANCH_NAME=${{ env.GITHUB_REF }}" >> $GITHUB_ENV
+        else
+          exit 1
+        fi
+        printenv
+      shell: bash
+      # echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "${{ github.ref_name }}" )" >> $GITHUB_ENV
