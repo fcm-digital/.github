@@ -41,13 +41,9 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values
 
     - uses: actions/checkout@v3
-      if: env.BRANCH_NAME == 'abc-workflow-test'
-      # if: env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'main'
+      if: env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values
-    
-    - run: ls -la
-      shell: bash 
