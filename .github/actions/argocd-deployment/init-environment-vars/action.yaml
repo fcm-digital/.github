@@ -6,9 +6,9 @@ runs:
   using: "composite"
   steps:
     - run: |-
-        if [[ (-v '${{ env.GITHUB_HEAD_REF }}') && ( '${{ github.event_name }}' == 'pull_request') ]]; then
+        if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           echo "BRANCH_NAME=${{ env.GITHUB_HEAD_REF }}" >> $GITHUB_ENV
-        elfi [[ (-z '${{ env.GITHUB_HEAD_REF }}') && ( '${{ github.event_name }}' == 'push') ]]; then
+        elfi [[ '${{ github.event_name }}' == 'push' ]]; then
           echo "BRANCH_NAME=${{ env.GITHUB_REF }}" >> $GITHUB_ENV
         else
           exit 1
