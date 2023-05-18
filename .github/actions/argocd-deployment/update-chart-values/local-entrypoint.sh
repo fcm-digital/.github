@@ -2,8 +2,10 @@
 
 set -euo pipefail
 
+ls -la
 cd kube/values/$APP_NAME
 
+git status
 
 # The branch name cannot start with 'prod'.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
