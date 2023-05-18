@@ -52,7 +52,7 @@ runs:
 
     - name: "Build & push Docker image [branch tag] + [latest tag]"
       uses: docker/build-push-action@v4
-      if: (github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/main')
+      if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
@@ -64,7 +64,7 @@ runs:
 
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v4
-      if: (github.ref != 'refs/heads/master') && (github.ref != 'refs/heads/main')
+      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
