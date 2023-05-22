@@ -30,25 +30,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: local-values-update
-      name: Local Values Update (current_tag)
-      run: ${{ github.action_path }}/local-entrypoint.sh
+    - id: remote-values-sync
+      name: Sync Remote Values with Local Values
+      run: ${{ github.action_path }}/entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
-        DEPLOYMENT_TYPE: local
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         ROLLOUT: ${{ inputs.rollout }}
       shell: bash
-
-    # - id: remote-values-sync
-    #   name: Sync Remote Values with Local Values
-    #   if: steps.local-values-update.outputs.exit_code == 0
-    #   run: ${{ github.action_path }}/remote-entrypoint.sh
-    #   env:
-    #     APP_NAME: ${{ inputs.app_name }}
-    #     DEPLOYMENT_TYPE: remote
-    #     ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-    #     IMAGE_TAG: ${{ inputs.image_tag }}
-    #     ROLLOUT: ${{ inputs.rollout }}
-    #   shell: bash
