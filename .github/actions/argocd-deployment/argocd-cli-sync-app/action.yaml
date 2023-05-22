@@ -3,27 +3,33 @@ name: 'ArgoCD CLI Sync App'
 description: 'ArgoCD CLI commands for App force syncing.'
 
 inputs:
-  argocd_app_name:
+  app_name:
+    description: 'Name of the app to deploy.'
     required: true
     type: string
-    description: 'ArgoCD app name.'
-  argocd_current_env:
+  app_region:
+    description: 'Region of the app to deploy.'
     required: true
     type: string
-    description: 'ArgoCD current env.'
-  argocd_app_region:
-    required: true
-    type: string
-    description: 'ArgoCD current app region.'
   argocd_auth_token:
+    description: 'ArgoCD auth token with get/sync permissions over apps.'
     required: true
     type: string
-    description: 'ArgoCD auth token with get/sync permissions over apps.'
   argocd_url:
+    description: 'ArgoCD URL (default: argocd.fcm.digital).'
     required: false
     type: string
     default: 'argocd.fcm.digital'
-    description: 'ArgoCD URL (default: argocd.fcm.digital).'
+  branch_name:
+    description: 'Current branch name.'
+    required: true
+    type: string
+  env_to_deploy:
+    description: >
+      Environment where the image will be deployed.
+      If the value is 'ALL_ENV', then all environments will be updated.
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -32,9 +38,10 @@ runs:
       name: 'ArgoCD CLI Sync app'
       run: ${{ github.action_path }}/entrypoint.sh
       env:
-        ARGOCD_APP_NAME: ${{ inputs.argocd_app_name }}
-        ARGOCD_CURRENT_ENV: ${{ inputs.argocd_current_env }}
-        ARGOCD_APP_REGION: ${{ inputs.argocd_app_region }}
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
         ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
         ARGOCD_URL: ${{ inputs.argocd_url }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
       shell: bash
