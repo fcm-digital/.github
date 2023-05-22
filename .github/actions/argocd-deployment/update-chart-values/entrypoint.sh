@@ -23,9 +23,10 @@ fi
 
 # Iter over all values-*.yaml files in order to sync thier content with the local values.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+    #ToDo: git checkout origin/staging
     for env in $(ls -d -- */); do
-        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "/$env/values-stg-tag.yaml"
-        cp -f "../kube/values/$APP_NAME/values-stg-$env.yaml" "/$env/values-stg.yaml"
+        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./$env/values-stg-tag.yaml"
+        cp -f "../kube/values/$APP_NAME/staging/$env/values-stg.yaml" "./$env/values-stg.yaml"
     done
     cp -f "../kube/values/$APP_NAME/stg/values-stg.yaml" "values-stg.yaml"
 else
@@ -52,3 +53,5 @@ else
     git commit -m "New Deployment in $APP_NAME - $IMAGE_TAG for $ENV_TO_DEPLOY"
 fi
 git push
+
+#ToDo: git checkout origin/master||main if [["$ENV_TO_DEPLOY" == "ALL_ENV"]]

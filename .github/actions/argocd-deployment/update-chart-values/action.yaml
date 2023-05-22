@@ -35,6 +35,7 @@ runs:
       run: ${{ github.action_path }}/entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         ROLLOUT: ${{ inputs.rollout }}

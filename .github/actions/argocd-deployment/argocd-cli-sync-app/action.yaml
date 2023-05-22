@@ -25,9 +25,7 @@ inputs:
     required: true
     type: string
   env_to_deploy:
-    description: >
-      Environment where the image will be deployed.
-      If the value is 'ALL_ENV', then all environments will be updated.
+    description: 'Environment where the image will be deployed.'
     required: true
     type: string
 
