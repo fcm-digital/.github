@@ -4,6 +4,10 @@ set -euo pipefail
 
 cd helm-chart-$APP_NAME-values/
 
+git status
+ls -la
+
+echo "Env to deploy: $ENV_TO_DEPLOY"
 
 # The branch name cannot start with 'prod'.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
@@ -27,14 +31,14 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
 else
     if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
         # Store the currentTag value before the deployment for rollout undo (just in case).
-        echo "OLD_IMAGE_TAG=$(cat "/prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-        sed -i "{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}" "/prod/values-prod-tag.yaml"
-        cp -f "../../kube/values/$APP_NAME/prod/values-prod.yaml" "/prod/values-prod.yaml"
+        echo "OLD_IMAGE_TAG=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+        sed -i "{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}" "./prod/values-prod-tag.yaml"
+        cp -f "../../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
     else
         # Store the currentTag value before the deployment for rollout undo (just in case).
-        echo "OLD_IMAGE_TAG=$(cat "/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-        sed -i "{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}" "/$ENV_TO_DEPLOY/values-stg-tag.yaml"
-        cp -f "../../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "/$ENV_TO_DEPLOY/values-stg.yaml"
+        echo "OLD_IMAGE_TAG=$(cat "./$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+        sed -i "{s/currentTag:.*/currentTag: '$IMAGE_TAG'/;}" "./$ENV_TO_DEPLOY/values-stg-tag.yaml"
+        cp -f "../../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./$ENV_TO_DEPLOY/values-stg.yaml"
     fi
 fi
 
