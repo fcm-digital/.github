@@ -4,10 +4,6 @@ set -euo pipefail
 
 cd helm-chart-$APP_NAME-values/
 
-git status
-ls -la
-
-echo "Env to deploy: $ENV_TO_DEPLOY"
 
 # The branch name cannot start with 'prod'.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
