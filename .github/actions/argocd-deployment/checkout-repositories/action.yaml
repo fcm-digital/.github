@@ -27,6 +27,10 @@ runs:
           exit 1
         fi
         echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_ENV
+
+        echo "The Branch name is: $BRANCH_NAME"
+        echo "The Trigger is: ${{ github.event_name }}"
+
         echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_ENV
         echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
         echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
@@ -37,11 +41,10 @@ runs:
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
-        ref: master
+        ref: ${{ env.BRANCH_NAME }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v3
-      # if: env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
