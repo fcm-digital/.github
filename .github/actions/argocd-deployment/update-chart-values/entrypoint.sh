@@ -22,7 +22,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./$env/values-stg-tag.yaml"
         cp -f "../kube/values/$APP_NAME/staging/$env/values-stg.yaml" "./$env/values-stg.yaml"
     done
-    cp -f "../kube/values/$APP_NAME/stg/values-stg.yaml" "values-stg.yaml"
+    cp -f "../kube/values/$APP_NAME/staging/values-stg.yaml" "values-stg.yaml"
 elif [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag value before the deployment for rollout undo (just in case).
