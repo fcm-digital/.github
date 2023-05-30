@@ -28,6 +28,7 @@ runs:
         fi
         echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_ENV
 
+        printenv
         echo "The Branch name is: ${{ env.BRANCH_NAME }}"
         echo "The Trigger is: ${{ github.event_name }}"
 
