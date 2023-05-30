@@ -22,15 +22,11 @@ runs:
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
         elif [[ '${{ github.event_name }}' == 'push' ]]; then
-          export BRANCH_NAME_LOCAL=$( echo $GITHUB_REF )
+          export BRANCH_NAME_LOCAL=$( cut -d '/' -f 3 <<< "$GITHUB_REF" )
         else
           exit 1
         fi
         echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_ENV
-
-        printenv
-        echo "The Branch name is: ${{ env.BRANCH_NAME }}"
-        echo "The Trigger is: ${{ github.event_name }}"
 
         echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_ENV
         echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
