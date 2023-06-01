@@ -105,7 +105,7 @@ jobs:
 
       - name: "Build & push to GCR latest tag"
         uses: docker/build-push-action@v4
-        if: ${{ endsWith(github.ref, '/master')  && inputs.gcr }}
+        if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') )  && inputs.gcr }}
         with:
           file: ${{ inputs.file }}
           context: ${{ inputs.context }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: "Build & push to GAR [${{ inputs.region }}] latest tag"
         uses: docker/build-push-action@v4
-        if: ${{ endsWith(github.ref, '/master') && inputs.gar }}
+        if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') ) && inputs.gar }}
         with:
           file: ${{ inputs.file }}
           context: ${{ inputs.context }}

@@ -66,7 +66,7 @@ runs:
 
     - name: "Build & push Docker image [latest tag]"
       uses: docker/build-push-action@v4
-      if: ${{ endsWith(github.ref, '/master') }}
+      if: ${{ endsWith(github.ref, '/master') || endsWith(github.ref, '/main' }}
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
