@@ -17,24 +17,23 @@ fi
 
 # Iter over all values-*.yaml files in order to sync thier content with the local values.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
-    cd helm-chart-$APP_NAME-values-staging/
-    for env in $(ls -d -- */); do
-        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./$env/values-stg-tag.yaml"
-        cp -f "../kube/values/$APP_NAME/staging/$env/values-stg.yaml" "./$env/values-stg.yaml"
+    for env_path in $(ls -d -- ./kube/values/$APP_NAME/staging/*/); do
+        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./helm-chart-$APP_NAME-values-staging/staging/${basename "${env_path%/}"}/values-stg-tag.yaml"
+        cp -f "$(basename "${env_path%/}")/values-stg.yaml" "./helm-chart-$APP_NAME-values-staging/staging/${basename "${env_path%/}"}/values-stg.yaml"
     done
-    cp -f "../kube/values/$APP_NAME/staging/values-stg.yaml" "values-stg.yaml"
+    cp -f "./kube/values/$APP_NAME/staging/values-stg.yaml" "./helm-chart-$APP_NAME-values-staging/staging/values-stg.yaml"
+
 elif [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
-    cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag value before the deployment for rollout undo (just in case).
-    echo "OLD_IMAGE_TAG=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
-    cp -f "../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
+    echo "OLD_IMAGE_TAG=$(cat "./helm-chart-$APP_NAME-values-prod/prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./helm-chart-$APP_NAME-values-prod/prod/values-prod-tag.yaml"
+    cp -f "./kube/values/$APP_NAME/prod/values-prod.yaml" "./helm-chart-$APP_NAME-values-prod/prod/values-prod.yaml"
+
 else
-    cd helm-chart-$APP_NAME-values-staging/
     # Store the currentTag value before the deployment for rollout undo (just in case).
-    echo "OLD_IMAGE_TAG=$(cat "./$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
-    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./$ENV_TO_DEPLOY/values-stg-tag.yaml"
-    cp -f "../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./$ENV_TO_DEPLOY/values-stg.yaml"
+    echo "OLD_IMAGE_TAG=$(cat "./helm-chart-$APP_NAME-values-staging/staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./helm-chart-$APP_NAME-values-staging/staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
+    cp -f "./kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./helm-chart-$APP_NAME-values-staging/staging/$ENV_TO_DEPLOY/values-stg.yaml"
 fi
 
 git config user.name github-actions
