@@ -20,7 +20,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     cd helm-chart-$APP_NAME-values-staging/
     for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$(basename "${env_path%/}")/values-stg-tag.yaml"
-        cp -f "$(basename "${env_path%/}")/values-stg.yaml" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
+        cp -f "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
     done
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
 
