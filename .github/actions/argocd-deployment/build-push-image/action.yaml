@@ -57,7 +57,11 @@ runs:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
-        tags: ${{ env.REPO_URL }}:${{ inputs.branch_name }}, ${{ env.REPO_URL }}:${{ inputs.image_tag }}, ${{ env.REPO_URL }}:latest
+        provenance: false
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:latest
 
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v4
@@ -66,5 +70,8 @@ runs:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
-        tags: ${{ env.REPO_URL }}:${{ inputs.branch_name }}, ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+        provenance: false
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
