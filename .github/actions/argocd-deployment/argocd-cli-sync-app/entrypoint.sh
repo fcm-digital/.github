@@ -9,11 +9,10 @@ argocd_app_sync () {
         --retry-backoff-factor 2
 }
 
-
-if [[ "$ARGOCD_CURRENT_ENV" == "master" && github.ref == 'refs/heads/master' ]] || [[ "$ARGOCD_CURRENT_ENV" == "main" && github.ref == 'refs/heads/main' ]]; then
-    ARGOCD_FULL_APP_NAME="$ARGOCD_APP_NAME-prod-$ARGOCD_APP_REGION"
+if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
+    ARGOCD_FULL_APP_NAME="$APP_NAME-prod-$APP_REGION"
 else
-    ARGOCD_FULL_APP_NAME="$ARGOCD_APP_NAME-$ARGOCD_CURRENT_ENV-stg-$ARGOCD_APP_REGION"
+    ARGOCD_FULL_APP_NAME="$APP_NAME-$ENV_TO_DEPLOY-stg-$APP_REGION"
 fi
 
 
