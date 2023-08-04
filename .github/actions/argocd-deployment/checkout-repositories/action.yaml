@@ -34,6 +34,13 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v3
+      with:
+        repository: fcm-digital/helm-chart-template
+        token: ${{ inputs.github_token_checkout }}
+        ref: master
+        path: helm-chart-template
+
+    - uses: actions/checkout@v3
       if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values

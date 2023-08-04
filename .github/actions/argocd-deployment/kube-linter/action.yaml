@@ -1,0 +1,64 @@
+---
+name: 'Kube-Linter'
+description: 'Kube Linter Execution for Helm Chart Templates.'
+
+inputs:
+  app_name:
+    description: 'The application name that will be deployed.'
+    required: true
+    type: string
+  branch_name:
+    description: 'Current branch name.'
+    required: true
+    type: string
+  env_to_deploy:
+    description: >
+      Environment where the image will be deployed.
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - id: install-go
+      name: 'GO Installation'
+      uses: actions/setup-go@v4
+
+    - id: install-helm
+      name: 'Helm Installation'
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.10.3' # Current Helm version installed into ArgoCD Pods. 
+        # token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
+
+    - id: install-kube-linter
+      name: 'Kube-Linter Installation'
+      shell: bash
+      run: |
+        go version
+        go install golang.stackrox.io/kube-linter/cmd/kube-linter@latest
+
+    - id: exec-kube-linter-staging
+      name: 'Kube-Linter Execution for Staging'
+      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+      shell: bash
+      run: |
+        cd ./helm-chart-template
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} -- \
+          -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
+          -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
+          -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg-tag.yaml \
+          > output-template.yaml
+
+    - id: exec-kube-linter-production
+      name: 'Kube-Linter Execution for Production'
+      if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
+      shell: bash
+      run: |
+        cd ./helm-chart-template
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+          -f ../kube/values/${{ inputs.app_name }}/prod/values-stg.yaml \
+          -f ../kube/values/${{ inputs.app_name }}/prod/values-stg-tag.yaml \
+          > output-template.yaml
