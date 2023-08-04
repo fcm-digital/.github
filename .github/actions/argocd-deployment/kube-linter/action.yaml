@@ -37,6 +37,7 @@ runs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ inputs.go_version }}
+        cache: false
 
     - id: install-helm
       name: 'Helm Installation'
@@ -57,6 +58,7 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       shell: bash
       run: |
+        ls -la
         cd helm-chart-template
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} -- \
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
@@ -70,6 +72,7 @@ runs:
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       shell: bash
       run: |
+        ls -la
         cd helm-chart-template
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-stg.yaml \
