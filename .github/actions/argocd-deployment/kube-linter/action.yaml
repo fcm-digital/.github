@@ -57,20 +57,22 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       shell: bash
       run: |
-        cd ./helm-chart-template
+        cd helm-chart-template
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} -- \
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg-tag.yaml \
           > output-template.yaml
+        cat output-template.yaml
 
     - id: exec-kube-linter-production
       name: 'Kube-Linter Execution for Production'
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       shell: bash
       run: |
-        cd ./helm-chart-template
+        cd helm-chart-template
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-stg-tag.yaml \
           > output-template.yaml
+        cat output-template.yaml
