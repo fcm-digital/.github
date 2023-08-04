@@ -16,6 +16,16 @@ inputs:
       Environment where the image will be deployed.
     required: true
     type: string
+  go_version:
+    description: 'Go Version'
+    required: false
+    type: string
+    default: '1.20'
+  helm_version:
+    description: 'Helm Version'
+    required: false
+    type: string
+    default: 'v3.10.3'
 
 runs:
   using: "composite"
@@ -25,12 +35,14 @@ runs:
     - id: install-go
       name: 'GO Installation'
       uses: actions/setup-go@v4
+      with:
+        go-version: ${{ inputs.go_version }}
 
     - id: install-helm
       name: 'Helm Installation'
       uses: azure/setup-helm@v3
       with:
-        version: 'v3.10.3' # Current Helm version installed into ArgoCD Pods. 
+        version: ${{ inputs.helm_version }} # Current Helm version installed into ArgoCD Pods.
         # token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
 
     - id: install-kube-linter
