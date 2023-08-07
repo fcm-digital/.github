@@ -62,7 +62,7 @@ runs:
           -f ../helm-chart-${{ inputs.app_name }}-values-staging/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
           -f ../helm-chart-${{ inputs.app_name }}-values-staging/staging/${{ inputs.env_to_deploy }}/values-stg-tag.yaml \
           > output-template.yaml
-        cat output-template.yaml
+        kube-linter lint output-template.yaml
 
     - id: exec-kube-linter-production
       name: 'Kube-Linter Execution for Production'
@@ -74,4 +74,4 @@ runs:
           -f ../helm-chart-${{ inputs.app_name }}-values-prod/prod/${{ inputs.env_to_deploy }}/values-stg.yaml \
           -f ../helm-chart-${{ inputs.app_name }}-values-prod/prod/${{ inputs.env_to_deploy }}/values-stg-tag.yaml \
           > output-template.yaml
-        cat output-template.yaml
+        kube-linter lint output-template.yaml
