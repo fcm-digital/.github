@@ -6,8 +6,8 @@ inputs:
   argocd_cli_version:
     required: false
     type: string
-    default: 'v2.6.2'
-    description: 'ArgoCD CLI version (default: v2.6.2).'
+    default: 'v2.8.1'
+    description: 'ArgoCD CLI version (default: v2.8.1).'
 
 runs:
   using: "composite"
