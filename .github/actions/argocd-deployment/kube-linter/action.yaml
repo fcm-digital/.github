@@ -61,7 +61,8 @@ runs:
       shell: bash
       run: |
         cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} --currentTag=${{ inputs.image_tag }} \
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+          --set currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
           > output-template.yaml
@@ -73,7 +74,8 @@ runs:
       shell: bash
       run: |
         cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} --currentTag=${{ inputs.image_tag }} \
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+          --set currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
           > output-template.yaml
         kube-linter lint output-template.yaml
