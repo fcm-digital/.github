@@ -16,6 +16,10 @@ inputs:
       Environment where the image will be deployed.
     required: true
     type: string
+  image_tag:
+    description: 'The image tag that will be deployed.'
+    required: true
+    type: string
   go_version:
     description: 'Go Version'
     required: false
@@ -25,7 +29,7 @@ inputs:
     description: 'Helm Version'
     required: false
     type: string
-    default: 'v3.10.3'
+    default: 'v3.12.1'
 
 runs:
   using: "composite"
@@ -57,10 +61,9 @@ runs:
       shell: bash
       run: |
         cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} --currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
-          -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg-tag.yaml \
           > output-template.yaml
         kube-linter lint output-template.yaml
 
@@ -70,8 +73,7 @@ runs:
       shell: bash
       run: |
         cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} --currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
-          -f ../kube/values/${{ inputs.app_name }}/prod/values-prod-tag.yaml \
           > output-template.yaml
         kube-linter lint output-template.yaml
