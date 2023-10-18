@@ -11,6 +11,11 @@ inputs:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
     type: string
+  helm_chart_template_ref:
+    description: 'The helm-chart-template branch name.'
+    required: false
+    type: string
+    default: master
 
 runs:
   using: "composite"
@@ -37,7 +42,7 @@ runs:
       with:
         repository: fcm-digital/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
-        ref: master
+        ref: ${{ inputs.helm_chart_template_ref }}
         path: helm-chart-template
 
     - uses: actions/checkout@v3
