@@ -50,27 +50,30 @@ runs:
         fi
       shell: bash
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: "Build & push Docker image [branch tag] + [latest tag]"
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v5
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
+        cache-from: type=registry,${{ env.REPO_URL }}:${{ inputs.branch_name }}:buildcache
         context: ${{ inputs.context }}
-        provenance: false
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
           ${{ env.REPO_URL }}:latest
 
     - name: "Build & push Docker image [branch tag]"
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v5
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
+        cache-from: type=registry,${{ env.REPO_URL }}:${{ inputs.branch_name }}:buildcache
         context: ${{ inputs.context }}
-        provenance: false
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
