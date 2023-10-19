@@ -59,7 +59,6 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        # cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
