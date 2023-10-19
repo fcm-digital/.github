@@ -54,6 +54,7 @@ runs:
       uses: docker/setup-buildx-action@v3
 
     - name: "Pull Docker image [branch] for Buildx Cache"
+      shell: bash
       run: |
         docker pull ${{ env.REPO_URL }}:${{ inputs.branch_name }}
 
