@@ -58,9 +58,9 @@ runs:
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
         push: ${{ inputs.push }}
-        pull: true
         file: ${{ inputs.file }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
@@ -72,9 +72,9 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
-        pull: true
         file: ${{ inputs.file }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
