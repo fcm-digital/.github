@@ -63,7 +63,7 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       shell: bash
       run: |
-        docker build --target builder \
+        docker build \
         --cache-from=${{ env.REPO_URL }}:${{ inputs.branch_name }} \
         -t ${{ env.REPO_URL }}:${{ inputs.branch_name }} \
         -t ${{ env.REPO_URL }}:${{ inputs.image_tag }} \
