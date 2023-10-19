@@ -61,6 +61,7 @@ runs:
 
     - name: "Build & push Docker image [branch tag]"
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+      shell: bash
       run: |
         "docker build --target builder " \
         "--cache-from=${{ env.REPO_URL }}:${{ inputs.branch_name }} " \
