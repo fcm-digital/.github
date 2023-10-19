@@ -70,6 +70,7 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
+        cache-to: type=inline
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
@@ -83,6 +84,7 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
+        cache-to: type=inline
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
