@@ -56,7 +56,13 @@ runs:
     - name: "Pull Docker image [branch] for Buildx Cache"
       shell: bash
       run: |
-        docker pull ${{ env.REPO_URL }}:force-fail || true
+        docker pull ${{ env.REPO_URL }}:${{ inputs.branch_name }} || true
+
+    - name: "Pull Docker image [latest] for Buildx Cache"
+      if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
+      shell: bash
+      run: |
+        docker pull ${{ env.REPO_URL }}:latest || true
 
     - name: "Build & push Docker image [branch tag] + [latest tag]"
       uses: docker/build-push-action@v5
@@ -64,8 +70,6 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        # cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
-        # cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }},mode=max
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
@@ -79,7 +83,6 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        # cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
