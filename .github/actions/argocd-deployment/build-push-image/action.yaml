@@ -59,7 +59,7 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        cache-from: type=registry,${{ env.REPO_URL }}:${{ inputs.branch_name }}:buildcache
+        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
@@ -72,7 +72,7 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        cache-from: type=registry,${{ env.REPO_URL }}:${{ inputs.branch_name }}:buildcache
+        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
