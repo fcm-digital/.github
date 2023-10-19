@@ -56,7 +56,7 @@ runs:
     - name: "Pull Docker image [branch] for Buildx Cache"
       shell: bash
       run: |
-        docker pull ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        docker pull ${{ env.REPO_URL }}:force-fail
 
     - name: "Build & push Docker image [branch tag] + [latest tag]"
       uses: docker/build-push-action@v5
