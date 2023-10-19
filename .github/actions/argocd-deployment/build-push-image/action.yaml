@@ -71,7 +71,7 @@ runs:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         # cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
-        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        # cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
@@ -87,7 +87,7 @@ runs:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
         # cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
-        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        # cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
