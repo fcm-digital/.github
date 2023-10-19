@@ -15,11 +15,19 @@ if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" != "master" ]] || [[ "$ENV_
     exit 1
 fi
 
+if [[ "$UPDATE_DEPLOYED_AT" = true ]]; then
+    echo "Updating 'DEPLOYED_AT' env variable at runtime."
+    DEPLOYED_AT=$(date -u +"%FT%TZ")
+fi
+
 # Iter over all values-*.yaml files in order to sync thier content with the local values.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
     for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$(basename "${env_path%/}")/values-stg-tag.yaml"
+        if [ ! -z ${DEPLOYED_AT+x} ]; then
+            sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
+        fi
         cp -f "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
     done
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
@@ -29,6 +37,9 @@ elif [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$EN
     # Store the currentTag value before the deployment for rollout undo (just in case).
     echo "OLD_IMAGE_TAG=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
+    if [ ! -z ${DEPLOYED_AT+x} ]; then
+        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./prod/values-prod.yaml"
+    fi
     cp -f "./../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
 
 else
@@ -36,6 +47,9 @@ else
     # Store the currentTag value before the deployment for rollout undo (just in case).
     echo "OLD_IMAGE_TAG=$(cat "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
+    if [ ! -z ${DEPLOYED_AT+x} ]; then
+        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
+    fi
     cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
 fi
 

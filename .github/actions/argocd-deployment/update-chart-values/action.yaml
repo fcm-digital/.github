@@ -26,6 +26,11 @@ inputs:
     required: false
     type: boolean
     default: false
+  update_deployed_at:
+    description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
+    required: true
+    type: boolean
+    default: false
 
 runs:
   using: "composite"
@@ -39,4 +44,5 @@ runs:
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         ROLLOUT: ${{ inputs.rollout }}
+        UPDATE_DEPLOYED_AT: ${{ inputs.update_deployed_at }}
       shell: bash
