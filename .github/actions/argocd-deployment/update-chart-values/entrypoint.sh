@@ -26,7 +26,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$(basename "${env_path%/}")/values-stg-tag.yaml"
         if [ ! -z ${DEPLOYED_AT+x} ]; then
-            sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
+            sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml"
         fi
         cp -f "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
     done
@@ -38,7 +38,7 @@ elif [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$EN
     echo "OLD_IMAGE_TAG=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
     if [ ! -z ${DEPLOYED_AT+x} ]; then
-        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./prod/values-prod.yaml"
+        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
     fi
     cp -f "./../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
 
@@ -48,7 +48,7 @@ else
     echo "OLD_IMAGE_TAG=$(cat "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
     if [ ! -z ${DEPLOYED_AT+x} ]; then
-        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
+        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
     cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
 fi
