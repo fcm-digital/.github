@@ -70,13 +70,15 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        cache-to: type=inline
-        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        # cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
           ${{ env.REPO_URL }}:latest
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
 
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v5
@@ -84,10 +86,12 @@ runs:
       with:
         push: ${{ inputs.push }}
         file: ${{ inputs.file }}
-        cache-to: type=inline
-        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        # cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
 
