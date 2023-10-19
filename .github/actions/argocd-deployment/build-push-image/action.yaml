@@ -63,12 +63,12 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       shell: bash
       run: |
-        "docker build --target builder " \
-        "--cache-from=${{ env.REPO_URL }}:${{ inputs.branch_name }} " \
-        "-t ${{ env.REPO_URL }}:${{ inputs.branch_name }} " \
-        "-t ${{ env.REPO_URL }}:${{ inputs.image_tag }} " \
-        "--build-arg BUILDKIT_INLINE_CACHE=1 " \
-        "-f './Dockerfile' '.' "
+        docker build --target builder \
+        --cache-from=${{ env.REPO_URL }}:${{ inputs.branch_name }} \
+        -t ${{ env.REPO_URL }}:${{ inputs.branch_name }} \
+        -t ${{ env.REPO_URL }}:${{ inputs.image_tag }} \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        -f './Dockerfile' '.'
 
     # - name: "Pull Docker image [latest] for Buildx Cache"
     #   if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
