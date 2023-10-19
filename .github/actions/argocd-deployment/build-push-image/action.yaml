@@ -56,10 +56,7 @@ runs:
     - name: "Pull Docker image [branch] for Buildx Cache"
       shell: bash
       run: |
-        docker manifest inspect ${{ env.REPO_URL }}:force-fail > /dev/null
-        if [ $? -eq 0 ]; then
-          docker pull ${{ env.REPO_URL }}:force-fail
-        fi
+        docker pull ${{ env.REPO_URL }}:force-fail > /dev/null
 
     - name: "Build & push Docker image [branch tag] + [latest tag]"
       uses: docker/build-push-action@v5
