@@ -50,8 +50,8 @@ runs:
         fi
       shell: bash
 
-    # - name: Set up Docker Buildx
-    #   uses: docker/setup-buildx-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: "Pull, Build & push Docker image [branch tag]"
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
