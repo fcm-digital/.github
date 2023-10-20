@@ -70,8 +70,8 @@ runs:
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
-        # build-args: |
-        #   BUILDKIT_INLINE_CACHE="1"
+        build-args: |
+          BUILDKIT_INLINE_CACHE="1"
 
     # - name: "Pull, Build & Push Docker image [branch tag]"
     #   if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
