@@ -59,10 +59,10 @@ runs:
       run: |
         docker pull ${{ env.REPO_URL }}:${{ inputs.branch_name }} || true
         docker build \
-        --cache-from=${{ env.REPO_URL }}:${{ inputs.branch_name }} \
-        -t ${{ env.REPO_URL }}:${{ inputs.branch_name }} \
-        -t ${{ env.REPO_URL }}:${{ inputs.image_tag }} \
-        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --cache-from='${{ env.REPO_URL }}:${{ inputs.branch_name }}' \
+        -t '${{ env.REPO_URL }}:${{ inputs.branch_name }}' \
+        -t '${{ env.REPO_URL }}:${{ inputs.image_tag }}' \
+        --build-arg BUILDKIT_INLINE_CACHE='1' \
         -f './Dockerfile' '.'
 
     # - name: "Pull Docker image [latest] for Buildx Cache"
