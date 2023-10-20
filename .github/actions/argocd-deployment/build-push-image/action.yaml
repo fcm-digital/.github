@@ -64,6 +64,7 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
+        pull: true
         file: ${{ inputs.file }}
         cache-from: ${{ env.REPO_URL }}:${{ inputs.branch_name }}
         context: ${{ inputs.context }}
