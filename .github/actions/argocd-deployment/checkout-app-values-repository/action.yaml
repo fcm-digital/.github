@@ -15,10 +15,6 @@ inputs:
     description: 'The target environment where the changes will be applied.'
     required: true
     type: string
-  tag_to_deploy:
-    description: 'The image tag that will be deployed.'
-    required: true
-    type: string
 
 runs:
   using: "composite"
