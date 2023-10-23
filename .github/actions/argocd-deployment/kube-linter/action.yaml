@@ -16,6 +16,10 @@ inputs:
       Environment where the image will be deployed.
     required: true
     type: string
+  exclude_rules:
+    description: 'The kube-linter rules to be excluded.'
+    required: false
+    type: string
   image_tag:
     description: 'The image tag that will be deployed.'
     required: true
@@ -66,7 +70,7 @@ runs:
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
           > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account
+        kube-linter lint output-template.yaml --exclude non-existent-service-account $exclude_rules
 
     - id: exec-kube-linter-production
       name: 'Kube-Linter Execution for Production'
@@ -78,4 +82,4 @@ runs:
           --set currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
           > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account
+        kube-linter lint output-template.yaml --exclude non-existent-service-account $exclude_rules
