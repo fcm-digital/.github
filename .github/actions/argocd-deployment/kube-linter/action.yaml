@@ -70,7 +70,7 @@ runs:
           -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
           -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
           > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account $exclude_rules
+        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
 
     - id: exec-kube-linter-production
       name: 'Kube-Linter Execution for Production'
@@ -82,4 +82,4 @@ runs:
           --set currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
           > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account $exclude_rules
+        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
