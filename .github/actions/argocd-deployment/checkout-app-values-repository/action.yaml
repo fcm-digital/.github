@@ -1,0 +1,40 @@
+---
+name: 'Checkout App Values Repository'
+description: 'Checkout app values repository (helm-chart-app-values) for ArgoCD deployment.'
+
+inputs:
+  app_name:
+    description: 'Name of the app to deploy.'
+    required: true
+    type: string
+  github_token_checkout:
+    description: 'The GitHub token to checkout helm_chart_template repository.'
+    required: true
+    type: string
+  environment:
+    description: 'The target environment where the changes will be applied.'
+    required: true
+    type: string
+  tag_to_deploy:
+    description: 'The image tag that will be deployed.'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      if: inputs.environment == 'prod'
+      with:
+        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.github_token_checkout }}
+        ref: master
+        path: helm-chart-${{ inputs.app_name }}-values-prod
+
+    - uses: actions/checkout@v3
+      if: inputs.environment != 'prod'
+      with:
+        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.github_token_checkout }}
+        ref: staging
+        path: helm-chart-${{ inputs.app_name }}-values-staging
