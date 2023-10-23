@@ -58,8 +58,8 @@ git config user.email github-actions@github.com
 git pull
 git add .
 if $ROLLOUT; then
-    git commit -m "Rollout Undo in $APP_NAME - $IMAGE_TAG for $ENV_TO_DEPLOY"
+    git commit -m "ROLLOUT UNDO in (${APP_NAME^^}) - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
 else
-    git commit -m "New Deployment in $APP_NAME - $IMAGE_TAG for $ENV_TO_DEPLOY"
+    git commit -m "DEPLOYMENT in (${APP_NAME^^}) - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
 fi
 git push
