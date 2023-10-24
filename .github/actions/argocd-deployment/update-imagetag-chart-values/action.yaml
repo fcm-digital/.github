@@ -26,4 +26,5 @@ runs:
         APP_NAME: ${{ inputs.app_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
+        UPDATE_DEPLOYED_AT: ${{ inputs.update_deployed_at }}
       shell: bash
