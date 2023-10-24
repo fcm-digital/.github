@@ -2,12 +2,24 @@
 name: 'Ask for Manual Approval'
 description: 'Ask for Manual Approval'
 
+inputs:
+  github_secret_token:
+    description: '.'
+    required: true
+    type: string
+  approvers:
+    description: 'The GitHub token to checkout helm_chart_template repository.'
+    required: true
+    type: string
+
 runs:
   using: 'composite'
   steps:
-    
-    - uses: trstringer/manual-approval@v1
+
+    - uses: trstringer/manual-approval@v1.9.0
       with:
         minimum-approvals: 1
+        secret: ${{ inputs.github_secret_token }}
+        approvers: ${{ inputs.approvers }}
         issue-title: "Deploying to Production."
-        issue-body: "Please approve or deny the deployment of new app version."
+        issue-body: "Please 'approve' or 'deny' the deployment of new app version." #ToDo: Parametrize
