@@ -45,4 +45,4 @@ runs:
         secret: ${{ inputs.github_secret_token }}
         approvers: ${{ inputs.approvers }}
         issue-title: "Deploying to Production."
-        issue-body: "Please 'approve' or 'deny' the deployment of new app version.\nTake a look to: ${{ $ARGOCD_URL }}" #ToDo: Parametrize
+        issue-body: "Please 'approve' or 'deny' the deployment of new app version.\nTake a look to: ${{ env.ARGOCD_URL }}" #ToDo: Parametrize
