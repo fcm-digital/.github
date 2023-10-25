@@ -31,11 +31,11 @@ runs:
         else
           exit 1
         fi
-        echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
+        echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> "$GITHUB_OUTPUT"
 
-        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
-        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
-        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
+        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> "$GITHUB_OUTPUT"
+        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> "$GITHUB_OUTPUT"
+        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - uses: actions/checkout@v3
