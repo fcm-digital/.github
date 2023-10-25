@@ -3,23 +3,46 @@ name: 'Ask for Manual Approval'
 description: 'Ask for Manual Approval'
 
 inputs:
-  github_secret_token:
-    description: '.'
+  app_name:
+    description: 'Name of the app to deploy.'
+    required: true
+    type: string
+  app_region:
+    description: 'Region of the app to deploy.'
     required: true
     type: string
   approvers:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
     type: string
+  env_to_deploy:
+    description: 'Environment where the image will be deployed.'
+    required: true
+    type: string
+  github_secret_token:
+    description: '.'
+    required: true
+    type: string
 
 runs:
   using: 'composite'
   steps:
+    - id: argocd-url
+      name: ArgoCD URL
+      run: |
+        if [[ "${{ inputs.branch_name }}" == "prod" ]]; then
+          echo "ARGOCD_URL=$( echo "https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-prod-${{ inputs.app_region }}" )" >> $GITHUB_ENV
+        else
+          echo "ARGOCD_URL=$( echo "https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-${{ inputs.env_to_deploy }}-stg-${{ inputs.app_region }}" )" >> $GITHUB_ENV
+        fi
+      shell: bash
 
-    - uses: trstringer/manual-approval@v1.9.0
+    - id: manual-approval
+      name: Ask for Manual Approval
+      uses: trstringer/manual-approval@v1
       with:
         minimum-approvals: 1
         secret: ${{ inputs.github_secret_token }}
         approvers: ${{ inputs.approvers }}
         issue-title: "Deploying to Production."
-        issue-body: "Please 'approve' or 'deny' the deployment of new app version." #ToDo: Parametrize
+        issue-body: "Please 'approve' or 'deny' the deployment of new app version.\nTake a look to: ${{ env.ARGOCD_URL }}" #ToDo: Parametrize

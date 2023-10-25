@@ -17,12 +17,24 @@ inputs:
     type: string
     default: master
 
+outputs:
+  branch_name:
+    description: 'The current Branch name.'
+    value: ${{ steps.init-context-vars.outputs.branch_name }}
+  current_env:
+    description: 'The current Environment name.'
+    value: ${{ steps.init-context-vars.outputs.current_env }}
+  image_tag:
+    description: 'The new Image Tag that will be deployed.'
+    value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
+
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
 
-    - run: |
+    - id: init-context-vars
+      run: |
         export COMMIT_TIME=$( git show -s --format=%ct )
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
@@ -31,11 +43,11 @@ runs:
         else
           exit 1
         fi
-        echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_ENV
+        echo "branch_name=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
 
-        echo "CURRENT_ENV=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_ENV
-        echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
-        echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+        echo "current_env=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
+        echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
+        echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v3
