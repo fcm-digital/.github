@@ -21,6 +21,12 @@ outputs:
   branch_name:
     description: 'The current Branch name.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}
+  current_env:
+    description: 'The current Environment name.'
+    value: ${{ steps.init-context-vars.outputs.current_env }}
+  image_tag:
+    description: 'The new Image Tag that will be deployed.'
+    value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
 
 runs:
   using: "composite"
@@ -39,9 +45,9 @@ runs:
         fi
         echo "branch_name=$( echo $BRANCH_NAME_LOCAL )'" >> $GITHUB_OUTPUT
 
-        echo "CURRENT_ENV='$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )'" >> $GITHUB_OUTPUT
-        echo "TIME='$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")'" >> $GITHUB_OUTPUT
-        echo "SHORT_SHA='$( git rev-parse --short=7 HEAD )'" >> $GITHUB_OUTPUT
+        echo "current_env='$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )'" >> $GITHUB_OUTPUT
+        echo "current_time='$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")'" >> $GITHUB_OUTPUT
+        echo "short_sha='$( git rev-parse --short=7 HEAD )'" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v3
