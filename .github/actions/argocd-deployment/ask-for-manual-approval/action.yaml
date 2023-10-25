@@ -16,7 +16,7 @@ runs:
   using: 'composite'
   steps:
 
-    - uses: trstringer/manual-approval@v1.9.0
+    - uses: trstringer/manual-approval@v1
       with:
         minimum-approvals: 1
         secret: ${{ inputs.github_secret_token }}
