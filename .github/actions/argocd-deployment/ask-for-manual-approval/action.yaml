@@ -31,9 +31,9 @@ runs:
       name: ArgoCD URL
       run: |
         if [[ "${{ inputs.branch_name }}" == "prod" ]]; then
-            export ARGOCD_URL="https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-prod-${{ inputs.app_region }}"
+          echo "ARGOCD_URL=$( echo "https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-prod-${{ inputs.app_region }}" )" >> $GITHUB_ENV
         else
-            export ARGOCD_URL="https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-${{ inputs.env_to_deploy }}-stg-${{ inputs.app_region }}"
+          echo "ARGOCD_URL=$( echo "https://argocd.fcm.digital/applications/argocd/${{ inputs.app_name }}-${{ inputs.env_to_deploy }}-stg-${{ inputs.app_region }}" )" >> $GITHUB_ENV
         fi
       shell: bash
 
