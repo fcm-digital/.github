@@ -17,12 +17,18 @@ inputs:
     type: string
     default: master
 
+outputs:
+  branch_name:
+    description: 'The current Branch name.'
+    value: ${{ steps.init-context-vars.outputs.branch_name }}
+
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
 
-    - run: |
+    - id: init-context-vars
+      run: |
         export COMMIT_TIME=$( git show -s --format=%ct )
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
@@ -31,12 +37,11 @@ runs:
         else
           exit 1
         fi
-        echo "BRANCH_NAME=$( echo $BRANCH_NAME_LOCAL )'" >> $GITHUB_OUTPUT
+        echo "branch_name=$( echo $BRANCH_NAME_LOCAL )'" >> $GITHUB_OUTPUT
 
         echo "CURRENT_ENV='$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )'" >> $GITHUB_OUTPUT
         echo "TIME='$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")'" >> $GITHUB_OUTPUT
         echo "SHORT_SHA='$( git rev-parse --short=7 HEAD )'" >> $GITHUB_OUTPUT
-        echo "testtesttest='12345'" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v3
