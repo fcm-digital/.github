@@ -73,6 +73,10 @@ runs:
         fi
       shell: bash
 
+    - id: test
+      shell: bash
+      run: echo ${{ steps.init-context-vars.outputs.branch_name }}
+
     - uses: actions/checkout@v3
       with:
         repository: fcm-digital/helm-chart-template
