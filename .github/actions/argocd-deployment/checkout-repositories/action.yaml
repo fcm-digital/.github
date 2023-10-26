@@ -61,7 +61,8 @@ runs:
         echo "branch_name=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
 
         if [[ ${{ inputs.env_to_deploy != '' }} ]] && [[ ${{ inputs.env_to_deploy != 'auto' }} ]]; then
-          echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
+          # echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
+          echo "env_to_deploy=$( echo ${{ inputs.branch_name }} )" >> $GITHUB_OUTPUT
         else
           echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
         fi
