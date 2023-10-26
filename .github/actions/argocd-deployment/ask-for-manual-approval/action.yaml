@@ -19,6 +19,14 @@ inputs:
     description: 'Environment where the image will be deployed.'
     required: true
     type: string
+  app_id:
+    description: 'Manual Approvals GitHub App AppId.'
+    required: true
+    type: string
+  private_key:
+    description: 'Manual Approvals GitHub App Private Key.'
+    required: true
+    type: string
 
 runs:
   using: 'composite'
@@ -37,8 +45,8 @@ runs:
       name: Generate App Token
       uses: tibdex/github-app-token@v1
       with:
-        app_id: ${{ secrets.MANUAL_APPROVAL_APP_ID }}
-        private_key: ${{ secrets.MANUAL_APPROVAL_PRIVATE_KEY }}
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.private_key }}
 
     - id: manual-approval
       name: Ask for Manual Approval
