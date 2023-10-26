@@ -19,8 +19,12 @@ inputs:
     description: 'Environment where the image will be deployed.'
     required: true
     type: string
-  github_secret_token:
-    description: '.'
+  app_id:
+    description: 'Manual Approvals GitHub App AppId.'
+    required: true
+    type: string
+  private_key:
+    description: 'Manual Approvals GitHub App Private Key.'
     required: true
     type: string
 
@@ -37,12 +41,19 @@ runs:
         fi
       shell: bash
 
+    - id: generate-app-token
+      name: Generate App Token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.private_key }}
+
     - id: manual-approval
       name: Ask for Manual Approval
       uses: trstringer/manual-approval@v1
       with:
         minimum-approvals: 1
-        secret: ${{ inputs.github_secret_token }}
+        secret: ${{ steps.generate-app-token.outputs.token }}
         approvers: ${{ inputs.approvers }}
         issue-title: "Deploying to Production."
         issue-body: "Please 'approve' or 'deny' the deployment of new app version.\nTake a look to: ${{ env.ARGOCD_URL }}" #ToDo: Parametrize
