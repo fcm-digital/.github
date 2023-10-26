@@ -53,7 +53,7 @@ runs:
       uses: trstringer/manual-approval@v1
       with:
         minimum-approvals: 1
-        secret: ${{ steps.generate_token.outputs.token }}
+        secret: ${{ steps.generate-app-token.outputs.token }}
         approvers: ${{ inputs.approvers }}
         issue-title: "Deploying to Production."
         issue-body: "Please 'approve' or 'deny' the deployment of new app version.\nTake a look to: ${{ env.ARGOCD_URL }}" #ToDo: Parametrize
