@@ -7,6 +7,16 @@ inputs:
     description: 'Name of the app to deploy.'
     required: true
     type: string
+  branch_name:
+    description: 'Current branch name.'
+    required: false
+    type: string
+    default: ''
+  env_to_deploy:
+    description: 'The target environment where the changes will be applied.'
+    required: false
+    type: string
+    default: ''
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
@@ -21,9 +31,9 @@ outputs:
   branch_name:
     description: 'The current Branch name.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}
-  current_env:
+  env_to_deploy:
     description: 'The current Environment name.'
-    value: ${{ steps.init-context-vars.outputs.current_env }}
+    value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
   image_tag:
     description: 'The new Image Tag that will be deployed.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
@@ -31,12 +41,17 @@ outputs:
 runs:
   using: "composite"
   steps:
+    #Todo: Update to actions/checkout@v4
     - uses: actions/checkout@v3
+      with:
+        # Master or Main branch if 'inputs.branch_name' == ''
+        ref: ${{ inputs.branch_name }}
 
     - id: init-context-vars
       run: |
-        export COMMIT_TIME=$( git show -s --format=%ct )
-        if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+        if [[ ${{ inputs.branch_name != '' }} ]]; then
+          export BRANCH_NAME_LOCAL=$( echo ${{ inputs.branch_name }} )
+        elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
         elif [[ '${{ github.event_name }}' == 'push' ]]; then
           export BRANCH_NAME_LOCAL=$( cut -d '/' -f 3 <<< "$GITHUB_REF" )
@@ -45,9 +60,19 @@ runs:
         fi
         echo "branch_name=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
 
-        echo "current_env=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
-        echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
-        echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
+        if [[ ${{ inputs.env_to_deploy != '' }} ]] && [[ ${{ inputs.env_to_deploy != 'auto' }} ]]; then
+          echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
+        else
+          echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ ${{ inputs.branch_name == '' }} ]]; then
+          export COMMIT_TIME=$( git show -s --format=%ct )
+          echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
+          echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
+        fi
+
+        printenv
       shell: bash
 
     - uses: actions/checkout@v3
@@ -58,6 +83,7 @@ runs:
         path: helm-chart-template
 
     - uses: actions/checkout@v3
+      # ToDo: Review if statement -> env.BRANCH_NAME value from where (?)
       if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
