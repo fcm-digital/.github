@@ -71,8 +71,6 @@ runs:
           echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
           echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
         fi
-
-        printenv
       shell: bash
 
     - uses: actions/checkout@v3
@@ -83,8 +81,7 @@ runs:
         path: helm-chart-template
 
     - uses: actions/checkout@v3
-      # ToDo: Review if statement -> env.BRANCH_NAME value from where (?)
-      if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main'
+      if: steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
@@ -92,6 +89,7 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v3
+      if: steps.init-context-vars.outputs.branch_name == 'manu-changes'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
