@@ -6,29 +6,44 @@ inputs:
   app_name:
     description: 'Name of the app to deploy.'
     required: true
-    type: string
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
-    type: string
-  env_to_deploy:
-    description: 'The target environment where the changes will be applied.'
+  branch_name:
+    description: 'Target Branch from where the values will be synced.'
     required: true
-    type: string
+  env_to_deploy:
+    description: 'Target Environment: prod, sandbox...'
+    required: true
+    default: 'auto'
+  image_tag:
+    description: 'Specific Image Tag to Deploy.'
+    required: true
+
+outputs:
+  env_to_deploy:
+    description: 'The current Environment name.'
+    value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
 
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: {{ inputs.branch_name }}
+
     - run: |
-        if [[ '${{ github.event.inputs.env_to_deploy }}' == 'prod' ]]; then
-          echo "BRANCH_NAME=master" >> $GITHUB_ENV
+        if [[ ${{ inputs.env_to_deploy == 'auto' }} ]]; then
+          echo "env_to_deploy=$( cut -d '-' -f 1 <<< "${{ inputs.branch_name }}" )" >> $GITHUB_OUTPUT
+        elif [[ ${{ inputs.env_to_deploy == 'prod' }} ]]; then
+          echo "env_to_deploy=master" >> $GITHUB_OUTPUT
         else
-          echo "BRANCH_NAME=anystagingenv" >> $GITHUB_ENV
+          echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
     - uses: actions/checkout@v3
-      if: inputs.env_to_deploy == 'prod'
+      if: steps.init-context-vars.outputs.env_to_deploy == 'master' || steps.init-context-vars.outputs.env_to_deploy == 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
@@ -36,7 +51,6 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v3
-      if: inputs.env_to_deploy != 'prod'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
