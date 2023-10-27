@@ -15,6 +15,7 @@ if [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" != "master" ]] || [[ "$ENV_
     exit 1
 fi
 
+# 'BFF' and 'BIGBROTHER' environment variable -> Must be updated in each deploy.
 if [[ "$UPDATE_DEPLOYED_AT" = true ]]; then
     echo "Updating 'DEPLOYED_AT' env variable at runtime."
     DEPLOYED_AT=$(date -u +"%FT%TZ")
@@ -24,12 +25,22 @@ fi
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
     for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
-        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$(basename "${env_path%/}")/values-stg-tag.yaml"
-        if [ ! -z ${DEPLOYED_AT+x} ]; then
-            sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml"
+        # Get the source of the 'currentTag' environment
+        export CURRENT_ENV=$(basename "${env_path%/}")
+        export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
+        export CURRENT_IMAGE_TAG_ENV=$(cut -d '-' -f 1 <<< $( echo $CURRENT_IMAGE_TAG )
+
+        # Check if the currentTag is an old 'master' image -> Then, sync the values.
+        # Sandbox will always be synced when a new 'master' image is deployed.
+        if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
+            sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+            if [ ! -z ${DEPLOYED_AT+x} ]; then
+                sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/values-stg.yaml"
+            fi
+            cp -f "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/values-stg.yaml" "./staging/$CURRENT_ENV/values-stg.yaml"
         fi
-        cp -f "./../kube/values/$APP_NAME/staging/$(basename "${env_path%/}")/values-stg.yaml" "./staging/$(basename "${env_path%/}")/values-stg.yaml"
     done
+    # The values-stg.yaml will always be synced when a Pull Request is closed.
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
 
 elif [[ "$ENV_TO_DEPLOY" == "master" && "$BRANCH_NAME" == "master" ]] || [[ "$ENV_TO_DEPLOY" == "main" && "$BRANCH_NAME" == "main" ]]; then
