@@ -56,7 +56,8 @@ runs:
         path: helm-chart-template
 
     - uses: actions/checkout@v3
-      if: steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main'
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && \
+          (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
@@ -67,5 +68,5 @@ runs:
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
-        ref: ${{ steps.init-context-vars.outputs.branch_name }}
+        ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
