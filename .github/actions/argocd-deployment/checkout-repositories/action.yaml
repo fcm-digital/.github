@@ -7,10 +7,6 @@ inputs:
     description: 'Name of the app to deploy.'
     required: true
     type: string
-  branch_name:
-    description: 'Current branch name.'
-    required: false
-    type: string
     default: ''
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
@@ -38,9 +34,6 @@ runs:
   steps:
       #Todo: Update to actions/checkout@v4
     - uses: actions/checkout@v3
-      with:
-        # Master or Main branch if 'inputs.branch_name' == ''
-        ref: ${{ inputs.branch_name }}
 
     - id: init-context-vars
       run: |
