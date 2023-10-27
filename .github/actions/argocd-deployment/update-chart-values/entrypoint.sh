@@ -28,7 +28,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
         # Get the source of the 'currentTag' environment
         export CURRENT_ENV=$(basename "${env_path%/}")
         export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
-        export CURRENT_IMAGE_TAG_ENV=$(cut -d '-' -f 1 <<< $( echo $CURRENT_IMAGE_TAG )
+        export CURRENT_IMAGE_TAG_ENV=$(cut -d '-' -f 1 <<< $( echo $CURRENT_IMAGE_TAG ))
 
         # Check if the currentTag is an old 'master' image -> Then, sync the values.
         # Sandbox will always be synced when a new 'master' image is deployed.
