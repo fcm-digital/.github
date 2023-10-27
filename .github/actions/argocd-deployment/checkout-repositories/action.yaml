@@ -6,15 +6,12 @@ inputs:
   app_name:
     description: 'Name of the app to deploy.'
     required: true
-    type: string
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
-    type: string
   helm_chart_template_ref:
     description: 'The helm-chart-template branch name.'
     required: false
-    type: string
     default: master
 
 outputs:
@@ -59,7 +56,7 @@ runs:
         path: helm-chart-template
 
     - uses: actions/checkout@v3
-      if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main'
+      if: steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
