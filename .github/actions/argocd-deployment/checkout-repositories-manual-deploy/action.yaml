@@ -30,7 +30,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        ref: {{ inputs.branch_name }}
+        ref: ${{ inputs.branch_name }}
 
     - run: |
         if [[ ${{ inputs.env_to_deploy == 'auto' }} ]]; then
