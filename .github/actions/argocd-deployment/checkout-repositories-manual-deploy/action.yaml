@@ -32,7 +32,8 @@ runs:
       with:
         ref: ${{ inputs.branch_name }}
 
-    - run: |
+    - id: init-context-vars
+      run: |
         if [[ ${{ inputs.env_to_deploy == 'auto' }} ]]; then
           echo "env_to_deploy=$( cut -d '-' -f 1 <<< "${{ inputs.branch_name }}" )" >> $GITHUB_OUTPUT
         elif [[ ${{ inputs.env_to_deploy == 'prod' }} ]]; then
