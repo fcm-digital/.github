@@ -64,6 +64,7 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v3
+      if: steps.init-context-vars.outputs.branch_name == 'lhr-argocd-deployment'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
