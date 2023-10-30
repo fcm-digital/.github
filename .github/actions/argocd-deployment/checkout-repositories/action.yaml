@@ -6,15 +6,12 @@ inputs:
   app_name:
     description: 'Name of the app to deploy.'
     required: true
-    type: string
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
-    type: string
   helm_chart_template_ref:
     description: 'The helm-chart-template branch name.'
     required: false
-    type: string
     default: master
 
 outputs:
@@ -46,7 +43,13 @@ runs:
         fi
         echo "branch_name=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
 
-        echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
+        if [[ "$BRANCH_NAME_LOCAL" == "master" || "$BRANCH_NAME_LOCAL" == "main" ]] &&
+           [[ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' ]]; then
+          echo "env_to_deploy=prod"
+        else
+          echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
+        fi
+
         echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
         echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
       shell: bash
@@ -59,7 +62,10 @@ runs:
         path: helm-chart-template
 
     - uses: actions/checkout@v3
-      if: env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main'
+      if: (github.event_name == 'push') &&
+          (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
+          (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main') &&
+          (steps.init-context-vars.outputs.env_to_deploy == 'prod')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
