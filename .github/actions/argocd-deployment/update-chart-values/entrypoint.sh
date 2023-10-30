@@ -5,13 +5,13 @@ set -euo pipefail
 # The branch name can only start with 'master' or 'main' if the branch is MASTER/MAIN ref.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && 
    [[ "$BRANCH_NAME" != "master" || "$BRANCH_NAME" != "main" ]]; then
-    echo "The current Branch Name is not allowed. It must NOT start with 'master' or 'main'."
+    echo "The Environment to Deploy cannot be 'prod' if the branches are not 'master' or 'main'."
     exit 1
 fi
 
 if [[ "$ENV_TO_DEPLOY" != "prod" && "$ENV_TO_DEPLOY" != "ALL_ENV" ]] &&
    [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
-    echo "The Environment to Deploy cannot be 'prod' or 'ALL_ENV' if the branches are not 'master' or 'main'."
+    echo "The Environment to Deploy must be 'prod' or 'ALL_ENV' if the branches are 'master' or 'main'."
     exit 1
 fi
 
