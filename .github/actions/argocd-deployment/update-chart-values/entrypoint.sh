@@ -73,7 +73,7 @@ git config user.name github-actions
 git config user.email github-actions@github.com
 git pull
 git add .
-if $ROLLOUT; then
+if [[ $ROLLOUT == true ]]; then
     git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
 else
     git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
