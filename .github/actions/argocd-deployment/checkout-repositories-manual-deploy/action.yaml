@@ -15,7 +15,6 @@ inputs:
   env_to_deploy:
     description: 'Target Environment: prod, sandbox...'
     required: true
-    default: 'auto'
   image_tag:
     description: 'Specific Image Tag to Deploy.'
     required: true
@@ -34,17 +33,15 @@ runs:
 
     - id: init-context-vars
       run: |
-        if [[ ${{ inputs.env_to_deploy == 'auto' }} ]]; then
-          echo "env_to_deploy=$( cut -d '-' -f 1 <<< "${{ inputs.branch_name }}" )" >> $GITHUB_OUTPUT
-        elif [[ ${{ inputs.env_to_deploy == 'prod' }} ]]; then
-          echo "env_to_deploy=master" >> $GITHUB_OUTPUT
+        if [[ ${{ inputs.env_to_deploy == 'master'  }} || ${{ inputs.env_to_deploy == 'main'  }} ]]; then
+          echo "env_to_deploy=prod" >> $GITHUB_OUTPUT
         else
           echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
     - uses: actions/checkout@v3
-      if: steps.init-context-vars.outputs.env_to_deploy == 'master' || steps.init-context-vars.outputs.env_to_deploy == 'main'
+      if: steps.init-context-vars.outputs.env_to_deploy == 'prod'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}

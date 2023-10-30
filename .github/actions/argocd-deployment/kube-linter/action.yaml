@@ -74,11 +74,11 @@ runs:
 
     - id: exec-kube-linter-production
       name: 'Kube-Linter Execution for Production'
-      if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
+      if: inputs.env_to_deploy == 'prod' && (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       shell: bash
       run: |
         cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
+        helm template . --name-template=${{ inputs.app_name }} --namespace=fcm-platform \
           --set currentTag=${{ inputs.image_tag }} \
           -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
           > output-template.yaml
