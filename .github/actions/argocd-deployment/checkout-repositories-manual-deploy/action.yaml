@@ -34,6 +34,7 @@ runs:
     - id: init-context-vars
       run: |
         if [[ ${{ inputs.env_to_deploy == 'master'  }} || ${{ inputs.env_to_deploy == 'main'  }} ]]; then
+          echo "WHY ARE YOU HERE?"
           echo "env_to_deploy=prod" >> $GITHUB_OUTPUT
         else
           echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
