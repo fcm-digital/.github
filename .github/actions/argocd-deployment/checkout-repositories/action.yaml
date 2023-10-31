@@ -45,7 +45,7 @@ runs:
 
         if [[ "$BRANCH_NAME_LOCAL" == "master" || "$BRANCH_NAME_LOCAL" == "main" ]] &&
            [[ "$GITHUB_REF" == "refs/heads/master" || "$GITHUB_REF" == "refs/heads/main" ]]; then
-          echo "env_to_deploy=prod"
+          echo "env_to_deploy=prod" >> $GITHUB_OUTPUT
         else
           echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
         fi
