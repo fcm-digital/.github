@@ -44,10 +44,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: |
-        printenv
-      shell: bash
-
     - run: |-
         if [[ -z "${{ inputs.artifact_repository_name }}" ]]; then
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV

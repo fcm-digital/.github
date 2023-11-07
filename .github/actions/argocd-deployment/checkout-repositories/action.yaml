@@ -31,7 +31,6 @@ outputs:
     description: 'The time where the commit was created.'
     value: ${{ steps.init-context-vars.outputs.current_time }}
 
-
 runs:
   using: "composite"
   steps:
@@ -85,3 +84,12 @@ runs:
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
+
+    - id: check-staging-environment
+      if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') &&
+          (steps.init-context-vars.outputs.branch_name != 'master' && steps.init-context-vars.outputs.branch_name != 'main') &&
+          (steps.init-context-vars.outputs.env_to_deploy != 'prod')
+      run: |
+        cd helm-chart-${{ inputs.app_name }}-values-staging/staging
+        [ ! -d steps.init-context-vars.outputs.env_to_deploy ] && { echo "Error: environment does not exist" && exit 1; }
+      shell: bash
