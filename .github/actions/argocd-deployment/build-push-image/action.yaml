@@ -54,6 +54,12 @@ runs:
         else
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
+
+        if [[ -z "${{ env.GITHUB_ACTOR }}" ]]; then
+          echo "USER_BUILDER=ArgoCD-Unknown-User" >> $GITHUB_ENV
+        else
+          echo "USER_BUILDER=${{ env.GITHUB_ACTOR }} >> $GITHUB_ENV
+        fi
       shell: bash
 
     - name: Set up Docker Buildx
@@ -67,9 +73,9 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          APP_REVISION=test
+          APP_REVISION=${{ inputs.image_tag }}
           BRANCH=${{ inputs.branch_name }}
-          USER_BUILDER=ArgoCD
+          USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
         cache-from: |
