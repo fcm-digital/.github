@@ -24,6 +24,13 @@ outputs:
   image_tag:
     description: 'The new Image Tag that will be deployed.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
+  commit:
+    description: 'The commit Id.'
+    value: ${{ steps.init-context-vars.outputs.short_sha }}
+  commit_at:
+    description: 'The time where the commit was created.'
+    value: ${{ steps.init-context-vars.outputs.current_time }}
+
 
 runs:
   using: "composite"
