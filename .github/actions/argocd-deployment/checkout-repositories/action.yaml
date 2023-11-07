@@ -90,8 +90,11 @@ runs:
           (steps.init-context-vars.outputs.branch_name != 'master' && steps.init-context-vars.outputs.branch_name != 'main') &&
           (steps.init-context-vars.outputs.env_to_deploy != 'prod')
       run: |
-        echo ${{ steps.init-context-vars.outputs.env_to_deploy }}
         cd helm-chart-${{ inputs.app_name }}-values-staging/staging
-        ls -la
-        [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ] && { echo "Error: environment does not exist" && exit 1; }
+        if [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
+          echo "Error: environment does not exist. No deployment will be needed."
+          exit 1
+        else
+          echo "All Repositories were properly cloned!"
+        fi
       shell: bash
