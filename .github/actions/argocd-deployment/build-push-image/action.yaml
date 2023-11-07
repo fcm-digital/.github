@@ -45,7 +45,7 @@ runs:
   using: 'composite'
   steps:
     - run: |
-        prinenv
+        printenv
       shell: bash
 
     - run: |-
