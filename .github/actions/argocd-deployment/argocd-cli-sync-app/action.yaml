@@ -6,28 +6,22 @@ inputs:
   app_name:
     description: 'Name of the app to deploy.'
     required: true
-    type: string
   app_region:
     description: 'Region of the app to deploy.'
     required: true
-    type: string
   argocd_auth_token:
     description: 'ArgoCD auth token with get/sync permissions over apps.'
     required: true
-    type: string
   argocd_url:
     description: 'ArgoCD URL (default: argocd.fcm.digital).'
     required: false
-    type: string
     default: 'argocd.fcm.digital'
   branch_name:
     description: 'Current branch name.'
     required: true
-    type: string
   env_to_deploy:
     description: 'Environment where the image will be deployed.'
     required: true
-    type: string
 
 runs:
   using: "composite"
