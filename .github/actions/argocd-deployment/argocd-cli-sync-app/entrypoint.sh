@@ -3,7 +3,10 @@
 argocd_app_sync () {
     argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
-        --auth-token $ARGOCD_AUTH_TOKEN
+        --auth-token $ARGOCD_AUTH_TOKEN \
+        --retry-limit 2 \
+        --retry-backoff-duration 5s \
+        --retry-backoff-factor 2
 }
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
