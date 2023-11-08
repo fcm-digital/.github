@@ -24,6 +24,12 @@ outputs:
   image_tag:
     description: 'The new Image Tag that will be deployed.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
+  commit:
+    description: 'The commit Id.'
+    value: ${{ steps.init-context-vars.outputs.short_sha }}
+  commit_at:
+    description: 'The time where the commit was created.'
+    value: ${{ steps.init-context-vars.outputs.current_time }}
 
 runs:
   using: "composite"
@@ -78,3 +84,17 @@ runs:
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
+
+    - id: check-staging-environment
+      if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') &&
+          (steps.init-context-vars.outputs.branch_name != 'master' && steps.init-context-vars.outputs.branch_name != 'main') &&
+          (steps.init-context-vars.outputs.env_to_deploy != 'prod')
+      run: |
+        cd helm-chart-${{ inputs.app_name }}-values-staging/staging
+        if [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
+          echo "Error: environment does not exist. No deployment will be needed."
+          exit 1
+        else
+          echo "All Repositories were properly cloned!"
+        fi
+      shell: bash
