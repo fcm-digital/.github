@@ -17,6 +17,9 @@ inputs:
   image_tag:
     description: 'The image tag that will be deployed.'
     required: true
+  manual:
+    description: 'If true, the commit message will specify that is a Manual deployment.'
+    required: false
   rollout:
     description: 'If true, the commit message will specify that is a Rollout.'
     required: false
@@ -35,6 +38,7 @@ runs:
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
+        MANUAL: ${{ inputs.manual }}
         ROLLOUT: ${{ inputs.rollout }}
         UPDATE_DEPLOYED_AT: ${{ inputs.update_deployed_at }}
       shell: bash
