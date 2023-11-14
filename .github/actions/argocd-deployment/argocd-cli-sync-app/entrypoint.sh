@@ -10,7 +10,7 @@ argocd_app_sync () {
 }
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
-    ARGOCD_FULL_APP_NAME="$APP_NAME-prod-$APP_REGION"
+    ARGOCD_FULL_APP_NAME="$APP_NAME-pro-$APP_REGION"
 else
     ARGOCD_FULL_APP_NAME="$APP_NAME-$ENV_TO_DEPLOY-stg-$APP_REGION"
 fi
