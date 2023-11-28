@@ -28,6 +28,6 @@ runs:
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
-      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ inputs.old_commit }}...${{ inputs.new_commit }}"
+      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.old_image_tag }}/compare/${{ inputs.old_commit }}...${{ inputs.image_tag }}"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
