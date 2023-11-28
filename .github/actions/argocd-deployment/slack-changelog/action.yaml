@@ -31,15 +31,21 @@ inputs:
     required: true
 
 outputs:
-  branch_name:
+  live_image_tag:
     description: 'The current Branch name.'
     value: ${{ steps.get-live-commit-id.outputs.live_image_tag }}
+  new_commit_id:
+    description: 'The new Commit Id.'
+    value: ${{ steps.format-commit-ids.outputs.new_commit_id }}
+  live_commit_id:
+    description: 'The live/current Commit Id.'
+    value: ${{ steps.format-commit-ids.outputs.live_commit_id }}
 
 runs:
   using: "composite"
   steps:
-  - name: Get live Commit Id
-    id: get-live-commit-id
+  - name: Get live Image Tag
+    id: get-live-image-tag
     shell: bash
     run: ${{ github.action_path }}/entrypoint.sh
     env:
@@ -47,14 +53,20 @@ runs:
       APP_REGION: ${{ inputs.app_region }}
       ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
       ARGOCD_URL: ${{ inputs.argocd_url }}
-      BRANCH_NAME: ${{ inputs.branch_name }}
       ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+
+  - name: Format Image Tags to get Commit IDs
+    id: format-commit-ids
+    shell: bash
+    run: |
+      echo "new_commit_id=${{ inputs.image_tag }} | awk -F '-' '{print $NF}'" >> $GITHUB_OUTPUT
+      echo "live_commit_id=${{ steps.get-live-commit-id.outputs.live_image_tag }} | awk -F '-' '{print $NF}'" >> $GITHUB_OUTPUT
 
   - name: Send Changelog to Slack
     id: slack
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
-      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.get-live-commit-id.outputs.live_image_tag }}...${{ inputs.image_tag }}"
+      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }}"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
