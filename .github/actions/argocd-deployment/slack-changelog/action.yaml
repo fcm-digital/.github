@@ -1,0 +1,33 @@
+---
+name: 'Slack-Changelog'
+description: 'Send Notifications Changelog to Slack Channel.'
+
+inputs:
+  app_name:
+    description: 'The application name.'
+    required: true
+  old_commit:
+    description: 'The old commit to compare with the new one.'
+    required: true
+  new_commit:
+    description: 'The new commit to compare with the old one.'
+    required: true
+  slack_channel:
+    description: 'The Slack channel to where the Changelog notification will be sent.'
+    required: false
+    default: "argocd-stg-alarms" #! Test value
+  slack_bot_token:
+    description: 'The Slack token with the proper permissions.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Send Changelog to Slack
+    id: slack
+    uses: slackapi/slack-github-action@v1
+    with:
+      channel-id: ${{ inputs.slack_channel }}
+      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ inputs.old_commit }}...${{ inputs.new_commit }}"
+    env:
+      SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
