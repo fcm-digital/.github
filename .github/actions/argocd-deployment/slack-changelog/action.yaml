@@ -49,7 +49,7 @@ runs:
       ARGOCD_URL: ${{ inputs.argocd_url }}
       BRANCH_NAME: ${{ inputs.branch_name }}
       ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-      
+
   - name: Send Changelog to Slack
     id: slack
     uses: slackapi/slack-github-action@v1
