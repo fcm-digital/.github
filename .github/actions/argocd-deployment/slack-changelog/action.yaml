@@ -33,7 +33,7 @@ inputs:
 outputs:
   live_image_tag:
     description: 'The current Branch name.'
-    value: ${{ steps.get-live-commit-id.outputs.live_image_tag }}
+    value: ${{ steps.get-live-image-tag.outputs.live_image_tag }}
   new_commit_id:
     description: 'The new Commit Id.'
     value: ${{ steps.format-commit-ids.outputs.new_commit_id }}
