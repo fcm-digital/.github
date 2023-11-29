@@ -46,7 +46,7 @@ runs:
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
-      slack-message: "*Hey <!here>. A new release has been deployed in Production:* \n\n
+      slack-message: "*Hey! A new release has been deployed in Production:* \n\n
                         - :git-deploy: *App Name:* `${{ inputs.app_name }}` \n
                         - :git-package: *Release Content:* ${{ inputs.release_content }} \n\n
                       *Technical information:* \n
