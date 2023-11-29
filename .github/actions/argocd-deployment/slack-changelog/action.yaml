@@ -22,6 +22,9 @@ inputs:
   image_tag:
     description: 'The new commit to compare with the old one.'
     required: true
+  release_content:
+    description: 'Release content to display in the Slack message.'
+    required: false
   slack_channel:
     description: 'The Slack channel to where the Changelog notification will be sent.'
     required: false
@@ -67,6 +70,9 @@ runs:
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
-      slack-message: "A new release has been deployed in Production: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }}"
+      slack-message: "A new release has been deployed in Production: \n
+                      New Image: ${{ inputs.image_tag }} \n
+                      Code Diff: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }} \n
+                      Release Content: ${{ inputs.release_content }}"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
