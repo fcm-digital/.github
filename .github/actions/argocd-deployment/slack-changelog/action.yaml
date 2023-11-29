@@ -60,7 +60,7 @@ runs:
     shell: bash
     run: |
       echo "new_commit_id=$( echo "${{ inputs.image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
-      echo "live_commit_id=$( echo "${{ steps.get-live-commit-id.outputs.live_image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
+      echo "live_commit_id=$( echo "${{ steps.get-live-image-tag.outputs.live_image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
 
   - name: Send Changelog to Slack
     id: slack
