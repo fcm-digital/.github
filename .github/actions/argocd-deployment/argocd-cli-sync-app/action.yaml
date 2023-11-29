@@ -19,6 +19,10 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
+  changelog_slack_message:
+    description: 'If true, the action will output the live/current image tag.'
+    required: false
+    default: 'false'
   env_to_deploy:
     description: 'Environment where the image will be deployed.'
     required: true
@@ -32,6 +36,7 @@ runs:
   using: "composite"
   steps:
     - name: Get live Image Tag
+      if: inputs.changelog_slack_message == 'true' && inputs.env_to_deploy == 'prod'
       id: get-live-image-tag
       shell: bash
       run: ${{ github.action_path }}/get_live_imagetag_entrypoint.sh
