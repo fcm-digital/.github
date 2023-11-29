@@ -46,11 +46,11 @@ runs:
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
-      slack-message: "*Hey <!here>. A new release has been deployed in Production:* \n
-                      - :git-deploy: App Name: ${{ inputs.app_name }}
-                      - :git-package: Release Content: ${{ inputs.release_content }} \n
+      slack-message: "*Hey <!here>. A new release has been deployed in Production:* \n\n
+                        - :git-deploy: *App Name:* `${{ inputs.app_name }}` \n
+                        - :git-package: *Release Content:* ```${{ inputs.release_content }}``` \n\n
                       *Technical information:* \n
-                      - :git-tag: New Image: ${{ inputs.image_tag }} \n
-                      - :git-compare: Code Diff: https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }}"
+                        - :git-tag: *New Image:* `${{ inputs.image_tag }}` \n
+                        - :git-compare: *Code Diff:* https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }}"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
