@@ -9,6 +9,7 @@ if [[ "$ENV_TO_DEPLOY" == "prod" ]] &&
     exit 1
 fi
 
+#! Review
 if [[ "$ENV_TO_DEPLOY" != "prod" && "$ENV_TO_DEPLOY" != "ALL_ENV" ]] &&
    [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     echo "The Environment to Deploy must be 'prod' or 'ALL_ENV' if the branches are 'master' or 'main'."
@@ -51,7 +52,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
 elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag value before the deployment for rollout undo (just in case).
-    echo "OLD_IMAGE_TAG=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+    echo "old_image_tag=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_OUTPUT
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
@@ -61,7 +62,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
 else
     cd helm-chart-$APP_NAME-values-staging/
     # Store the currentTag value before the deployment for rollout undo (just in case).
-    echo "OLD_IMAGE_TAG=$(cat "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_ENV
+    echo "old_image_tag=$(cat "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_OUTPUT
     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
