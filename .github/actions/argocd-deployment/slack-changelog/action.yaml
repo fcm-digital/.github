@@ -18,7 +18,7 @@ inputs:
   slack_channel:
     description: 'The Slack channel to where the Changelog notification will be sent.'
     required: false
-    default: "production-changelog"
+    default: "notifications-testing" #! Test value
   slack_bot_token:
     description: 'The Slack token with the proper permissions.'
     required: true
