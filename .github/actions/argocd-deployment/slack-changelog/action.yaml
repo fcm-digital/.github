@@ -8,10 +8,10 @@ inputs:
     required: true
   image_tag:
     description: 'The new commit to compare with the old one.'
-    required: true
+    required: false
   live_image_tag:
     description: 'The live/current commit to compare with the new one.'
-    required: true        
+    required: false        
   release_content:
     description: 'Release content to display in the Slack message.'
     required: false
@@ -41,8 +41,9 @@ runs:
       echo "new_commit_id=$( echo "${{ inputs.image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
       echo "live_commit_id=$( echo "${{ inputs.live_image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
 
-  - name: Send Changelog to Slack
-    id: slack
+  - name: Send Changelog to Slack (With Tech Info)
+    id: slack-tech-info
+    if: inputs.image_tag != '' && inputs.live_image_tag != ''
     uses: slackapi/slack-github-action@v1
     with:
       channel-id: ${{ inputs.slack_channel }}
@@ -52,5 +53,17 @@ runs:
                       *Technical information:* \n
                         - :git-tag: *New Image:* `${{ inputs.image_tag }}` \n
                         - :git-compare: *Code Diff:* https://github.com/fcm-digital/${{ inputs.app_name }}/compare/${{ steps.format-commit-ids.outputs.live_commit_id }}...${{ steps.format-commit-ids.outputs.new_commit_id }}"
+    env:
+      SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
+
+  - name: Send Changelog to Slack
+    id: slack
+    if: inputs.image_tag == '' || inputs.live_image_tag == ''
+    uses: slackapi/slack-github-action@v1
+    with:
+      channel-id: ${{ inputs.slack_channel }}
+      slack-message: "*Hey! A new release has been deployed in Production:* \n\n
+                        - :git-deploy: *App Name:* `${{ inputs.app_name }}` \n
+                        - :git-package: *Release Content:* ${{ inputs.release_content }}"
     env:
       SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
