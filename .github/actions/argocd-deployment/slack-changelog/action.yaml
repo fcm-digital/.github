@@ -14,7 +14,7 @@ inputs:
     required: false        
   release_content:
     description: 'Release content to display in the Slack message.'
-    required: false
+    required: true
   slack_channel:
     description: 'The Slack channel to where the Changelog notification will be sent.'
     required: false
