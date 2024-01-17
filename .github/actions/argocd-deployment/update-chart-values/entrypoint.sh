@@ -9,12 +9,11 @@ if [[ "$ENV_TO_DEPLOY" == "prod" ]] &&
     exit 1
 fi
 
-#! Review
-if [[ "$ENV_TO_DEPLOY" != "prod" && "$ENV_TO_DEPLOY" != "ALL_ENV" ]] &&
-   [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
-    echo "The Environment to Deploy must be 'prod' or 'ALL_ENV' if the branches are 'master' or 'main'."
-    exit 1
-fi
+# if [[ "$ENV_TO_DEPLOY" != "prod" && "$ENV_TO_DEPLOY" != "ALL_ENV" ]] &&
+#    [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+#     echo "The Environment to Deploy must be 'prod' or 'ALL_ENV' if the branches are 'master' or 'main'."
+#     exit 1
+# fi
 
 if [[ "$ENV_TO_DEPLOY" == "master" || "$ENV_TO_DEPLOY" == "main" ]]; then
     echo "The Environment to Deploy cannot be 'master' or 'main'."
