@@ -40,7 +40,7 @@ runs:
         fi
       shell: bash
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: steps.init-context-vars.outputs.env_to_deploy == 'prod'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
@@ -48,7 +48,7 @@ runs:
         ref: master
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}

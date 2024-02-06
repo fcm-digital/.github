@@ -34,8 +34,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-      #Todo: Update to actions/checkout@v4
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - id: init-context-vars
       run: |
@@ -60,14 +59,14 @@ runs:
         echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
       shell: bash
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
         ref: ${{ inputs.helm_chart_template_ref }}
         path: helm-chart-template
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: (github.event_name == 'push') &&
           (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
           (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main') &&
@@ -78,7 +77,7 @@ runs:
         ref: ${{ env.BRANCH_NAME }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
