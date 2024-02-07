@@ -33,14 +33,14 @@ runs:
   steps:
     - id: install-go
       name: 'GO Installation'
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ inputs.go_version }}
         cache: false
 
     - id: install-helm
       name: 'Helm Installation'
-      uses: azure/setup-helm@v3
+      uses: azure/setup-helm@v4
       with:
         version: ${{ inputs.helm_version }} # Current Helm version installed into ArgoCD Pods.
         # token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
