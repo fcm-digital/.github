@@ -6,12 +6,10 @@ inputs:
   artifact_region:
     description: 'Region or zone for Google Artifact Registry.'
     required: false
-    type: string
     default: 'europe'
   gcp_json:
     description: 'The Service Account that contains the permissions to GCP.'
     required: true
-    type: string
 
 runs:
   using: "composite"
