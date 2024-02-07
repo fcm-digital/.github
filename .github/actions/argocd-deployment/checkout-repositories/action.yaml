@@ -30,6 +30,9 @@ outputs:
   commit_at:
     description: 'The time where the commit was created.'
     value: ${{ steps.init-context-vars.outputs.current_time }}
+  deploy_on_existing_env:
+    description: 'If the environment exists -> `true`. Else (branch_name without an env) -> `false`'
+    value: ${{ steps.check-environment.outputs.deploy_on_existing_env }}
 
 runs:
   using: "composite"
