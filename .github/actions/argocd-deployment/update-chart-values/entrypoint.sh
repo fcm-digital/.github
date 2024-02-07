@@ -29,7 +29,7 @@ fi
 # Iter over all values-*.yaml files in order to sync thier content with the local values.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
-    for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
+    for env_path in $(ls -d -- ./staging/*/ 2>/dev/null); do
         # Get the source of the 'currentTag' environment
         export CURRENT_ENV=$(basename "${env_path%/}")
         export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
