@@ -40,7 +40,7 @@ runs:
 
     - id: install-helm
       name: 'Helm Installation'
-      uses: azure/setup-helm@v4
+      uses: azure/setup-helm@v3
       with:
         version: ${{ inputs.helm_version }} # Current Helm version installed into ArgoCD Pods.
         # token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
