@@ -69,15 +69,19 @@ else
     cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
 fi
 
-git config user.name github-actions
-git config user.email github-actions@github.com
-git pull
-git add .
-if [[ $ROLLOUT == true ]]; then
-    git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
-elif [[ $MANUAL == true ]]; then
-    git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+if [ -z "$(git diff --exit-code)" ]; then
+    echo "No changes in the working directory."
 else
-    git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    git config user.name github-actions
+    git config user.email github-actions@github.com
+    git pull
+    git add .
+    if [[ $ROLLOUT == true ]]; then
+        git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    elif [[ $MANUAL == true ]]; then
+        git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    else
+        git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    fi
+    git push
 fi
-git push
