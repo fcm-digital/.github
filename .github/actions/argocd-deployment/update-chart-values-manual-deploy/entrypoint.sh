@@ -38,9 +38,17 @@ else
     fi
 fi
 
-git config user.name github-actions
-git config user.email github-actions@github.com
-git pull
-git add .
-git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
-git push
+
+if [ -z "$(git diff --exit-code)" ]; then
+    echo "No changes in the working directory."
+else
+    git config user.name github-actions
+    git config user.email github-actions@github.com
+    git pull
+    git add .
+    git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    git push
+fi
+
+
+

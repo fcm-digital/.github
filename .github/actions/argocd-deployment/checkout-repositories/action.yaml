@@ -30,12 +30,14 @@ outputs:
   commit_at:
     description: 'The time where the commit was created.'
     value: ${{ steps.init-context-vars.outputs.current_time }}
+  deploy_on_existing_env:
+    description: 'If the environment exists -> `true`. Else (branch_name without an env) -> `false`'
+    value: ${{ steps.check-environment.outputs.deploy_on_existing_env }}
 
 runs:
   using: "composite"
   steps:
-      #Todo: Update to actions/checkout@v4
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - id: init-context-vars
       run: |
@@ -60,14 +62,7 @@ runs:
         echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
       shell: bash
 
-    - uses: actions/checkout@v3
-      with:
-        repository: fcm-digital/helm-chart-template
-        token: ${{ inputs.github_token_checkout }}
-        ref: ${{ inputs.helm_chart_template_ref }}
-        path: helm-chart-template
-
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: (github.event_name == 'push') &&
           (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
           (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main') &&
@@ -78,23 +73,31 @@ runs:
         ref: ${{ env.BRANCH_NAME }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
 
-    - id: check-staging-environment
-      if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main') &&
-          (steps.init-context-vars.outputs.branch_name != 'master' && steps.init-context-vars.outputs.branch_name != 'main') &&
-          (steps.init-context-vars.outputs.env_to_deploy != 'prod')
+    - id: check-environment
       run: |
         cd helm-chart-${{ inputs.app_name }}-values-staging/staging
-        if [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
-          echo "Error: environment does not exist. No deployment will be needed."
-          exit 1
+        if [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
+          echo "All Repositories were properly cloned!"
+          echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
+        elif [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
+          echo "Environment does not exist. No deployment will be needed."
+          echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
         else
           echo "All Repositories were properly cloned!"
+          echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
         fi
       shell: bash
+
+    - uses: actions/checkout@v4
+      with:
+        repository: fcm-digital/helm-chart-template
+        token: ${{ inputs.github_token_checkout }}
+        ref: ${{ inputs.helm_chart_template_ref }}
+        path: helm-chart-template

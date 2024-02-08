@@ -29,7 +29,7 @@ fi
 # Iter over all values-*.yaml files in order to sync thier content with the local values.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
-    for env_path in $(ls -d -- ./../kube/values/$APP_NAME/staging/*/); do
+    for env_path in $(ls -d -- ./staging/*/ 2>/dev/null); do
         # Get the source of the 'currentTag' environment
         export CURRENT_ENV=$(basename "${env_path%/}")
         export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
@@ -69,15 +69,19 @@ else
     cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
 fi
 
-git config user.name github-actions
-git config user.email github-actions@github.com
-git pull
-git add .
-if [[ $ROLLOUT == true ]]; then
-    git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
-elif [[ $MANUAL == true ]]; then
-    git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+if [ -z "$(git diff --exit-code)" ]; then
+    echo "No changes in the working directory."
 else
-    git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    git config user.name github-actions
+    git config user.email github-actions@github.com
+    git pull
+    git add .
+    if [[ $ROLLOUT == true ]]; then
+        git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    elif [[ $MANUAL == true ]]; then
+        git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    else
+        git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    fi
+    git push
 fi
-git push
