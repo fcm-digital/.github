@@ -53,6 +53,8 @@ jobs:
           ruby-version: ${{ inputs.ruby }}
           bundler-cache: true
 
+      - run: bundle install && bundle clean --force
+
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v0'
