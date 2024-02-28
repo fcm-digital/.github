@@ -57,25 +57,25 @@ jobs:
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: ${{ secrets.gcp_json }}
           project_id: ${{ inputs.gcp_project }}
 
       - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
+        uses: 'google-github-actions/setup-gcloud@v2'
         with:
           install_components: 'gke-gcloud-auth-plugin'
 
       - name: Login to Google Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: gcr.io
           username: _json_key
           password: ${{ secrets.gcp_json }}
 
       - name: Login to Google Artifact Registry [${{ inputs.region }}]
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ inputs.region }}-docker.pkg.dev
           username: _json_key
