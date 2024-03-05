@@ -1,0 +1,142 @@
+---
+on:
+  workflow_call:
+    inputs:
+      gcr:
+        required: false
+        type: boolean
+        default: false
+        description: 'Wether to push to Google Container Registry'
+      gar:
+        required: false
+        type: boolean
+        default: true
+        description: 'Wether to push to Google Artifcat Registry'
+      file:
+        required: false
+        type: string
+        default: 'Dockerfile'
+        description: 'Path to Dockerfile'
+      context:
+        required: false
+        type: string
+        default: './'
+        description: 'Context to build image (default: ./)'
+      app:
+        required: true
+        type: string
+        description: 'Name of the app, to use for the registry: ${url}/${repo}/${app}'
+      region:
+        required: false
+        default: 'europe-west1'
+        type: string
+        description: 'Region or zone for Google Artifact Registry'
+      export:
+        required: false
+        default: false
+        type: boolean
+        description: 'Set to true if the image should be available to other jobs in the same Action'
+      repo:
+        required: false
+        type: string
+        description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
+      args:
+        required: false
+        type: string
+        description: 'The Docker build-arg list.'
+        default: ""
+    secrets:
+      gcp_json:
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Set some ENV
+        run: |
+          export COMMIT_TIME=$(git show -s --format=%ct)
+          echo "TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+          echo "SHORT_SHA=$( git rev-parse --short=7 HEAD )" >> $GITHUB_ENV
+          if [[ -z "${{ inputs.repo }}" ]]; then
+            echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app }}/${{ inputs.app }}" >> $GITHUB_ENV
+          else
+            echo "REPO_URL=${{ inputs.region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.repo }}/${{ inputs.app }}" >> $GITHUB_ENV
+          fi
+
+      - name: Login to Google Container Registry
+        uses: docker/login-action@v3
+        if: ${{ inputs.gcr }}
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.gcp_json }}
+
+      - name: Login to Google Artifact Registry [${{ inputs.region }}]
+        uses: docker/login-action@v3
+        if: ${{ inputs.gar }}
+        with:
+          registry: ${{ inputs.region }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.gcp_json }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Build & push to GCR"
+        uses: docker/build-push-action@v5
+        if: ${{ inputs.gcr }}
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          build-args: ${{ inputs.build-args }}
+          tags: |
+            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}
+            gcr.io/janus-156310/${{ inputs.app }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+
+      - name: "Build & push to GAR [${{ inputs.region }}]"
+        uses: docker/build-push-action@v5
+        if: ${{ inputs.gar }}
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          build-args: ${{ inputs.build-args }}
+          tags: |
+            ${{ env.REPO_URL }}:${{ github.ref_name }}
+            ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+
+      - name: "Build & push to GCR latest tag"
+        uses: docker/build-push-action@v5
+        if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') )  && inputs.gcr }}
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          build-args: ${{ inputs.build-args }}
+          tags: |
+            gcr.io/janus-156310/${{ inputs.app }}:latest
+
+      - name: "Build & push to GAR [${{ inputs.region }}] latest tag"
+        uses: docker/build-push-action@v5
+        if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') ) && inputs.gar }}
+        with:
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          push: true
+          build-args: ${{ inputs.build-args }}
+          tags: |
+            ${{ env.REPO_URL }}:latest
+
+      - if: ${{ inputs.export }}
+        name: "Export Docker image as Github Artifact"
+        uses: fcm-digital/.github/.github/actions/export-image@main
+        with:
+          app: ${{ inputs.app }}
+          file: ${{ inputs.file }}
+          context: ${{ inputs.context }}
+          region: ${{ inputs.region }}
