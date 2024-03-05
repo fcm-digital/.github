@@ -40,7 +40,7 @@ on:
         required: false
         type: string
         description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
-      args:
+      build-args:
         required: false
         type: string
         description: 'The Docker build-arg list.'
