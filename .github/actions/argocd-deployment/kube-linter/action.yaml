@@ -53,7 +53,7 @@ runs:
       shell: bash
       run: |
         go version
-        go install golang.stackrox.io/kube-linter/cmd/kube-linter@{{ inputs.kube_linter_version }}
+        go install golang.stackrox.io/kube-linter/cmd/kube-linter
 
     - id: exec-kube-linter-staging
       name: 'Kube-Linter Execution for Staging'
