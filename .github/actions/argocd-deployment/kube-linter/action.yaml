@@ -10,8 +10,7 @@ inputs:
     description: 'Current branch name.'
     required: true
   env_to_deploy:
-    description: >
-      Environment where the image will be deployed.
+    description: 'Environment where the image will be deployed.'
     required: true
   exclude_rules:
     description: 'The kube-linter rules to be excluded.'
@@ -27,6 +26,10 @@ inputs:
     description: 'Helm Version'
     required: false
     default: 'v3.12.1'
+  kube_linter_version:
+    description: 'Kube Linter Version'
+    required: false
+    default: 'v0.6.2'
 
 runs:
   using: "composite"
@@ -36,7 +39,6 @@ runs:
       uses: actions/setup-go@v5
       with:
         go-version: ${{ inputs.go_version }}
-        cache: false
 
     - id: install-helm
       name: 'Helm Installation'
@@ -50,7 +52,7 @@ runs:
       shell: bash
       run: |
         go version
-        go install golang.stackrox.io/kube-linter/cmd/kube-linter@latest
+        go install golang.stackrox.io/kube-linter/cmd/kube-linter@{{ inputs.kube_linter_version }}
 
     - id: exec-kube-linter-staging
       name: 'Kube-Linter Execution for Staging'
