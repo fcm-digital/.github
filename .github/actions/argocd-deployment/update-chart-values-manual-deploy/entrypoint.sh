@@ -21,13 +21,18 @@ elif [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
         export CURRENT_ENV=$(basename "${env_path%/}")
         export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
         export CURRENT_IMAGE_TAG_ENV=$(cut -d '-' -f 1 <<< $( echo $CURRENT_IMAGE_TAG ))
+        export CURRENT_SOURCE_FILE=$(echo "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/values-stg.yaml")
 
-        if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-            sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
-            if [ ! -z ${DEPLOYED_AT+x} ]; then
-                sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/values-stg.yaml"
+        if [[ -e $CURRENT_SOURCE_FILE ]]; then
+            if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
+                sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                if [ ! -z ${DEPLOYED_AT+x} ]; then
+                    sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
+                fi
+                cp -f $CURRENT_SOURCE_FILE "./staging/$CURRENT_ENV/values-stg.yaml"
             fi
-            cp -f "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/values-stg.yaml" "./staging/$CURRENT_ENV/values-stg.yaml"
+        else
+            echo "$CURRENT_ENV not found in local code repository, but existing in helm-chart-$APP_NAME-values/staging repository."
         fi
     done
 else
