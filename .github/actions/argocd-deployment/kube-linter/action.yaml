@@ -39,6 +39,7 @@ runs:
       uses: actions/setup-go@v5
       with:
         go-version: ${{ inputs.go_version }}
+        cache: false
 
     - id: install-helm
       name: 'Helm Installation'
