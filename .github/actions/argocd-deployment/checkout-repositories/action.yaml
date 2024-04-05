@@ -82,16 +82,18 @@ runs:
 
     - id: check-environment
       run: |
-        cd helm-chart-${{ inputs.app_name }}-values-staging/staging
         if [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
           echo "All Repositories were properly cloned!"
           echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
-        elif [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
-          echo "Environment does not exist. No deployment will be needed."
-          echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
         else
-          echo "All Repositories were properly cloned!"
-          echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
+          cd helm-chart-${{ inputs.app_name }}-values-staging/staging
+          if [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
+            echo "Environment does not exist. No deployment will be needed."
+            echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
+          else
+            echo "All Repositories were properly cloned!"
+            echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
+          fi
         fi
       shell: bash
 
