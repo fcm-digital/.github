@@ -86,7 +86,6 @@ runs:
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
         push: ${{ inputs.push }}
-        pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
           APP_REVISION=${{ inputs.image_tag }}
@@ -94,12 +93,6 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-        cache-from: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          type=registry,ref=${{ env.REPO_URL }}:latest
-        cache-to: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }},mode=max
-          type=registry,ref=${{ env.REPO_URL }}:latest,mode=max
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
