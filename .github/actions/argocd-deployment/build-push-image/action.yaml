@@ -66,7 +66,6 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
-        pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
           APP_REVISION=${{ inputs.image_tag }}
