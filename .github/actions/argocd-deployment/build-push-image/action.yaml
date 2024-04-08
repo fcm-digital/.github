@@ -35,7 +35,7 @@ inputs:
   pull:
     description: 'Whether to pull image from registry for cache building.'
     required: false
-    default: 'true'
+    default: 'false'
   push:
     description: 'Whether to push image to registry, or build locally.'
     required: false
@@ -66,6 +66,7 @@ runs:
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       with:
         push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
           APP_REVISION=${{ inputs.image_tag }}
@@ -85,6 +86,7 @@ runs:
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
         push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
           APP_REVISION=${{ inputs.image_tag }}
