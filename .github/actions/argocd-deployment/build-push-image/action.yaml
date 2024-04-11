@@ -15,6 +15,10 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
+  cache_type:
+    description: 'Enable cache for docker building (Available options: none, inline, registry)'
+    required: false
+    default: 'inline'
   commit:
     description: 'The commit Id.'
     required: true
@@ -35,11 +39,12 @@ inputs:
   pull:
     description: 'Whether to pull image from registry for cache building.'
     required: false
-    default: 'true'
+    default: 'false'
   push:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
+
 
 runs:
   using: 'composite'
@@ -61,9 +66,10 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: "Pull, Build & Push Docker image [branch tag] + [image tag]"
+    - name: "(NO CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+      if: inputs.cache_type == 'none' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -74,15 +80,54 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-        cache-from: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        context: ${{ inputs.context }}
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+
+    - name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: inputs.cache_type == 'inline' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
-    - name: "Pull, Build & Push Docker image [branch tag] + [image tag] + [latest]"
+    - name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: inputs.cache_type == 'registry' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
+        cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
+        context: ${{ inputs.context }}
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+
+    - name: "(PRODUCTION) Pull, Build & Push Docker image [branch tag] + [image tag] + [latest]"
       uses: docker/build-push-action@v5
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
@@ -95,10 +140,6 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-        cache-from: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          type=registry,ref=${{ env.REPO_URL }}:latest
-        cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
