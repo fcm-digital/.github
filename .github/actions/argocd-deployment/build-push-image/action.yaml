@@ -15,6 +15,10 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
+  cache_type:
+    description: 'Enable cache for docker building (Available options: none, inline, registry)'
+    required: false
+    default: 'inline'
   commit:
     description: 'The commit Id.'
     required: true
@@ -40,15 +44,7 @@ inputs:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
-  # --- Cache Building Options ---
-  inline_cache:
-    description: 'Enable inline cache for docker building.'
-    required: false
-    default: 'true'
-  registry_cache:
-    description: 'Enable registry cache for docker building.'
-    required: false
-    default: 'false'
+
 
 runs:
   using: 'composite'
@@ -72,7 +68,7 @@ runs:
 
     - name: "(NO CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: (inputs.inline_cache == 'false' && inputs.registry_cache == 'false') &&
+      if: inputs.cache_type == 'none' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
@@ -91,7 +87,7 @@ runs:
 
     - name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: inputs.inline_cache == 'true' &&
+      if: inputs.cache_type == 'inline' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
@@ -112,7 +108,7 @@ runs:
 
     - name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: (inputs.registry_cache == 'true' && inputs.inline_cache == 'false')
+      if: inputs.cache_type == 'registry' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
