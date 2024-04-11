@@ -40,6 +40,15 @@ inputs:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
+  # --- Cache Building Options ---
+  inline_cache:
+    description: 'Enable inline cache for docker building.'
+    required: false
+    default: 'true'
+  registry_cache:
+    description: 'Enable registry cache for docker building.'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -61,9 +70,50 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: "Pull, Build & Push Docker image [branch tag] + [image tag]"
+    - name: "(NO CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+      if: (inputs.inline_cache == 'false' && inputs.registry_cache == 'false') &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+        context: ${{ inputs.context }}
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+
+    - name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: inputs.inline_cache == 'true' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-to: type=inline
+        context: ${{ inputs.context }}
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+
+    - name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: (inputs.registry_cache == 'true' && inputs.inline_cache == 'false')
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -81,7 +131,7 @@ runs:
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
-    - name: "Pull, Build & Push Docker image [branch tag] + [image tag] + [latest]"
+    - name: "(PRODUCTION) Pull, Build & Push Docker image [branch tag] + [image tag] + [latest]"
       uses: docker/build-push-action@v5
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
       with:
