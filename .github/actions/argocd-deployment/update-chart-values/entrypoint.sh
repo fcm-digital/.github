@@ -14,6 +14,11 @@ if [[ "$ENV_TO_DEPLOY" == "master" || "$ENV_TO_DEPLOY" == "main" ]]; then
     exit 1
 fi
 
+if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
+    echo "It cannot be deployed in All Environments if the branch is not 'master' or 'main'."
+    exit 1
+fi
+
 # Must be updated in each deploy.
 if [[ "$UPDATE_DEPLOYED_AT" = true ]]; then
     echo "Updating 'DEPLOYED_AT' env variable at runtime."
