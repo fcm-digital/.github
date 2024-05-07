@@ -30,9 +30,9 @@ on:
 
       ruby:
         required: false
-        default: "3.1.0"
+        default: "3.3.0"
         type: string
-        description: "Ruby version to use with make.rb (default: 3.1.0)"
+        description: "Ruby version to use with make.rb (default: 3.3.0)"
 
     secrets:
       gcp_json:
@@ -46,7 +46,7 @@ jobs:
     name: 'Run make.rb'
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
         with:
