@@ -21,6 +21,6 @@ else
 fi
 
 helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \
-    --set currentTag=$IMAGE_TAG $HELM_VALUES --debug
+    --set currentTag=$IMAGE_TAG $HELM_VALUES > output-template.yaml
 
 kube-linter lint output-template.yaml --exclude non-existent-service-account $EXCLUDE_RULES
