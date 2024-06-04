@@ -20,6 +20,9 @@ else
     done < <(find ../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY -type f -name '*.yaml' -print0)
 fi
 
+echo "show HELM_VALUES"
+echo $HELM_VALUES
+
 helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \
     --set currentTag=$IMAGE_TAG $HELM_VALUES > output-template.yaml
 
