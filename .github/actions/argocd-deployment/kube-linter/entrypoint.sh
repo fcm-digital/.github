@@ -20,15 +20,7 @@ else
     done < <(find ../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY -type f -name '*.yaml' -print0)
 fi
 
-echo "show HELM_VALUES"
-echo $HELM_VALUES
-cd ..
-ls -la
-pwd
-
 helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \
-    --set currentTag=$IMAGE_TAG $HELM_VALUES > output-template.yaml
-
-cat output-template.yaml
+    --set currentTag=$IMAGE_TAG $HELM_VALUES --debug
 
 # kube-linter lint output-template.yaml --exclude non-existent-service-account $EXCLUDE_RULES
