@@ -29,7 +29,7 @@ inputs:
   kube_linter_version:
     description: 'Kube Linter Version'
     required: false
-    default: 'v0.6.8'
+    default: 'v0.6.2'
 
 runs:
   using: "composite"
