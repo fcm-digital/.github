@@ -22,6 +22,7 @@ fi
 
 echo "show HELM_VALUES"
 echo $HELM_VALUES
+cd ..
 ls -la
 pwd
 
