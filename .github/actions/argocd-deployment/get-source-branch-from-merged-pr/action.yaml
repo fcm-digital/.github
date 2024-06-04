@@ -1,0 +1,45 @@
+---
+name: 'Get Source Branch from Pull Request'
+description: 'Get Source Branch name from a Pull Request in a "on push" action'
+
+#! NOT WORKING!
+
+runs:
+  using: "composite"
+  steps:
+  - name: Get the JSON payload for the push
+    shell: bash
+    run: echo "${{ toJson(github.event) }}" > payload.json
+  
+  - name: Install jq (a JSON processor)
+    shell: bash
+    run: apt-get install jq
+
+  - name: Extract merge commit SHA
+    id: mergecommit
+    shell: bash
+    run: echo "pr_sha=$(jq -r '.head_commit.id' payload.json)" >> $GITHUB_OUTPUT
+
+  - name: Use GitHub API to get associated PR with the merge commit
+    id: prdetails
+    shell: bash
+    run: |
+      PR=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  "https://api.github.com/repos/${{ github.repository }}/pulls?state=closed&sort=updated&direction=desc" \
+                  | jq --arg SHA "${{ steps.mergecommit.outputs.sha }}" '.[] | select(.merge_commit_sha == $SHA)')
+      PR_NUMBER=$(echo $PR | jq '.number')
+      echo "::set-output name=pr_number::$PR_NUMBER"
+      PR_BRANCH=$(echo $PR | jq -r '.head.ref')
+      echo "::set-output name=pr_branch::$PR_BRANCH"
+
+  - name: Checkout the code
+    uses: actions/checkout@v2
+
+  - name: Work with the PR branch name
+    shell: bash
+    run: |
+      PR_NUMBER=${{ steps.prdetails.outputs.pr_number }}
+      PR_BRANCH=${{ steps.prdetails.outputs.pr_branch }}
+      echo "PR Number is $PR_NUMBER"
+      echo "Source Branch of the PR is $PR_BRANCH"
