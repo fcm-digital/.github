@@ -22,6 +22,8 @@ fi
 
 echo "show HELM_VALUES"
 echo $HELM_VALUES
+ls -la
+pwd
 
 helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \
     --set currentTag=$IMAGE_TAG $HELM_VALUES > output-template.yaml
