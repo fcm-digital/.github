@@ -55,27 +55,39 @@ runs:
         go version
         go install golang.stackrox.io/kube-linter/cmd/kube-linter@${{ inputs.kube_linter_version }}
 
-    - id: exec-kube-linter-staging
-      name: 'Kube-Linter Execution for Staging'
+    - id: helm-template-staging
+      name: 'Helm Template for Staging'
       if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
       shell: bash
       run: |
-        cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
-          --set currentTag=${{ inputs.image_tag }} \
-          -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
-          -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
-          > output-template.yaml
+        cd kube/values/${{ inputs.app_name }/staging
+
+        HELM_VALUES=""
+        while IFS= read -r -d '' file; do
+          HELM_VALUES+="-f \"$file\" "
+        done < <(find ./${{ inputs.env_to_deploy }} -type f -name '*.yaml' -print0)
+
+        while IFS= read -r -d '' file; do
+          HELM_VALUES+="-f \"$file\" "
+        done < <(find . -maxdepth 1 -type f -name '*.yaml' -print0)
+
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
+          --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
+
         kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
 
-    - id: exec-kube-linter-production
-      name: 'Kube-Linter Execution for Production'
+    - id: helm-template-production
+      name: 'Helm Template for Production'
       if: inputs.env_to_deploy == 'prod' && (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       shell: bash
       run: |
-        cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=prod-namespace \
-          --set currentTag=${{ inputs.image_tag }} \
-          -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
-          > output-template.yaml
+        cd kube/values/${{ inputs.app_name }/prod
+
+        while IFS= read -r -d '' file; do
+          HELM_VALUES+="-f \"$file\" "
+        done < <(find "$VALUES_ENVIRONMENT" -type f -name '*.yaml' -print0)
+
+        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
+          --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
+
         kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
