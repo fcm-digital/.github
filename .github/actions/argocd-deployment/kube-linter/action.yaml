@@ -65,11 +65,11 @@ runs:
         HELM_VALUES=""
         while IFS= read -r -d '' file; do
           HELM_VALUES+="-f \"$file\" "
-        done < <(find ./${{ inputs.env_to_deploy }} -type f -name '*.yaml' -print0)
+        done < <(find './${{ inputs.env_to_deploy }}' -type f -name '*.yaml' -print0)
 
         while IFS= read -r -d '' file; do
           HELM_VALUES+="-f \"$file\" "
-        done < <(find . -maxdepth 1 -type f -name '*.yaml' -print0)
+        done < <(find '.' -maxdepth 1 -type f -name '*.yaml' -print0)
 
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
           --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
@@ -85,7 +85,7 @@ runs:
 
         while IFS= read -r -d '' file; do
           HELM_VALUES+="-f \"$file\" "
-        done < <(find "$VALUES_ENVIRONMENT" -type f -name '*.yaml' -print0)
+        done < <(find '.' -type f -name '*.yaml' -print0)
 
         helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
           --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
