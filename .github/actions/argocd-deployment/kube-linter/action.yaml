@@ -55,41 +55,11 @@ runs:
         go version
         go install golang.stackrox.io/kube-linter/cmd/kube-linter@${{ inputs.kube_linter_version }}
 
-    - id: helm-template-staging
-      name: 'Helm Template for Staging'
-      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+    - id: exec-kube-linter
+      name: 'Execute Kube Linter'
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
       shell: bash
-      run: |
-        cd "kube/values/${{ inputs.app_name }/staging"
-
-        HELM_VALUES=""
-        while IFS= read -r -d '' file; do
-          HELM_VALUES+="-f \"$file\" "
-        done < <(find '.' -maxdepth 1 -type f -name '*.yaml' -print0)
-
-        cd "${{ inputs.env_to_deploy }}"
-
-        while IFS= read -r -d '' file; do
-          HELM_VALUES+="-f \"$file\" "
-        done < <(find '.' -type f -name '*.yaml' -print0)
-
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
-          --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
-
-        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
-
-    - id: helm-template-production
-      name: 'Helm Template for Production'
-      if: inputs.env_to_deploy == 'prod' && (inputs.branch_name == 'master' || inputs.branch_name == 'main')
-      shell: bash
-      run: |
-        cd "kube/values/${{ inputs.app_name }/prod"
-
-        while IFS= read -r -d '' file; do
-          HELM_VALUES+="-f \"$file\" "
-        done < <(find '.' -type f -name '*.yaml' -print0)
-
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \"
-          --set currentTag=${{ inputs.image_tag }} $HELM_VALUES > output-template.yaml
-
-        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
