@@ -25,7 +25,7 @@ else
     done < <(find '.' -type f -name '*.yaml' -print0)
 fi
 
-helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \"
+helm template . --name-template=$APP_NAME --namespace=$ENV_TO_DEPLOY \
     --set currentTag=$IMAGE_TAG $HELM_VALUES > output-template.yaml
 
-kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
+kube-linter lint output-template.yaml --exclude non-existent-service-account $EXCLUDE_RULES
