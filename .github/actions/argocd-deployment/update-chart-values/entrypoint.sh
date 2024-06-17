@@ -52,6 +52,10 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     # The values-stg.yaml will always be synced when a Pull Request is closed.
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
 
+elif [[ "$ENV_TO_DEPLOY" == "NO_SYNC" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+    cd helm-chart-$APP_NAME-values-staging/
+    cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
+
 elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag value before the deployment for rollout undo (just in case).
