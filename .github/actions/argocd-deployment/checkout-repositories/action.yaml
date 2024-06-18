@@ -84,7 +84,7 @@ runs:
 
     - id: check-environment
       run: |
-        if [ (! -d helm-chart-${{ inputs.app_name }}-values-staging) && (! -d helm-chart-${{ inputs.app_name }}-values-prod) ]; then
+        if [ ! -d helm-chart-${{ inputs.app_name }}-values-staging ] && [ ! -d helm-chart-${{ inputs.app_name }}-values-prod ]; then
             echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
         elif [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
           echo "All Repositories were properly cloned!"
