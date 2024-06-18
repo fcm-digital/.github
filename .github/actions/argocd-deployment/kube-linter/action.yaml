@@ -25,11 +25,11 @@ inputs:
   helm_version:
     description: 'Helm Version'
     required: false
-    default: 'v3.12.1'
+    default: 'v3.14.3'
   kube_linter_version:
     description: 'Kube Linter Version'
     required: false
-    default: 'v0.6.2'
+    default: 'v0.6.7'
 
 runs:
   using: "composite"
@@ -55,27 +55,12 @@ runs:
         go version
         go install golang.stackrox.io/kube-linter/cmd/kube-linter@${{ inputs.kube_linter_version }}
 
-    - id: exec-kube-linter-staging
-      name: 'Kube-Linter Execution for Staging'
-      if: inputs.branch_name != 'master' && inputs.branch_name != 'main'
+    - id: exec-kube-linter
+      name: 'Execute Kube Linter'
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        EXCLUDE_RULES: ${{ inputs.exclude_rules }}
       shell: bash
-      run: |
-        cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=${{ inputs.env_to_deploy }} \
-          --set currentTag=${{ inputs.image_tag }} \
-          -f ../kube/values/${{ inputs.app_name }}/staging/values-stg.yaml \
-          -f ../kube/values/${{ inputs.app_name }}/staging/${{ inputs.env_to_deploy }}/values-stg.yaml \
-          > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
-
-    - id: exec-kube-linter-production
-      name: 'Kube-Linter Execution for Production'
-      if: inputs.env_to_deploy == 'prod' && (inputs.branch_name == 'master' || inputs.branch_name == 'main')
-      shell: bash
-      run: |
-        cd helm-chart-template
-        helm template . --name-template=${{ inputs.app_name }} --namespace=prod-namespace \
-          --set currentTag=${{ inputs.image_tag }} \
-          -f ../kube/values/${{ inputs.app_name }}/prod/values-prod.yaml \
-          > output-template.yaml
-        kube-linter lint output-template.yaml --exclude non-existent-service-account ${{ inputs.exclude_rules }}
