@@ -63,7 +63,8 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v4
-      if: (github.event_name == 'push') &&
+      if: (github.event.inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]') &&
+          (github.event_name == 'push') && 
           (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
           (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main') &&
           (steps.init-context-vars.outputs.env_to_deploy == 'prod')
@@ -74,6 +75,7 @@ runs:
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v4
+      if: (github.event.inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
@@ -82,7 +84,9 @@ runs:
 
     - id: check-environment
       run: |
-        if [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
+        if [ (! -d "helm-chart-${{ inputs.app_name }}-values-staging") && (! -d "helm-chart-${{ inputs.app_name }}-values-prod") ]; then
+            echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
           echo "All Repositories were properly cloned!"
           echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
         else
@@ -98,6 +102,7 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v4
+      if: (github.event.inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]')
       with:
         repository: fcm-digital/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
