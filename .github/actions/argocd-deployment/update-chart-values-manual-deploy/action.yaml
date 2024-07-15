@@ -11,7 +11,7 @@ inputs:
     required: true
   image_tag:
     description: 'The image tag that will be deployed.'
-    required: true
+    required: false
   update_deployed_at:
     description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
     required: false

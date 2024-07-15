@@ -16,7 +16,7 @@ inputs:
     required: true
   image_tag:
     description: 'The image tag that will be deployed.'
-    required: true
+    required: false
   manual:
     description: 'If true, the commit message will specify that is a Manual deployment.'
     required: false

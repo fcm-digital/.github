@@ -9,7 +9,9 @@ fi
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
     cd helm-chart-$APP_NAME-values-prod/
-    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
+    if [ ! -z ${IMAGE_TAG+x} ]; then
+        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
+    fi
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./prod/values-prod.yaml"
     fi
@@ -25,7 +27,9 @@ elif [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
 
         if [[ -e $CURRENT_SOURCE_FILE ]]; then
             if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-                sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                if [ ! -z ${IMAGE_TAG+x} ]; then
+                    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                fi
                 if [ ! -z ${DEPLOYED_AT+x} ]; then
                     sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
                 fi
@@ -37,7 +41,9 @@ elif [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
     done
 else
     cd helm-chart-$APP_NAME-values-staging/
-    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
+    if [ ! -z ${IMAGE_TAG+x} ]; then
+        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
+    fi
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
