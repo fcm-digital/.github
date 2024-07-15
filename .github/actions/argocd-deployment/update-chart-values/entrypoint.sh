@@ -39,7 +39,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
             # Check if the currentTag is an old 'master' image -> Then, sync the values.
             # Sandbox will always be synced when a new 'master' image is deployed.
             if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-                if [ ! -z ${IMAGE_TAG+x} ]; then
+                if [ "$IMAGE_TAG" != "" ]; then
                     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
                 fi
                 if [ ! -z ${DEPLOYED_AT+x} ]; then
@@ -62,7 +62,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
     cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag value before the deployment for rollout undo (just in case).
     echo "old_image_tag=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_OUTPUT
-    if [ ! -z ${IMAGE_TAG+x} ]; then
+    if [ "$IMAGE_TAG" != "" ]; then
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
     fi
     if [ ! -z ${DEPLOYED_AT+x} ]; then
@@ -74,7 +74,7 @@ else
     cd helm-chart-$APP_NAME-values-staging/
     # Store the currentTag value before the deployment for rollout undo (just in case).
     echo "old_image_tag=$(cat "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_OUTPUT
-    if [ ! -z ${IMAGE_TAG+x} ]; then
+    if [ "$IMAGE_TAG" != "" ]; then
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
     fi
     if [ ! -z ${DEPLOYED_AT+x} ]; then
@@ -92,8 +92,10 @@ else
     git add .
     if [[ $ROLLOUT == true ]]; then
         git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
-    elif [[ $MANUAL == true ]]; then
+    elif [[ $MANUAL == true ]] && [[ "$IMAGE_TAG" != "" ]]; then
         git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+    elif [[ $MANUAL == true ]]; then
+        git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} -> [${ENV_TO_DEPLOY^^}]"
     else
         git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
     fi
