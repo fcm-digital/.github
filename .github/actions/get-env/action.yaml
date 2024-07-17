@@ -10,7 +10,7 @@ inputs:
     description: "List of allowed environments"
     type: string
     require: false
-    default: "abc ath bcn bne bos hub lhr mad sfo svq syd sandbox"
+    default: "abc ath bcn bne bos hub lhr mad qa sfo svq syd sandbox"
 outputs:
   env:
     description: 'Name of the environment'
