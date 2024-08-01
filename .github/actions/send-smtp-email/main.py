@@ -8,16 +8,17 @@ from email import encoders
 
 def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_username, smtp_password, email_from, email_to, email_subject, email_body, email_attachments):
   """Sends an email with attachment.
-  :param smtp_enable_tls: Enable TLS for SMTP.
-  :param smtp_server_address: SMTP server address.
-  :param smtp_server_port: SMTP server port.
-  :param smtp_username: SMTP username.
-  :param smtp_password: SMTP password.
-  :param email_from: From email address.
-  :param email_to: To email address.
-  :param email_subject: Email subject.
-  :param email_body: Email body.
-  :param email_attachments: Email attachments.
+  Args:
+    smtp_enable_tls (bool): Enable TLS for SMTP.
+    smtp_server_address (str): SMTP server address.
+    smtp_server_port (int): SMTP server port.
+    smtp_username (str): SMTP username.
+    smtp_password (str): SMTP password.
+    email_from (str): From email address.
+    email_to (str): To email address.
+    email_subject (str): Email subject.
+    email_body (str): Email body.
+    email_attachments (str): Email attachments.
   """
   
   msg = MIMEMultipart()
@@ -33,8 +34,8 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
   part.add_header('Content-Disposition', 'attachment; filename=' + email_attachments)
   msg.attach(part)
   
-  smtp = smtplib.SMTP(smtp_server_address, smtp_server_port)
   try:
+    smtp = smtplib.SMTP(smtp_server_address, smtp_server_port)
     if smtp_enable_tls:
       smtp.ehlo()
       smtp.starttls()
