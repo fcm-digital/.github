@@ -1,5 +1,5 @@
 from os import getenv
-from smtplib import SMTP
+from smtplib import SMTP, SMTPAuthenticationError
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -40,8 +40,11 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
     if smtp_enable_tls:
       smtp.ehlo()
       smtp.starttls()
-      smtp.login(smtp_username, smtp_password)
-      smtp.sendmail(msg['From'], [msg['To']], msg.as_string())
+      try:
+        smtp.login(smtp_username, smtp_password)
+        smtp.sendmail(msg['From'], [msg['To']], msg.as_string())
+      except SMTPAuthenticationError:
+        print("Error: Authentication failed. Please check your SMTP credentials.")
     smtp.quit()
   except Exception as e:
     print("An error occurred while sending the email:", str(e))
