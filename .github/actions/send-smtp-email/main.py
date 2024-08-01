@@ -1,3 +1,4 @@
+from os import getenv
 from smtplib import SMTP
 
 from email.mime.multipart import MIMEMultipart
@@ -23,7 +24,7 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
   
   msg = MIMEMultipart()
   msg['From'] = email_from
-  msg['To'] = ewmail_to
+  msg['To'] = email_to
   msg['Date'] = formatdate(localtime=True)
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
@@ -47,16 +48,16 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
 
 def main():
   send_mail(
-    smtp_enable_tls=os.getenv('SMTP_ENABLE_TLS'),
-    smtp_server_address=os.getenv('SMTP_SERVER_ADDRESS'),
-    smtp_server_port=os.getenv('SMTP_SERVER_PORT'),
-    smtp_username=os.getenv('SMTP_USERNAME'),
-    smtp_password=os.getenv('SMTP_PASSWORD'),
-    email_from=os.getenv('EMAIL_FROM'),
-    email_to=os.getenv('EMAIL_TO'),
-    email_subject=os.getenv('EMAIL_SUBJECT'),
-    email_body=os.getenv('EMAIL_BODY'),
-    email_attachments=os.getenv('EMAIL_ATTACHMENTS'),
+    smtp_enable_tls=getenv('SMTP_ENABLE_TLS'),
+    smtp_server_address=getenv('SMTP_SERVER_ADDRESS'),
+    smtp_server_port=getenv('SMTP_SERVER_PORT'),
+    smtp_username=getenv('SMTP_USERNAME'),
+    smtp_password=getenv('SMTP_PASSWORD'),
+    email_from=getenv('EMAIL_FROM'),
+    email_to=getenv('EMAIL_TO'),
+    email_subject=getenv('EMAIL_SUBJECT'),
+    email_body=getenv('EMAIL_BODY'),
+    email_attachments=getenv('EMAIL_ATTACHMENTS'),
   )
 
 if __name__ == "__main__":
