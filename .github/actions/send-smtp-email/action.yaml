@@ -1,0 +1,63 @@
+---
+name: 'Send SMTP Email'
+description: 'Send SMTP Email with TLS.'
+
+inputs:
+  smtp_enable_tls:
+    description: 'If "true" TLS will be enabled.'
+    default: 'true'
+  smtp_server_address:
+    description: 'SMTP server address.'
+    required: true
+  smtp_server_port:
+    description: 'SMTP server port.'
+    required: true
+  smtp_username:
+    description: 'SMTP username.'
+    required: true
+  smtp_password:
+    description: 'SMTP password.'
+    required: true
+  email_from:
+    description: 'Email from (sender).'
+    required: true
+  email_to:
+    description: 'Email to (recipient).'
+    required: true
+  email_subject:
+    description: 'Email subject.'
+    required: true
+  email_body:
+    description: 'Email body to be sent.'
+    required: true
+  email_attachments:
+    description: 'Email attachment Files.'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: install Python Packages
+      run: |
+        python -m pip install --upgrade pip
+        pip install smtplib=3.12.4
+      shell: bash
+
+    - name: Execute Python Script
+      env:
+        SMTP_ENABLE_TLS: ${{ inputs.smtp_enable_tls }}
+        SMTP_SERVER_ADDRESS: ${{ inputs.smtp_server_address }}
+        SMTP_SERVER_PORT: ${{ inputs.smtp_server_port }}
+        SMTP_USERNAME: ${{ inputs.smtp_username }}
+        SMTP_PASSWORD: ${{ inputs.smtp_password }}
+        EMAIL_FROM: ${{ inputs.email_from }}
+        EMAIL_TO: ${{ inputs.email_to }}
+        EMAIL_SUBJECT: ${{ inputs.email_subject }}
+        EMAIL_BODY: ${{ inputs.email_body }}
+        EMAIL_ATTACHMENTS: ${{ inputs.email_attachments }}
+      run: python main.py
+      shell: bash
