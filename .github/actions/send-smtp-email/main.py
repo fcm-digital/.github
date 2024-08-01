@@ -47,7 +47,7 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
 
 def main():
   send_mail(
-    smtp_enable_tls=os.getenv('SMTP_ENABLE_TLS')
+    smtp_enable_tls=os.getenv('SMTP_ENABLE_TLS'),
     smtp_server_address=os.getenv('SMTP_SERVER_ADDRESS'),
     smtp_server_port=os.getenv('SMTP_SERVER_PORT'),
     smtp_username=os.getenv('SMTP_USERNAME'),
