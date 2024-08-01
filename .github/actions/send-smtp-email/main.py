@@ -1,13 +1,12 @@
 from os import getenv
 from smtplib import SMTP, SMTPAuthenticationError
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 
-def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_username, smtp_password, email_from, email_to, email_subject, email_body, email_attachments):
+def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port: int, smtp_username: str, smtp_password: str, email_from: str, email_to: str, email_subject: str, email_body: str, email_attachments: str) -> None:
   """Sends an email with attachment.
   Args:
     smtp_enable_tls (bool): Enable TLS for SMTP.
@@ -21,7 +20,6 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
     email_body (str): Email body.
     email_attachments (str): Email attachments.
   """
-  
   msg = MIMEMultipart()
   msg['From'] = email_from
   msg['To'] = email_to
@@ -29,11 +27,12 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
   
-  part = MIMEBase('application', "octet-stream")
-  part.set_payload(open(email_attachments, "rb").read())
-  encoders.encode_base64(part)
-  part.add_header('Content-Disposition', 'attachment; filename=' + email_attachments)
-  msg.attach(part)
+  with open(email_attachments, "rb") as attachment:
+    part = MIMEBase('application', "octet-stream")
+    part.set_payload(attachment.read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', 'attachment', filename=email_attachments)
+    msg.attach(part)
   
   try:
     smtp = SMTP(smtp_server_address, smtp_server_port)
@@ -44,12 +43,11 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
         smtp.login(smtp_username, smtp_password)
         smtp.sendmail(msg['From'], [msg['To']], msg.as_string())
       except SMTPAuthenticationError:
-        print("Error: Authentication failed. Please check your SMTP credentials.")
-    smtp.quit()
+        raise SMTPAuthenticationError("Error: Authentication failed. Please check your SMTP credentials.")    smtp.quit()
   except Exception as e:
-    print("An error occurred while sending the email:", str(e))
+    raise Exception("An error occurred while sending the email:", str(e))
 
-def main():
+def main() -> None:
   send_mail(
     smtp_enable_tls=getenv('SMTP_ENABLE_TLS'),
     smtp_server_address=getenv('SMTP_SERVER_ADDRESS'),
