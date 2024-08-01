@@ -1,4 +1,4 @@
-import smtplib
+from smtplib import SMTP
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -35,7 +35,7 @@ def send_mail(smtp_enable_tls, smtp_server_address, smtp_server_port, smtp_usern
   msg.attach(part)
   
   try:
-    smtp = smtplib.SMTP(smtp_server_address, smtp_server_port)
+    smtp = SMTP(smtp_server_address, smtp_server_port)
     if smtp_enable_tls:
       smtp.ehlo()
       smtp.starttls()
