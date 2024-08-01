@@ -53,5 +53,5 @@ runs:
         EMAIL_SUBJECT: ${{ inputs.email_subject }}
         EMAIL_BODY: ${{ inputs.email_body }}
         EMAIL_ATTACHMENTS: ${{ inputs.email_attachments }}
-      run: python main.py
+      run: python ${{ github.action_path }}/main.py
       shell: bash
