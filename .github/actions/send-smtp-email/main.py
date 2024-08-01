@@ -43,7 +43,8 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
         smtp.login(smtp_username, smtp_password)
         smtp.sendmail(msg['From'], [msg['To']], msg.as_string())
       except SMTPAuthenticationError:
-        raise SMTPAuthenticationError("Error: Authentication failed. Please check your SMTP credentials.")    smtp.quit()
+        raise SMTPAuthenticationError("Error: Authentication failed. Please check your SMTP credentials.")
+    smtp.quit()
   except Exception as e:
     raise Exception("An error occurred while sending the email:", str(e))
 
