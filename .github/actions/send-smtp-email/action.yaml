@@ -24,6 +24,12 @@ inputs:
   email_to:
     description: 'Email to (recipient).'
     required: true
+  email_cc:
+    description: 'Email cc (carbon copy).'
+    required: false
+  email_bcc:
+    description: 'Email bcc (blind carbon copy).'
+    required: false
   email_subject:
     description: 'Email subject.'
     required: true
@@ -50,6 +56,8 @@ runs:
         SMTP_PASSWORD: ${{ inputs.smtp_password }}
         EMAIL_FROM: ${{ inputs.email_from }}
         EMAIL_TO: ${{ inputs.email_to }}
+        EMAIL_CC: ${{ inputs.email_cc }}
+        EMAIL_BCC: ${{ inputs.email_bcc }}
         EMAIL_SUBJECT: ${{ inputs.email_subject }}
         EMAIL_BODY: ${{ inputs.email_body }}
         EMAIL_ATTACHMENTS: ${{ inputs.email_attachments }}

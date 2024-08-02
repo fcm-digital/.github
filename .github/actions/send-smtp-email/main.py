@@ -6,7 +6,10 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 
-def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port: int, smtp_username: str, smtp_password: str, email_from: str, email_to: str, email_subject: str, email_body: str, email_attachments: str) -> None:
+def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port: int,
+        smtp_username: str, smtp_password: str, email_from: str, email_to: str,
+        email_cc: list[str], email_bcc: list[str], email_subject: str, email_body: str,
+        email_attachments: str) -> None:
   """Sends an email with attachment.
   Args:
     smtp_enable_tls (bool): Enable TLS for SMTP.
@@ -16,24 +19,29 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     smtp_password (str): SMTP password.
     email_from (str): From email address.
     email_to (str): To email address.
+    email_cc (list[str]): CC email addresses.
+    email_bcc (list[str]): BCC email addresses.
     email_subject (str): Email subject.
     email_body (str): Email body.
     email_attachments (str): Email attachments.
   """
+
   msg = MIMEMultipart()
   msg['From'] = email_from
   msg['To'] = email_to
+  msg['Cc'] = ",".join(email_cc)
+  msg['Bcc'] = ",".join(email_bcc)
   msg['Date'] = formatdate(localtime=True)
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
-  
+
   with open(email_attachments, "rb") as attachment:
     part = MIMEBase('application', "octet-stream")
     part.set_payload(attachment.read())
     encoders.encode_base64(part)
     part.add_header('Content-Disposition', 'attachment', filename=email_attachments)
     msg.attach(part)
-  
+
   try:
     smtp = SMTP(smtp_server_address, smtp_server_port)
     if smtp_enable_tls:
@@ -57,6 +65,8 @@ def main() -> None:
     smtp_password=getenv('SMTP_PASSWORD'),
     email_from=getenv('EMAIL_FROM'),
     email_to=getenv('EMAIL_TO'),
+    email_cc=[getenv('EMAIL_CC')],
+    email_bcc=[getenv('EMAIL_BCC')],
     email_subject=getenv('EMAIL_SUBJECT'),
     email_body=getenv('EMAIL_BODY'),
     email_attachments=getenv('EMAIL_ATTACHMENTS'),
