@@ -27,10 +27,13 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   """
 
   msg = MIMEMultipart()
+  recipients = (email_cc if email_cc else []) + (email_bcc if email_bcc else []) + [email_to]
   msg['From'] = email_from
   msg['To'] = email_to
-  msg['Cc'] = ",".join(email_cc)
-  msg['Bcc'] = ",".join(email_bcc)
+  if email_cc:
+    msg['Cc'] = ",".join(email_cc)
+  if email_bcc:
+    msg['Bcc'] = ",".join(email_bcc)
   msg['Date'] = formatdate(localtime=True)
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
@@ -49,7 +52,7 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
       smtp.starttls()
       try:
         smtp.login(smtp_username, smtp_password)
-        smtp.sendmail(msg['From'], [msg['To']], msg.as_string())
+        smtp.sendmail(msg['From'], recipients, msg.as_string())
       except SMTPAuthenticationError:
         raise SMTPAuthenticationError("Error: Authentication failed. Please check your SMTP credentials.")
     smtp.quit()
@@ -65,8 +68,8 @@ def main() -> None:
     smtp_password=getenv('SMTP_PASSWORD'),
     email_from=getenv('EMAIL_FROM'),
     email_to=getenv('EMAIL_TO'),
-    email_cc=[getenv('EMAIL_CC')],
-    email_bcc=[getenv('EMAIL_BCC')],
+    email_cc=getenv('EMAIL_CC'),
+    email_bcc=getenv('EMAIL_BCC'),
     email_subject=getenv('EMAIL_SUBJECT'),
     email_body=getenv('EMAIL_BODY'),
     email_attachments=getenv('EMAIL_ATTACHMENTS'),
