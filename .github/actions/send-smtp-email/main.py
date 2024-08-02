@@ -8,7 +8,7 @@ from email import encoders
 
 def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port: int,
         smtp_username: str, smtp_password: str, email_from: str, email_to: str,
-        email_cc: list[str], email_bcc: list[str], email_subject: str, email_body: str,
+        email_cc: str, email_bcc: str, email_subject: str, email_body: str,
         email_attachments: str) -> None:
   """Sends an email with attachment.
   Args:
@@ -19,15 +19,15 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     smtp_password (str): SMTP password.
     email_from (str): From email address.
     email_to (str): To email address.
-    email_cc (list[str]): CC email addresses.
-    email_bcc (list[str]): BCC email addresses.
+    email_cc (str): CC email addresses.
+    email_bcc (str): BCC email addresses.
     email_subject (str): Email subject.
     email_body (str): Email body.
     email_attachments (str): Email attachments.
   """
 
   msg = MIMEMultipart()
-  recipients = (email_cc if email_cc else []) + (email_bcc if email_bcc else []) + [email_to]
+  recipients = email_cc.split(",") + email_bcc.split(",") + [email_to]
   msg['From'] = email_from
   msg['To'] = email_to
   if email_cc:
