@@ -31,9 +31,9 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   msg['From'] = email_from
   msg['To'] = email_to
   if email_cc:
-    msg['Cc'] = ",".join(email_cc)
+    msg['Cc'] = ",".join([email_cc])
   if email_bcc:
-    msg['Bcc'] = ",".join(email_bcc)
+    msg['Bcc'] = ",".join([email_bcc])
   msg['Date'] = formatdate(localtime=True)
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
