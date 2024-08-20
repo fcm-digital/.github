@@ -25,12 +25,6 @@ inputs:
   commit_at:
     description: 'The time where the commit was created.'
     required: true
-  oban_pro_fingerprint:
-    description: 'Oban Pro fingerprint.'
-    required: true
-  oban_pro_key:
-    description: 'Oban Pro key.'
-    required: true
   context:
     description: 'Context to build image (default: ./).'
     required: false
@@ -68,6 +62,16 @@ runs:
           echo "USER_BUILDER=$GITHUB_ACTOR" >> $GITHUB_ENV
         fi
 
+        if [[ -z "$OBAN_PRO_FINGERPRINT" ]]; then
+          echo "OBAN_PRO_FINGERPRINT Must be defined as environment variable."
+          exit 1
+        fi
+
+        if [[ -z "$OBAN_PRO_KEY" ]]; then
+          echo "OBAN_PRO_KEY Must be defined as environment variable."
+          exit 1
+        fi
+
         if [[ -z "$PRIVATE_GIT_REPO_KEY" ]]; then
           echo "PRIVATE_GIT_REPO_KEY Must be defined as environment variable."
           exit 1
@@ -91,8 +95,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
         tags: |
@@ -113,8 +117,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
@@ -137,8 +141,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
@@ -160,8 +164,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
         tags: |
