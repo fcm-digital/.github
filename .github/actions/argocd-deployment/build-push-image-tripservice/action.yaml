@@ -81,6 +81,8 @@ runs:
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'none' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      env:
+        PRIVATE_GIT_REPO_KEY: ${{ env.PRIVATE_GIT_REPO_KEY }}
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -93,7 +95,6 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
@@ -103,6 +104,8 @@ runs:
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'inline' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      env:
+        PRIVATE_GIT_REPO_KEY: ${{ env.PRIVATE_GIT_REPO_KEY }}
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -115,7 +118,6 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
@@ -127,6 +129,8 @@ runs:
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'registry' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      env:
+        PRIVATE_GIT_REPO_KEY: ${{ env.PRIVATE_GIT_REPO_KEY }}
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -139,7 +143,6 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
@@ -150,6 +153,8 @@ runs:
     - name: "(PRODUCTION) Pull, Build & Push Docker image [branch tag] + [image tag] + [latest]"
       uses: docker/build-push-action@v5
       if: inputs.branch_name == 'master' || inputs.branch_name == 'main'
+      env:
+        PRIVATE_GIT_REPO_KEY: ${{ env.PRIVATE_GIT_REPO_KEY }}
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -162,7 +167,6 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
