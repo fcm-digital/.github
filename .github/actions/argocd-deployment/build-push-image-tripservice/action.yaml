@@ -72,7 +72,9 @@ runs:
           echo "PRIVATE_GIT_REPO_KEY Must be defined as environment variable."
           exit 1
         else
-          echo "PRIVATE_GIT_REPO_KEY=$PRIVATE_GIT_REPO_KEY" >> $GITHUB_ENV
+          echo "PRIV_GIT_REPO_KEY<<EOF" >> $GITHUB_ENV
+          echo "$PRIVATE_GIT_REPO_KEY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -95,7 +97,7 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
+          PRIVATE_GIT_REPO_KEY=${{ env.PRIV_GIT_REPO_KEY }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
@@ -117,7 +119,7 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
+          PRIVATE_GIT_REPO_KEY=${{ env.PRIV_GIT_REPO_KEY }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
@@ -141,7 +143,7 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
+          PRIVATE_GIT_REPO_KEY=${{ env.PRIV_GIT_REPO_KEY }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
@@ -164,7 +166,7 @@ runs:
           COMMIT_AT=${{ inputs.commit_at }}
           OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
           OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
-          PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}
+          PRIVATE_GIT_REPO_KEY=${{ env.PRIV_GIT_REPO_KEY }}
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
