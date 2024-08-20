@@ -71,10 +71,6 @@ runs:
         if [[ -z "$PRIVATE_GIT_REPO_KEY" ]]; then
           echo "PRIVATE_GIT_REPO_KEY Must be defined as environment variable."
           exit 1
-        else
-          echo "PRIV_GIT_REPO_KEY<<EOF" >> $GITHUB_ENV
-          echo "$PRIVATE_GIT_REPO_KEY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
         fi
       shell: bash
 
