@@ -148,6 +148,9 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
           type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
