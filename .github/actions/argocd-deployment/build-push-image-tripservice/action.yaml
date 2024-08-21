@@ -52,8 +52,10 @@ runs:
     - run: |-
         if [[ -z "${{ inputs.artifact_repository_name }}" ]]; then
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
+          echo "REPO_URL_BUILDER=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}-builder/${{ inputs.app_name }}-builder" >> $GITHUB_ENV
         else
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
+          echo "REPO_URL_BUILDER=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}-builder/${{ inputs.app_name }}-builder" >> $GITHUB_ENV
         fi
 
         if [[ -z "$GITHUB_ACTOR" ]]; then
@@ -103,7 +105,8 @@ runs:
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
-    - name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+    - id: inline-cache-builder-stage
+      name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag] for builder stage"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'inline' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
@@ -120,7 +123,33 @@ runs:
           OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
           OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
-        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+        cache-to: type=inline
+        context: ${{ inputs.context }}
+        target: builder
+        tags: |
+          ${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL_BUILDER }}:${{ inputs.image_tag }}
+
+    - id: inline-cache
+      name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: steps.inline-cache-builder-stage.outcome == 'success' &&
+          inputs.cache_type == 'inline' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
