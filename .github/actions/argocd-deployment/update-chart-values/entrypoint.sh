@@ -80,7 +80,7 @@ else
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
-    cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/*" "./staging/$ENV_TO_DEPLOY/*"
+    cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY" "./staging/$ENV_TO_DEPLOY"
 fi
 
 if [ -z "$(git diff --exit-code)" ]; then
