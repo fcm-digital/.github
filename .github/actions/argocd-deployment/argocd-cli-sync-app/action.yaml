@@ -26,6 +26,9 @@ inputs:
   env_to_deploy:
     description: 'Environment where the image will be deployed.'
     required: true
+  label_filter:
+    description: 'Label value to be used as a filter for selecting resources.'
+    required: false
 
 outputs:
   live_image_tag:
@@ -57,4 +60,5 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        LABEL_FILTER: ${{ inputs.label_filter }}
       shell: bash
