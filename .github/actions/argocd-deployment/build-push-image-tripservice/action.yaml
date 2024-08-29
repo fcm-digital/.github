@@ -126,6 +126,7 @@ runs:
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:latest
         cache-to: type=inline
         context: ${{ inputs.context }}
         target: builder
@@ -154,6 +155,8 @@ runs:
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
           type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:latest
+          type=registry,ref=${{ env.REPO_URL }}:latest
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
