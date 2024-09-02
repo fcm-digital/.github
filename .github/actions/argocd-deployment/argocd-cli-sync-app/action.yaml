@@ -29,6 +29,9 @@ inputs:
   label_filter:
     description: 'Label key/value to be used as a filter for selecting resources.'
     required: false
+  ignore_label_filter:
+    description: 'Label key/value to be used as a filter for ignoring resources.'
+    required: false
   resources_filter:
     description: 'Resources type_name to be used as a filter for selecting resources.'
     required: false
@@ -81,6 +84,6 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-        LABEL_FILTER: ${{ inputs.label_filter }}
+        # LABELS: ${{ steps.argocd-labels-filter.outputs.labels_filter }}
         RESOURCES: ${{ steps.argocd-resources-filter.outputs.resources_filter }}
       shell: bash
