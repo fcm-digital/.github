@@ -69,8 +69,12 @@ runs:
         else
           resources_to_sync=""
         fi
-
-        echo "resources_filter=$( echo "$resources_to_sync" | sed 's/_/:/g' | awk '{for(i=1;i<=NF;i++) printf "--resource '"'*:%s'"' ", $i}' )" >> $GITHUB_OUTPUT
+        
+        if [ -z "$resources_to_sync" ]; then
+          echo "resources_filter=" >> $GITHUB_OUTPUT
+        else
+          echo "resources_filter=$( echo "$resources_to_sync" | sed 's/_/:/g' | awk '{for(i=1;i<=NF;i++) printf "--resource '"'*:%s'"' ", $i}' )" >> $GITHUB_OUTPUT
+        fi
       shell: bash
 
     - id: argocd-cli-sync-app
