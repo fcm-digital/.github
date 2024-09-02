@@ -57,7 +57,7 @@ runs:
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
 
     - id: argocd-resources-filter
-      if: inputs.env_to_deploy != 'prod'
+      if: ( inputs.resources_filter || inputs.ignore_resources_filter ) &&  inputs.env_to_deploy != 'prod'
       name: 'ArgoCD CLI resources filter'
       shell: bash
       run: ${{ github.action_path }}/get_resources_filter_entrypoint.sh
