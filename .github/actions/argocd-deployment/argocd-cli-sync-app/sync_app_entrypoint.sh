@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
+    echo "argocd app sync $ARGOCD_FULL_APP_NAME --server $ARGOCD_URL --auth-token $ARGOCD_AUTH_TOKEN --prune --retry-limit 2 --retry-backoff-duration 5s --retry-backoff-factor 2 $RESOURCES $LABELS"
     argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
