@@ -59,23 +59,16 @@ runs:
     - id: argocd-resources-filter
       if: inputs.env_to_deploy != 'prod'
       name: 'ArgoCD CLI resources filter'
-      run: |
-        if [ -n "${{ inputs.resources_filter }}" ]; then
-          filter_params=$( echo inputs.resources_filter | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
-          resources_to_sync=$( argocd app resources ${{ inputs.app_name }}-${{ inputs.env_to_deploy }}-stg-${{ inputs.app_region }} | awk '$NF == "No" {print $(NF-3) "_" $(NF-1)}' | grep $filter_params )
-        elif [ -n "${{ inputs.ignore_resources_filter }}" ]; then
-          filter_params=$( echo inputs.ignore_resources_filter | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
-          resources_to_sync=$( argocd app resources ${{ inputs.app_name }}-${{ inputs.env_to_deploy }}-stg-${{ inputs.app_region }} | awk '$NF == "No" {print $(NF-3) "_" $(NF-1)}' | grep -v $filter_params )
-        else
-          resources_to_sync=""
-        fi
-        
-        if [ -z "$resources_to_sync" ]; then
-          echo "resources_filter=" >> $GITHUB_OUTPUT
-        else
-          echo "resources_filter=$( echo "$resources_to_sync" | sed 's/_/:/g' | awk '{for(i=1;i<=NF;i++) printf "--resource '"'*:%s'"' ", $i}' )" >> $GITHUB_OUTPUT
-        fi
       shell: bash
+      run: ${{ github.action_path }}/get_resources_filter_entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        RESOURCES_FILTER: ${{ inputs.resources_filter }}
+        IGNORE_RESOURCES_FILTER: ${{ inputs.ignore_resources_filter }}
 
     - id: argocd-cli-sync-app
       if: steps.argocd-resources-filter.outcomes == 'success'
