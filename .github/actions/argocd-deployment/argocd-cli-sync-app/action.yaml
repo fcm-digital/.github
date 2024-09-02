@@ -71,7 +71,7 @@ runs:
         IGNORE_RESOURCES_FILTER: ${{ inputs.ignore_resources_filter }}
 
     - id: argocd-cli-sync-app
-      if: steps.argocd-resources-filter.outcomes == 'success'
+      if: steps.argocd-resources-filter.outcome == 'success'
       name: 'ArgoCD CLI Sync app'
       run: ${{ github.action_path }}/sync_app_entrypoint.sh
       env:
