@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    argocd app sync $ARGOCD_FULL_APP_NAME ${LABEL_FILTER:+--label "$LABEL_FILTER"} ${RESOURCES_FILTER} \
+    argocd app sync $ARGOCD_FULL_APP_NAME ${LABEL_FILTER:+--label "$LABEL_FILTER"} ${RESOURCES} \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
-        --apply-out-of-sync-only \
         --prune \
         --retry-limit 2 \
         --retry-backoff-duration 5s \
         --retry-backoff-factor 2
+        # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
 }
 
 argocd_app_wait () {

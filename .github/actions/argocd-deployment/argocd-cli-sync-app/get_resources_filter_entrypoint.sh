@@ -3,13 +3,13 @@
 argocd_app_get_resources () {
 
     if [ -n "$RESOURCES_FILTER" ]; then
-        FILTER_PARAMS=$( echo inputs.resources_filter | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
+        FILTER_PARAMS=$( echo $RESOURCES_FILTER | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
         local resources_to_sync=$(argocd app resources $ARGOCD_FULL_APP_NAME \
             --server $ARGOCD_URL \
             --auth-token $ARGOCD_AUTH_TOKEN | awk '$NF == "No" {print $(NF-3) "_" $(NF-1)}' | grep $FILTER_PARAMS )
 
     elif [ -n "$IGNORE_RESOURCES_FILTER" ]; then
-        FILTER_PARAMS=$( echo inputs.ignore_resources_filter | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
+        FILTER_PARAMS=$( echo $IGNORE_RESOURCES_FILTER | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
         local resources_to_sync=$(argocd app resources $ARGOCD_FULL_APP_NAME \
             --server $ARGOCD_URL \
             --auth-token $ARGOCD_AUTH_TOKEN | awk '$NF == "No" {print $(NF-3) "_" $(NF-1)}' | grep -v $FILTER_PARAMS )

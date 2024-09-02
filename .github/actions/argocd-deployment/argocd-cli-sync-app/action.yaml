@@ -82,5 +82,5 @@ runs:
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         LABEL_FILTER: ${{ inputs.label_filter }}
-        RESOURCES_FILTER: ${{ steps.argocd-resources-filter.outputs.resources_filter }}
+        RESOURCES: ${{ steps.argocd-resources-filter.outputs.resources_filter }}
       shell: bash
