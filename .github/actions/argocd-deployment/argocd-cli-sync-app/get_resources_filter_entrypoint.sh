@@ -9,11 +9,9 @@ argocd_app_get_resources () {
 
     elif [ -n "$IGNORE_RESOURCES_FILTER" ]; then
         local filter_params=$( echo $IGNORE_RESOURCES_FILTER | awk '{for(i=1;i<=NF;i++) printf "-e %s ", $i}' )
-        echo $filter_params
         local resources_to_sync=$(argocd app resources $ARGOCD_FULL_APP_NAME \
             --server $ARGOCD_URL \
             --auth-token $ARGOCD_AUTH_TOKEN | awk '$NF == "No" {print $(NF-3) "_" $(NF-1)}' | grep -v $filter_params )
-        echo $resources_to_sync
     fi
 
     if [ -n "$resources_to_sync" ]; then
