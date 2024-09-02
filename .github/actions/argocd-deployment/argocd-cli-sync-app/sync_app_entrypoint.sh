@@ -11,7 +11,7 @@ argocd_app_sync () {
         --prune \
         --retry-limit 2 \
         --retry-backoff-duration 5s \
-        --retry-backoff-factor 2 ${RESOURCES} ${LABELS}
+        --retry-backoff-factor 2 --resource '*:ConfigMap:itinerary-core-runtime' --resource '*:Service:itinerary-core'
         # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
 }
 
