@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    argocd app sync $ARGOCD_FULL_APP_NAME --server $ARGOCD_URL --auth-token $ARGOCD_AUTH_TOKEN --prune --retry-limit 2 --retry-backoff-duration 5s --retry-backoff-factor 2 $RESOURCES $LABELS
-    # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
+    echo $RESOURCES
+    echo "---------------"
+    echo "argocd app sync $ARGOCD_FULL_APP_NAME --server $ARGOCD_URL --auth-token $ARGOCD_AUTH_TOKEN --prune --retry-limit 2 --retry-backoff-duration 5s --retry-backoff-factor 2 ${RESOURCES} ${LABELS}"
+    echo "---------------"
+    argocd app sync $ARGOCD_FULL_APP_NAME \
+        --server $ARGOCD_URL \
+        --auth-token $ARGOCD_AUTH_TOKEN \
+        --prune \
+        --retry-limit 2 \
+        --retry-backoff-duration 5s \
+        --retry-backoff-factor 2 ${RESOURCES} ${LABELS}
+        # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
 }
 
 argocd_app_wait () {

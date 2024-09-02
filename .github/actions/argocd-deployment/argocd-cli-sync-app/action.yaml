@@ -76,6 +76,7 @@ runs:
     - id: argocd-cli-sync-app
       if: steps.argocd-resources-filter.outcome == 'success'
       name: 'ArgoCD CLI Sync app'
+      shell: bash
       run: ${{ github.action_path }}/sync_app_entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
@@ -86,4 +87,3 @@ runs:
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         # LABELS: ${{ steps.argocd-labels-filter.outputs.labels_filter }}
         RESOURCES: ${{ steps.argocd-resources-filter.outputs.resources_filter }}
-      shell: bash
