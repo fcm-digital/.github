@@ -70,7 +70,7 @@ runs:
           resources_to_sync=""
         fi
 
-        echo "resources_filter=$( echo "$resources_to_sync" | sed 's/_/:/g' | awk '{for(i=1;i<=NF;i++) printf "--resource '*:%s' ", $i}' )" >> $GITHUB_OUTPUT
+        echo "resources_filter=$( echo "$resources_to_sync" | sed 's/_/:/g' | awk '{for(i=1;i<=NF;i++) printf "--resource '"'*:%s'"' ", $i}' )" >> $GITHUB_OUTPUT
       shell: bash
 
     - id: argocd-cli-sync-app
