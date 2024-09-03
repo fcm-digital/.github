@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 argocd_app_refresh () {
-    local app_name=$1
-    local argocd_command="argocd app get $app_name \
+    local argocd_command="argocd app get $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --refresh"
