@@ -16,7 +16,7 @@ argocd_app_wait () {
     argocd app wait $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
-        --health
+        --operation
 }
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
