@@ -1,25 +1,15 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    echo "-----------------------------"
-    echo $RESOURCES
-    echo "-----------------------------"
-    echo "argocd app sync $ARGOCD_FULL_APP_NAME \
+    argocd_command="argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --prune \
         --retry-limit 2 \
         --retry-backoff-duration 5s \
         --retry-backoff-factor 2 $RESOURCES"
-    echo "-----------------------------"
-    argocd app sync $ARGOCD_FULL_APP_NAME \
-        --server $ARGOCD_URL \
-        --auth-token $ARGOCD_AUTH_TOKEN \
-        --prune \
-        --retry-limit 2 \
-        --retry-backoff-duration 5s \
-        --retry-backoff-factor 2 $RESOURCES
         # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
+    eval $argocd_command
 }
 
 argocd_app_wait () {
