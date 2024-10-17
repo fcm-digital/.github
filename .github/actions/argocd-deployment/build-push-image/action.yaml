@@ -44,6 +44,9 @@ inputs:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
+  target:
+    description: 'Sets the target stage to build.'
+    required: false
 
 
 runs:
@@ -81,6 +84,7 @@ runs:
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
         context: ${{ inputs.context }}
+        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -102,6 +106,7 @@ runs:
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
+        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -123,6 +128,7 @@ runs:
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
+        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -141,6 +147,7 @@ runs:
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
         context: ${{ inputs.context }}
+        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
