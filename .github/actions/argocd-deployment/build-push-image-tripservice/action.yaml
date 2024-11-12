@@ -25,12 +25,6 @@ inputs:
   commit_at:
     description: 'The time where the commit was created.'
     required: true
-  oban_pro_fingerprint:
-    description: 'Oban Pro fingerprint.'
-    required: true
-  oban_pro_key:
-    description: 'Oban Pro key.'
-    required: true
   context:
     description: 'Context to build image (default: ./).'
     required: false
@@ -58,14 +52,26 @@ runs:
     - run: |-
         if [[ -z "${{ inputs.artifact_repository_name }}" ]]; then
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
+          echo "REPO_URL_BUILDER=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}-builder/${{ inputs.app_name }}-builder" >> $GITHUB_ENV
         else
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
+          echo "REPO_URL_BUILDER=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}-builder/${{ inputs.app_name }}-builder" >> $GITHUB_ENV
         fi
 
         if [[ -z "$GITHUB_ACTOR" ]]; then
           echo "USER_BUILDER=ArgoCD-Unknown-User" >> $GITHUB_ENV
         else
           echo "USER_BUILDER=$GITHUB_ACTOR" >> $GITHUB_ENV
+        fi
+
+        if [[ -z "$OBAN_PRO_FINGERPRINT" ]]; then
+          echo "OBAN_PRO_FINGERPRINT Must be defined as environment variable."
+          exit 1
+        fi
+
+        if [[ -z "$OBAN_PRO_KEY" ]]; then
+          echo "OBAN_PRO_KEY Must be defined as environment variable."
+          exit 1
         fi
 
         if [[ -z "$PRIVATE_GIT_REPO_KEY" ]]; then
@@ -75,6 +81,7 @@ runs:
       shell: bash
 
     - name: Set up Docker Buildx
+      if: inputs.cache_type != 'none'
       uses: docker/setup-buildx-action@v3
 
     - name: "(NO CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -91,15 +98,16 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
-    - name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+    - id: inline-cache-builder-stage
+      name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag] for builder stage"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'inline' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
@@ -113,10 +121,42 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
-        cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:latest
+        cache-to: type=inline
+        context: ${{ inputs.context }}
+        target: builder
+        tags: |
+          ${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+
+    - id: inline-cache
+      name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: steps.inline-cache-builder-stage.outcome == 'success' &&
+          inputs.cache_type == 'inline' &&
+          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL_BUILDER }}:latest
+          type=registry,ref=${{ env.REPO_URL }}:latest
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
@@ -137,8 +177,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
@@ -160,8 +200,8 @@ runs:
           USER_BUILDER=${{ env.USER_BUILDER }}
           COMMIT_SHA=${{ inputs.commit }}
           COMMIT_AT=${{ inputs.commit_at }}
-          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
-          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          OBAN_PRO_FINGERPRINT=${{ env.OBAN_PRO_FINGERPRINT }}
+          OBAN_PRO_KEY=${{ env.OBAN_PRO_KEY }}
           "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
         tags: |

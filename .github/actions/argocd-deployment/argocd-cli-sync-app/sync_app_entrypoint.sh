@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    argocd app sync $ARGOCD_FULL_APP_NAME \
+    local argocd_command="argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --prune \
         --retry-limit 2 \
         --retry-backoff-duration 5s \
-        --retry-backoff-factor 2
+        --retry-backoff-factor 2 $RESOURCES"
+        # --apply-out-of-sync-only \ # Only available for release 2.9 or higher
+    eval $argocd_command
 }
 
 argocd_app_wait () {
     argocd app wait $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
-        --health
+        --operation
 }
 
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then

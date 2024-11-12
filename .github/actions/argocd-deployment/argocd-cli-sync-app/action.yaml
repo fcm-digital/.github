@@ -26,6 +26,18 @@ inputs:
   env_to_deploy:
     description: 'Environment where the image will be deployed.'
     required: true
+  label_filter:
+    description: 'Label key/value to be used as a filter for selecting resources.'
+    required: false
+  ignore_label_filter:
+    description: 'Label key/value to be used as a filter for ignoring resources.'
+    required: false
+  resources_filter:
+    description: 'Resources type_name to be used as a filter for selecting resources.'
+    required: false
+  ignore_resources_filter:
+    description: 'Resources type_name to be used as a filter for ignoring resources.'
+    required: false
 
 outputs:
   live_image_tag:
@@ -35,9 +47,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get live Image Tag
+    - id: get-live-image-tag
       if: inputs.changelog_slack_message == 'true' && inputs.env_to_deploy == 'prod'
-      id: get-live-image-tag
+      name: Get live Image Tag
       shell: bash
       run: ${{ github.action_path }}/get_live_imagetag_entrypoint.sh
       env:
@@ -47,8 +59,24 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
 
+    - id: argocd-resources-filter
+      if: ( inputs.resources_filter || inputs.ignore_resources_filter ) &&  inputs.env_to_deploy != 'prod'
+      name: 'ArgoCD CLI resources filter'
+      shell: bash
+      run: ${{ github.action_path }}/get_resources_filter_entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        RESOURCES_FILTER: ${{ inputs.resources_filter }}
+        IGNORE_RESOURCES_FILTER: ${{ inputs.ignore_resources_filter }}
+
     - id: argocd-cli-sync-app
+      if: steps.argocd-resources-filter.outcome == 'success'
       name: 'ArgoCD CLI Sync app'
+      shell: bash
       run: ${{ github.action_path }}/sync_app_entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
@@ -57,4 +85,5 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-      shell: bash
+        # LABELS: ${{ steps.argocd-labels-filter.outputs.labels_filter }}
+        RESOURCES: ${{ steps.argocd-resources-filter.outputs.resources_filter }}
