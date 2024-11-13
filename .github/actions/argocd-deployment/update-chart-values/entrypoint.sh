@@ -39,13 +39,15 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
             # Check if the currentTag is an old 'master' image -> Then, sync the values.
             # Sandbox will always be synced when a new 'master' image is deployed.
             if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-                if [ "$IMAGE_TAG" != "" ]; then
-                    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                if [[ "$CURRENT_IMAGE_TAG" != "$IMAGE_TAG" ]]; then
+                    if [ "$IMAGE_TAG" != "" ]; then
+                        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                    fi
+                    if [ ! -z ${DEPLOYED_AT+x} ]; then
+                        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
+                    fi
                 fi
-                if [ ! -z ${DEPLOYED_AT+x} ]; then
-                    sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
-                fi
-                cp -f $CURRENT_SOURCE_FILE "./staging/$CURRENT_ENV/values-stg.yaml"
+                cp -f -r "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
             fi
         else
             echo "$CURRENT_ENV not found in local code repository, but existing in helm-chart-$APP_NAME-values/staging repository."
@@ -80,7 +82,7 @@ else
     if [ ! -z ${DEPLOYED_AT+x} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
-    cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
+    cp -f -r "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/" "./staging/"
 fi
 
 if [ -z "$(git diff --exit-code)" ]; then
