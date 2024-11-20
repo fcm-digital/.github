@@ -61,8 +61,10 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
                     if [ ! -z ${DEPLOYED_AT+x} ]; then
                         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
                     fi
-                    if [[ "$SYNCED_ENVS_AS_OUTPUTS" == "true" ]]; then
+                    if [[ $SYNCED_ENVS_AS_OUTPUTS == true ]]; then
                         add_synced_staging_envs $CURRENT_ENV
+                        echo $CURRENT_ENV
+                        echo $synced_staging_envs
                     fi
                 fi
                 cp -f -r "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
@@ -74,7 +76,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     # The values-stg.yaml will always be synced when a Pull Request is closed.
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
     if [ ! -z ${synced_staging_envs} ]; then
-        echo "synced_staging_envs=$synced_staging_envs" >> $GITHUB_OUTPUT
+        echo "synced_staging_envs=$( echo $synced_staging_envs )" >> $GITHUB_OUTPUT
     fi
 
 elif [[ "$ENV_TO_DEPLOY" == "NO_SYNC" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
