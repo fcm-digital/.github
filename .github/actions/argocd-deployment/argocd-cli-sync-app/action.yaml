@@ -24,7 +24,7 @@ inputs:
     required: false
     default: 'false'
   env_to_deploy:
-    description: 'Environment where the image will be deployed.'
+    description: 'Environment or Environments where the image will be deployed.'
     required: true
   sync_for_all_envs:
     description: 'If true, the action will sync the app for all environments (ALL_ENV).'

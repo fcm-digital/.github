@@ -75,7 +75,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     done
     # The values-stg.yaml will always be synced when a Pull Request is closed.
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
-    if [ ! -z ${synced_staging_envs} ]; then
+    if [ ! -z ${synced_staging_envs+x} ]; then
         echo "synced_staging_envs=$( echo $synced_staging_envs )" >> $GITHUB_OUTPUT
     fi
 
