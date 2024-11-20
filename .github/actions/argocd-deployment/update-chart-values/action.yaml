@@ -37,6 +37,9 @@ outputs:
   old_image_tag:
     description: 'The old Branch name.'
     value: ${{ steps.remote-values-sync.outputs.old_image_tag }}
+  synced_staging_envs:
+    description: 'The synced staging environments.'
+    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}
 
 runs:
   using: "composite"
