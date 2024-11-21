@@ -4,7 +4,11 @@ argocd_app_sync_async() {
     argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
+        --apply-out-of-sync-only \
         --prune \
+        --retry-limit 3 \
+        --retry-backoff-duration 10s \
+        --retry-backoff-factor 3 \
         --async
 }
 
