@@ -65,18 +65,18 @@ runs:
         build_args_output=""
 
         if [[ -z "$GITHUB_ACTOR" ]]; then
-          build_args_output="${build_args_output}USER_BUILDER=ArgoCD-Unknown-User\n"
+          build_args_output="--build-arg ${build_args_output}USER_BUILDER=ArgoCD-Unknown-User "
         else
-          build_args_output="${build_args_output}USER_BUILDER=${GITHUB_ACTOR}\n"
+          build_args_output="--build-arg ${build_args_output}USER_BUILDER=${GITHUB_ACTOR} "
         fi
 
-        build_args_output="${build_args_output}APP_REVISION=${{ inputs.image_tag }}\n"
-        build_args_output="${build_args_output}BRANCH=${{ inputs.branch_name }}\n"
-        build_args_output="${build_args_output}COMMIT_SHA=${{ inputs.commit }}\n"
-        build_args_output="${build_args_output}COMMIT_AT=${{ inputs.commit_at }}\n"
+        build_args_output="--build-arg ${build_args_output}APP_REVISION=${{ inputs.image_tag }} "
+        build_args_output="--build-arg ${build_args_output}BRANCH=${{ inputs.branch_name }} "
+        build_args_output="--build-arg ${build_args_output}COMMIT_SHA=${{ inputs.commit }} "
+        build_args_output="--build-arg ${build_args_output}COMMIT_AT=${{ inputs.commit_at }} "
 
         for build_arg in $(echo ${{ inputs.build_args }} | tr -d '[:space:][:blank:]' | tr ',' '\n'); do
-          build_args_output="${build_args_output}${build_arg}\n"
+          build_args_output=--build-arg  "${build_args_output}${build_arg}"
         done
 
         echo "BUILD_ARGS=${build_args_output}" >> $GITHUB_ENV
