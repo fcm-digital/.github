@@ -12,7 +12,7 @@ argocd_app_sync_async() {
 }
 
 for env in $(echo $ENV_TO_DEPLOY | tr ',' '\n'); do
-    ARGOCD_FULL_APP_NAME="$APP_NAME-$ENV_TO_DEPLOY-stg-$APP_REGION"
+    ARGOCD_FULL_APP_NAME="$APP_NAME-$env-stg-$APP_REGION"
 
     until argocd_app_sync_async </dev/null
     do
