@@ -70,13 +70,13 @@ runs:
           build_args_output="${build_args_output}USER_BUILDER=${GITHUB_ACTOR}\n"
         fi
 
-        build_args_output="${build_args_output}APP_REVISION=${{ inputs.image_tag }}\n"
-        build_args_output="${build_args_output}BRANCH=${{ inputs.branch_name }}\n"
-        build_args_output="${build_args_output}COMMIT_SHA=${{ inputs.commit }}\n"
-        build_args_output="${build_args_output}COMMIT_AT=${{ inputs.commit_at }}\n"
+        build_args_output="${build_args_output}          APP_REVISION=${{ inputs.image_tag }}\n"
+        build_args_output="${build_args_output}          BRANCH=${{ inputs.branch_name }}\n"
+        build_args_output="${build_args_output}          COMMIT_SHA=${{ inputs.commit }}\n"
+        build_args_output="${build_args_output}          COMMIT_AT=${{ inputs.commit_at }}\n"
 
         for build_arg in $(echo ${{ inputs.build_args }} | tr -d '[:space:][:blank:]' | tr ',' '\n'); do
-          build_args_output="${build_args_output}${build_arg}\n"
+          build_args_output="${build_args_output}          ${build_arg}\n"
         done
 
         echo -e $build_args_output
@@ -95,8 +95,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          TEST=1
-          TEST2=2
+          ${{ env.BUILD_ARGS }}
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
