@@ -94,7 +94,8 @@ runs:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
-        build-args: ${{ env.BUILD_ARGS }}
+        build-args: |
+          "${{ env.BUILD_ARGS }}"
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
@@ -109,7 +110,8 @@ runs:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
-        build-args: ${{ env.BUILD_ARGS }}
+        build-args: |
+          "${{ env.BUILD_ARGS }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
@@ -126,7 +128,8 @@ runs:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
-        build-args: ${{ env.BUILD_ARGS }}
+        build-args: |
+          "${{ env.BUILD_ARGS }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
@@ -142,7 +145,8 @@ runs:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
-        build-args: ${{ env.BUILD_ARGS }}
+        build-args: |
+          "${{ env.BUILD_ARGS }}"
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
