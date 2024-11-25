@@ -62,25 +62,24 @@ runs:
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
 
-        build_args_output=""
+        echo "build_args_output<<EOF" >> $GITHUB_ENV
 
         if [[ -z "$GITHUB_ACTOR" ]]; then
-          build_args_output="${build_args_output}USER_BUILDER=ArgoCD-Unknown-User\n"
+          echo "USER_BUILDER=ArgoCD-Unknown-User" >> $GITHUB_ENV
         else
-          build_args_output="${build_args_output}USER_BUILDER=${GITHUB_ACTOR}\n"
+          echo "USER_BUILDER=${GITHUB_ACTOR}" >> $GITHUB_ENV
         fi
 
-        build_args_output="${build_args_output}          APP_REVISION=${{ inputs.image_tag }}\n"
-        build_args_output="${build_args_output}          BRANCH=${{ inputs.branch_name }}\n"
-        build_args_output="${build_args_output}          COMMIT_SHA=${{ inputs.commit }}\n"
-        build_args_output="${build_args_output}          COMMIT_AT=${{ inputs.commit_at }}\n"
+        echo "APP_REVISION=${{ inputs.image_tag }}" >> $GITHUB_ENV
+        echo "BRANCH=${{ inputs.branch_name }}" >> $GITHUB_ENV
+        echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
+        echo "COMMIT_AT=${{ inputs.commit_at }}" >> $GITHUB_ENV
 
         for build_arg in $(echo ${{ inputs.build_args }} | tr -d '[:space:][:blank:]' | tr ',' '\n'); do
-          build_args_output="${build_args_output}          ${build_arg}\n"
+          echo "${build_arg}" >> $GITHUB_ENV
         done
 
-        echo -e $build_args_output
-        echo -e "BUILD_ARGS=${build_args_output}" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Docker Buildx
@@ -95,7 +94,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          ${{ env.BUILD_ARGS }}
+          ${{ env.build_args_output }}
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
@@ -111,7 +110,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          "${{ env.BUILD_ARGS }}"
+          ${{ env.build_args_output }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
@@ -129,7 +128,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          "${{ env.BUILD_ARGS }}"
+          ${{ env.build_args_output }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
@@ -146,7 +145,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          "${{ env.BUILD_ARGS }}"
+          ${{ env.build_args_output }}
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
