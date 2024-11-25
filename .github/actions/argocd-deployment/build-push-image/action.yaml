@@ -95,7 +95,8 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          "${{ env.BUILD_ARGS }}"
+          TEST=1
+          TEST2=2
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
