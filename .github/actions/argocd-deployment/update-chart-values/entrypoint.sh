@@ -2,6 +2,19 @@
 
 set -euo pipefail
 
+
+synced_staging_envs=""
+
+add_synced_staging_envs() {
+    local new_staging_env=$1
+    if [ -z "$synced_staging_envs" ]; then
+        synced_staging_envs="$new_staging_env"
+    else
+        synced_staging_envs="$synced_staging_envs,$new_staging_env"
+    fi
+}
+
+
 # The branch name can only start with 'master' or 'main' if the branch is MASTER/MAIN ref.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && 
    [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
@@ -9,17 +22,19 @@ if [[ "$ENV_TO_DEPLOY" == "prod" ]] &&
     exit 1
 fi
 
+# The Environment name to Deploy cannot be 'master' or 'main'.
 if [[ "$ENV_TO_DEPLOY" == "master" || "$ENV_TO_DEPLOY" == "main" ]]; then
     echo "The Environment to Deploy cannot be 'master' or 'main'."
     exit 1
 fi
 
+# The Environment name to Deploy cannot be 'ALL_ENV' if the branch is not 'master' or 'main'.
 if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
     echo "It cannot be deployed in All Environments if the branch is not 'master' or 'main'."
     exit 1
 fi
 
-# Must be updated in each deploy.
+# Must be updated in each deploy if UPDATE_DEPLOYED_AT is true.
 if [[ "$UPDATE_DEPLOYED_AT" = true ]]; then
     echo "Updating 'DEPLOYED_AT' env variable at runtime."
     DEPLOYED_AT=$(date -u +"%FT%TZ")
@@ -39,13 +54,20 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
             # Check if the currentTag is an old 'master' image -> Then, sync the values.
             # Sandbox will always be synced when a new 'master' image is deployed.
             if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-                if [ "$IMAGE_TAG" != "" ]; then
-                    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                if [[ "$CURRENT_IMAGE_TAG" != "$IMAGE_TAG" ]]; then
+                    if [ "$IMAGE_TAG" != "" ]; then
+                        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                    fi
+                    if [ ! -z ${DEPLOYED_AT+x} ]; then
+                        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
+                    fi
+                    if [[ $SYNCED_ENVS_AS_OUTPUTS == true ]]; then
+                        add_synced_staging_envs $CURRENT_ENV
+                        echo $CURRENT_ENV
+                        echo $synced_staging_envs
+                    fi
                 fi
-                if [ ! -z ${DEPLOYED_AT+x} ]; then
-                    sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
-                fi
-                cp -f $CURRENT_SOURCE_FILE "./staging/$CURRENT_ENV/values-stg.yaml"
+                cp -f -r "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
             fi
         else
             echo "$CURRENT_ENV not found in local code repository, but existing in helm-chart-$APP_NAME-values/staging repository."
@@ -53,6 +75,9 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
     done
     # The values-stg.yaml will always be synced when a Pull Request is closed.
     cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
+    if [ ! -z ${synced_staging_envs+x} ]; then
+        echo "synced_staging_envs=$( echo $synced_staging_envs )" >> $GITHUB_OUTPUT
+    fi
 
 elif [[ "$ENV_TO_DEPLOY" == "NO_SYNC" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
@@ -65,7 +90,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
     if [ "$IMAGE_TAG" != "" ]; then
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./prod/values-prod-tag.yaml"
     fi
-    if [ ! -z ${DEPLOYED_AT+x} ]; then
+    if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
     fi
     cp -f "./../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
@@ -77,10 +102,10 @@ else
     if [ "$IMAGE_TAG" != "" ]; then
         sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$ENV_TO_DEPLOY/values-stg-tag.yaml"
     fi
-    if [ ! -z ${DEPLOYED_AT+x} ]; then
+    if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
-    cp -f "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml" "./staging/$ENV_TO_DEPLOY/values-stg.yaml"
+    cp -f -r "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/" "./staging/"
 fi
 
 if [ -z "$(git diff --exit-code)" ]; then

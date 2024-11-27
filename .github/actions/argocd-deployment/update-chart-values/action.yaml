@@ -13,6 +13,7 @@ inputs:
     description: >
       Environment where the image will be deployed.
       If the value is 'ALL_ENV', then all environments will be updated.
+      If the value is 'NO_SYNC', then the action will only update the common staging values.
     required: true
   image_tag:
     description: 'The image tag that will be deployed.'
@@ -23,14 +24,22 @@ inputs:
   rollout:
     description: 'If true, the commit message will specify that is a Rollout.'
     required: false
+  synced_envs_as_outputs:
+    description: 'If true, the action will output the environments that were sycned.'
+    required: false
+    default: 'false'
   update_deployed_at:
     description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
     required: false
+    default: 'false'
 
 outputs:
   old_image_tag:
     description: 'The old Branch name.'
     value: ${{ steps.remote-values-sync.outputs.old_image_tag }}
+  synced_staging_envs:
+    description: 'The synced staging environments.'
+    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}
 
 runs:
   using: "composite"
@@ -45,5 +54,6 @@ runs:
         IMAGE_TAG: ${{ inputs.image_tag }}
         MANUAL: ${{ inputs.manual }}
         ROLLOUT: ${{ inputs.rollout }}
+        SYNCED_ENVS_AS_OUTPUTS: ${{ inputs.synced_envs_as_outputs }}
         UPDATE_DEPLOYED_AT: ${{ inputs.update_deployed_at }}
       shell: bash

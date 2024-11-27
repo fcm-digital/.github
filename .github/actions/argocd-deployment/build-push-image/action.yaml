@@ -15,6 +15,9 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
+  build_args:
+    description: 'Build arguments for the docker image.'
+    required: false
   cache_type:
     description: 'Enable cache for docker building (Available options: none, inline, registry)'
     required: false
@@ -59,11 +62,24 @@ runs:
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
 
+        echo "build_args_output<<EOF" >> $GITHUB_ENV
+
         if [[ -z "$GITHUB_ACTOR" ]]; then
           echo "USER_BUILDER=ArgoCD-Unknown-User" >> $GITHUB_ENV
         else
-          echo "USER_BUILDER=$GITHUB_ACTOR" >> $GITHUB_ENV
+          echo "USER_BUILDER=${GITHUB_ACTOR}" >> $GITHUB_ENV
         fi
+
+        echo "APP_REVISION=${{ inputs.image_tag }}" >> $GITHUB_ENV
+        echo "BRANCH=${{ inputs.branch_name }}" >> $GITHUB_ENV
+        echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
+        echo "COMMIT_AT=${{ inputs.commit_at }}" >> $GITHUB_ENV
+
+        for build_arg in $(echo ${{ inputs.build_args }} | tr -d '[:space:][:blank:]' | tr ',' '\n'); do
+          echo "${build_arg}" >> $GITHUB_ENV
+        done
+
+        echo "EOF" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Docker Buildx
@@ -78,11 +94,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          APP_REVISION=${{ inputs.image_tag }}
-          BRANCH=${{ inputs.branch_name }}
-          USER_BUILDER=${{ env.USER_BUILDER }}
-          COMMIT_SHA=${{ inputs.commit }}
-          COMMIT_AT=${{ inputs.commit_at }}
+          ${{ env.build_args_output }}
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
@@ -98,11 +110,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          APP_REVISION=${{ inputs.image_tag }}
-          BRANCH=${{ inputs.branch_name }}
-          USER_BUILDER=${{ env.USER_BUILDER }}
-          COMMIT_SHA=${{ inputs.commit }}
-          COMMIT_AT=${{ inputs.commit_at }}
+          ${{ env.build_args_output }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
@@ -120,11 +128,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          APP_REVISION=${{ inputs.image_tag }}
-          BRANCH=${{ inputs.branch_name }}
-          USER_BUILDER=${{ env.USER_BUILDER }}
-          COMMIT_SHA=${{ inputs.commit }}
-          COMMIT_AT=${{ inputs.commit_at }}
+          ${{ env.build_args_output }}
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
@@ -141,11 +145,7 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          APP_REVISION=${{ inputs.image_tag }}
-          BRANCH=${{ inputs.branch_name }}
-          USER_BUILDER=${{ env.USER_BUILDER }}
-          COMMIT_SHA=${{ inputs.commit }}
-          COMMIT_AT=${{ inputs.commit_at }}
+          ${{ env.build_args_output }}
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
