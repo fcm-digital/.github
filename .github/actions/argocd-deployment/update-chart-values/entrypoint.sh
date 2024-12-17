@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -xeuo pipefail
 
 # The branch name can only start with 'master' or 'main' if the branch is MASTER/MAIN ref.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && 
