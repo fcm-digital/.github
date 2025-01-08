@@ -9,6 +9,9 @@ inputs:
   environment:
     description: 'Environment where the jobs will be executed.'
     required: true
+  github_token_checkout:
+    description: 'The GitHub token to checkout the repositories.'
+    required: true
   image_tag:
     description: 'The image tag that will be used.'
     required: true
@@ -32,6 +35,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-values
 
@@ -40,6 +44,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: fcm-digital/helm-chart-template
+        token: ${{ inputs.github_token_checkout }}
         ref: ${{ inputs.helm_chart_template_version }}
         path: helm-chart-template
 
