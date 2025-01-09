@@ -79,7 +79,7 @@ runs:
           echo "${build_arg}" >> $GITHUB_ENV
         done
 
-        echo "EOF\n" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Docker Buildx
