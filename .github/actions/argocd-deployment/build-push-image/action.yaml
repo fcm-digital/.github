@@ -79,7 +79,7 @@ runs:
         for part in "${parts[@]}"; do
             part=$(echo "$part" | sed 's/ *= */=/g' | awk NF)
             if [[ -n "$part" ]]; then
-                echo "$part" >> $GITHUB_ENV
+                echo "'$part'" >> $GITHUB_ENV
             fi
         done
         unset IFS
