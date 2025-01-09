@@ -75,8 +75,12 @@ runs:
         echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
         echo "COMMIT_AT=${{ inputs.commit_at }}" >> $GITHUB_ENV
 
-        for build_arg in $(echo ${{ inputs.build_args }} | sed 's/ *= */=/g' | tr ',' '\n'); do
-          echo "${build_arg}" >> $GITHUB_ENV
+        IFS=',' read -r -d '' -a parts <<< "${{ inputs.build_args }}"
+        for part in "${parts[@]}"; do
+            part=$(echo "$part" | sed 's/ *= */=/g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            if [[ -n "$part" ]]; then
+                echo "${part}" >> $GITHUB_ENV
+            fi
         done
 
         echo "EOF" >> $GITHUB_ENV
