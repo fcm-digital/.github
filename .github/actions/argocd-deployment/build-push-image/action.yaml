@@ -82,6 +82,7 @@ runs:
                 echo "${part}" >> $GITHUB_ENV
             fi
         done
+        unset IFS
 
         echo "EOF" >> $GITHUB_ENV
       shell: bash
