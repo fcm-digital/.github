@@ -78,13 +78,13 @@ runs:
         IFS=',' read -r -d '' -a parts <<< "${{ inputs.build_args }}"
         for part in "${parts[@]}"; do
             part=$(echo "$part" | sed 's/ *= */=/g' | awk NF)
-            # if [[ -n "$part" ]]; then
-            #     echo "'$part'" >> $GITHUB_ENV
-            # fi
+            if [[ -n "$part" ]]; then
+                echo "${part}" >> $GITHUB_ENV
+            fi
         done
         unset IFS
 
-        echo "EOF" >> $GITHUB_ENV
+        echo "EOF\n" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Docker Buildx
