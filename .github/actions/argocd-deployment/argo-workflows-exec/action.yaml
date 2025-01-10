@@ -54,19 +54,8 @@ runs:
       with:
         version: ${{ inputs.helm_version }}
 
-    - id: helm-template-jobs
-      if: inputs.environment != 'prod' && inputs.workflow_name != null
-      name: Helm Template for Job Resources
-      run: ${{ github.action_path }}/entrypoint.sh
-      env:
-        APP_NAME: ${{ inputs.app_name }}
-        ENVIRONMENT: ${{ inputs.environment }}
-        IMAGE_TAG: ${{ inputs.image_tag }}
-        WORKFLOW_NAME: ${{ inputs.workflow_name }}
-      shell: bash
-
     - id: helm-template-argo-workflows
-      if: steps.helm-template-jobs.outcome == 'success' && inputs.environment != 'prod' && inputs.workflow_name != null
+      if: inputs.environment != 'prod' && inputs.workflow_name != null
       name: Helm Template for Argo Workflows
       run: ${{ github.action_path }}/entrypoint.sh
       env:
