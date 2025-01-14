@@ -25,14 +25,16 @@ fi
 echo $VALUES
 
 cd ./helm-chart-template
-helm template . -s templates/job.yaml --name-template=$APP_NAME --namespace=$ENVIRONMENT $VALUES --set currentTag=$IMAGE_TAG > jobs.yaml
+helm template . -s templates/job.yaml --name-template=$APP_NAME --namespace=$ENVIRONMENT $VALUES --set currentTag=$IMAGE_TAG > "jobs-$ENVIRONMENT.yaml"
 
 
 delimiter="---"
 # delimiter="# Source: fcm-platform-helm-chart/templates/job.yaml"
 # sed -i 's/---//g' ./kube/values/itinerary-core/jobs.yaml
 
-csplit -zs --suppress-matched jobs.yaml /"$delimiter"/ '{*}'
+csplit -zs --suppress-matched "jobs-$ENVIRONMENT.yaml" /"$delimiter"/ '{*}'
+
+ls -la
 
 for file in xx*; do
     file_name=$(cat "$file" | grep 'type: ' --max-count=1 | awk '{ print $2 }')
