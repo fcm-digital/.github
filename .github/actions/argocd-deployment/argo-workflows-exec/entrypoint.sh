@@ -34,8 +34,6 @@ delimiter="---"
 
 csplit -zs --suppress-matched "jobs-$ENVIRONMENT.yaml" /"$delimiter"/ '{*}'
 
-ls -la
-
 for file in xx*; do
     file_name=$(cat "$file" | grep 'type: ' --max-count=1 | awk '{ print $2 }')
     if [ -z "$file_name" ]; then
@@ -45,9 +43,14 @@ for file in xx*; do
     fi
 done
 
+ls -la
+
 helm template . -s templates/argo-workflows-orchestration.yaml --name-template=$APP_NAME --namespace=$ENVIRONMENT $VALUES --set currentTag=$IMAGE_TAG > argo-workflows.yaml
 
 csplit -zs --suppress-matched argo-workflows.yaml /"$delimiter"/ '{*}'
+
+echo "------"
+ls -la
 
 for file in xx*; do
     workflow=$(cat "$file" | grep "app.kubernetes.io/name: " --max-count=1 | awk '{ print $2 }')
