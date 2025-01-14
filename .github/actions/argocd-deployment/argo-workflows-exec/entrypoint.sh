@@ -22,8 +22,6 @@ if [ ! -z "${VALUES_LOCAL_FILE}" ]; then
     done
 fi
 
-echo $VALUES
-
 cd ./helm-chart-template
 helm template . -s templates/job.yaml --name-template=$APP_NAME --namespace=$ENVIRONMENT $VALUES --set currentTag=$IMAGE_TAG > "jobs-$ENVIRONMENT.yaml"
 
@@ -43,14 +41,10 @@ for file in xx*; do
     fi
 done
 
-ls -la
 
 helm template . -s templates/argo-workflows-orchestration.yaml --name-template=$APP_NAME --namespace=$ENVIRONMENT $VALUES --set currentTag=$IMAGE_TAG > argo-workflows.yaml
 
 csplit -zs --suppress-matched argo-workflows.yaml /"$delimiter"/ '{*}'
-
-echo "------"
-ls -la
 
 for file in xx*; do
     workflow=$(cat "$file" | grep "app.kubernetes.io/name: " --max-count=1 | awk '{ print $2 }')
@@ -61,3 +55,6 @@ for file in xx*; do
         rm "$file"
     fi
 done
+
+echo "------"
+ls -la
