@@ -55,6 +55,3 @@ for file in xx*; do
         rm "$file"
     fi
 done
-
-echo "------"
-ls -la
