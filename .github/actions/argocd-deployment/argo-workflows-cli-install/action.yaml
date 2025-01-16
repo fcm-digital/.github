@@ -18,3 +18,4 @@ runs:
         curl -sSL -o argo-linux-amd64 https://github.com/argoproj/argo-workflows/releases/download/${{ inputs.argo_workflows_cli_version }}/argo-linux-amd64.gz
         install -m 555 argo-linux-amd64 /usr/local/bin/argo
         rm argo-linux-amd64
+        argo version
