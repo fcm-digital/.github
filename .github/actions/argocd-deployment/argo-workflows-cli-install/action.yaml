@@ -18,5 +18,5 @@ runs:
         curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${{ inputs.argo_workflows_cli_version }}/argo-linux-amd64.gz
         gunzip argo-linux-amd64.gz
         chmod +x argo-linux-amd64
-        mv ./argo-$ARGO_OS-amd64 /usr/local/bin/argo
+        mv ./argo-linux-amd64 /usr/local/bin/argo
         argo version
