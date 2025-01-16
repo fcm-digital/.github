@@ -33,7 +33,7 @@ delimiter="---"
 csplit -zs --suppress-matched "jobs-$ENVIRONMENT.yaml" /"$delimiter"/ '{*}'
 
 for file in xx*; do
-    file_name=$(cat "$file" | grep 'type: ' --max-count=1 | awk '{ print $2 }')
+    file_name=$(< "$file" | grep 'type: ' --max-count=1 | awk '{ print $2 }')
     if [ -z "$file_name" ]; then
         rm "$file"
     else
@@ -47,7 +47,7 @@ helm template . -s templates/argo-workflows-orchestration.yaml --name-template=$
 csplit -zs --suppress-matched argo-workflows.yaml /"$delimiter"/ '{*}'
 
 for file in xx*; do
-    workflow=$(cat "$file" | grep "app.kubernetes.io/name: " --max-count=1 | awk '{ print $2 }')
+    workflow=$(< "$file" | grep "app.kubernetes.io/name: " --max-count=1 | awk '{ print $2 }')
     
     if [[ "$workflow" == "$WORKFLOW_NAME" ]]; then
         mv "$file" "${WORKFLOW_NAME}.yaml"
