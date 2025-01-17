@@ -1,6 +1,6 @@
 
 if [[ -f $ARGO_WORKFLOW_FILE ]]; then
-    argo submit $ARGO_WORKFLOW_FILE --watch
+    argo submit $ARGO_WORKFLOW_FILE --wait
 else
     echo "File $ARGO_WORKFLOW_FILE not found"
     exit 1
