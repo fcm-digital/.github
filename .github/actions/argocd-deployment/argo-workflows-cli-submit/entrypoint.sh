@@ -1,0 +1,7 @@
+
+if [[ -f $ARGO_WORKFLOW_FILE ]]; then
+    argo submit --watch --wait $ARGO_WORKFLOW_FILE
+else
+    echo "File $ARGO_WORKFLOW_FILE not found"
+    exit 1
+fi
