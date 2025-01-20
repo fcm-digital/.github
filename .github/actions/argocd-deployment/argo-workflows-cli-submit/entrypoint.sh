@@ -1,3 +1,6 @@
+#!/bin/bash
+
+set -euo pipefail
 
 if [[ -f $ARGO_WORKFLOW_FILE ]]; then
     argo submit $ARGO_WORKFLOW_FILE --wait
