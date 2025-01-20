@@ -12,7 +12,6 @@ inputs:
   helm_chart_template_ref:
     description: 'The helm-chart-template branch name.'
     required: false
-    default: master
 
 outputs:
   branch_name:
@@ -103,7 +102,9 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v4
-      if: (inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]')
+      if: inputs.github_token_checkout != '' &&
+          github.event.pull_request.user.login != 'dependabot[bot]' && 
+          inputs.helm_chart_template_ref != ''
       with:
         repository: fcm-digital/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
