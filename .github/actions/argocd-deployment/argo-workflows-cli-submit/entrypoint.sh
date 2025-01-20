@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euox pipefail
+set -euo pipefail
 
 if [[ -f $ARGO_WORKFLOW_FILE ]]; then
     echo "Submitting Argo Workflow file $ARGO_WORKFLOW_FILE"
