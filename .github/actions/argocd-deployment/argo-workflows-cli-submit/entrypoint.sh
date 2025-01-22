@@ -6,7 +6,7 @@ WORKFLOWS_PATH="./helm-chart-template"
 
 for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
     ARGO_WORKFLOW_FILE="$WORKFLOWS_PATH/$WORKFLOW_NAME-$env.yaml"
-    if [[ -f $WORKFLOW_FILE ]]; then
+    if [[ -f $ARGO_WORKFLOW_FILE ]]; then
         echo "Submitting Argo Workflow file $ARGO_WORKFLOW_FILE"
         argo submit $ARGO_WORKFLOW_FILE
         if [[ $? -eq 0 ]]; then
