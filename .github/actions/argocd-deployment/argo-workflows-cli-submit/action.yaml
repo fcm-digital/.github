@@ -14,8 +14,11 @@ inputs:
   argo_token:
     description: 'Argo Workflows auth token.'
     required: true
-  argo_workflow_file:
-    description: 'Argo Workflows YAML file to submit.'
+  environments:
+    description: 'Environments list.'
+    required: true
+  workflow_name:
+    description: 'Workflow Name.'
     required: true
 
 runs:
@@ -29,7 +32,8 @@ runs:
         ARGO_NAMESPACE: ${{ inputs.argo_namespace }}
         ARGO_SERVER: ${{ inputs.argo_server }}
         ARGO_TOKEN: ${{ inputs.argo_token }}
-        ARGO_WORKFLOW_FILE: ${{ inputs.argo_workflow_file }}
         ARGO_HTTP1: true
         ARGO_SECURE: true
         KUBECONFIG: /dev/null
+        ENVIRONMENTS: ${{ inputs.environments }}
+        WORKFLOW_NAME: ${{ inputs.workflow_name }}

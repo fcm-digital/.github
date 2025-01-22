@@ -6,8 +6,8 @@ inputs:
   app_name:
     description: 'The application name.'
     required: true
-  environment:
-    description: 'Environment where the jobs will be executed.'
+  environments:
+    description: 'Environments list.'
     required: true
   github_token_checkout:
     description: 'The GitHub token to checkout the repositories.'
@@ -19,11 +19,11 @@ inputs:
     description: 'Helm Chart Template Version'
     required: true
   helm_version:
-    description: 'Helm Version'
+    description: 'Helm Version.'
     required: false
     default: 'v3.15.4'
   workflow_name:
-    description: 'Workflow File Name'
+    description: 'Workflow Name.'
     required: false
 
 runs:
@@ -55,12 +55,12 @@ runs:
         version: ${{ inputs.helm_version }}
 
     - id: helm-template-argo-workflows
-      if: inputs.environment != 'prod' && inputs.workflow_name != null
+      if: inputs.workflow_name != null
       name: Helm Template for Argo Workflows
       run: ${{ github.action_path }}/entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
-        ENVIRONMENT: ${{ inputs.environment }}
+        ENVIRONMENTS: ${{ inputs.environments }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         WORKFLOW_NAME: ${{ inputs.workflow_name }}
       shell: bash
