@@ -32,7 +32,6 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
 
     for file in xx*; do
         file_name=$(< $file grep 'type: ' --max-count=1 | awk '{ print $2 }')
-        echo $file_name
         if [ -z "$file_name" ]; then
             rm "$file"
         else
@@ -52,5 +51,7 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
             rm "$file"
         fi
     done
+
+    ls -la
 
 done
