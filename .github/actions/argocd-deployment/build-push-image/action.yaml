@@ -145,7 +145,6 @@ runs:
           echo "EOF" >> $GITHUB_ENV
         fi
 
-
         #! Set up docker-build 'BUILD ARGS'
 
         echo "build_args_env<<EOF" >> $GITHUB_ENV
@@ -190,6 +189,17 @@ runs:
           fi
           echo "EOF" >> $GITHUB_ENV
         fi
+
+        echo "Print variables:"
+        echo "REPO_URL=${{ env.REPO_URL }}"
+        echo "REPO_URL_STAGE=${{ env.REPO_URL_STAGE }}"
+        echo "CACHE_FROM=${{ env.cache_from_env }}"
+        echo "STAGE_CACHE_FROM=${{ env.stage_cache_from_env }}"
+        echo "CACHE_TO=${{ env.cache_to_env }}"
+        echo "STAGE_CACHE_TO=${{ env.stage_cache_to_env }}"
+        echo "BUILD_ARGS=${{ env.build_args_env }}"
+        echo "TAGS=${{ env.tags_env }}"
+        echo "TAGS_STAGE=${{ env.tags_stage_env }}"
 
       shell: bash
 
