@@ -137,7 +137,7 @@ runs:
     - id: stage-cache-staging
       name: "(STAGE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: inputs.cache_type == 'stage-and-registry' && inputs.target != "" &&
+      if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
@@ -158,7 +158,7 @@ runs:
     # - id: stage-cache-prod
     #   name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
     #   uses: docker/build-push-action@v5
-    #   if: inputs.cache_type == 'stage-and-registry' && inputs.target != "" &&
+    #   if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
     #       (inputs.branch_name == 'master' || inputs.branch_name == 'main')
     #   with:
     #     push: ${{ inputs.push }}
@@ -180,7 +180,7 @@ runs:
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'registry' ||
-          (inputs.cache_type == 'stage-and-registry' && inputs.target != "" && steps.stage-cache-staging.outcome == 'success') &&
+          (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-staging.outcome == 'success') &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
@@ -204,7 +204,7 @@ runs:
     #   name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
     #   uses: docker/build-push-action@v5
     #   if: (inputs.cache_type == 'registry' ||
-    #       (inputs.cache_type == 'stage-and-registry' && inputs.target != "" && steps.stage-cache-prod.outcome == 'success')) &&
+    #       (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
     #       (inputs.branch_name == 'master' || inputs.branch_name == 'main')
     #   with:
     #     push: ${{ inputs.push }}
