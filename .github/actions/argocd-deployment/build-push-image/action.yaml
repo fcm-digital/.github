@@ -155,26 +155,26 @@ runs:
         tags: |
           ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
 
-    # - id: stage-cache-prod
-    #   name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
-    #   uses: docker/build-push-action@v5
-    #   if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
-    #       (inputs.branch_name == 'master' || inputs.branch_name == 'main')
-    #   with:
-    #     push: ${{ inputs.push }}
-    #     pull: ${{ inputs.pull }}
-    #     file: ${{ inputs.file }}
-    #     build-args: |
-    #       ${{ env.build_args_env }}
-    #     cache-from: |
-    #       type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
-    #     cache-to: |
-    #       type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache,mode=max
-    #     context: ${{ inputs.context }}
-    #     target: ${{ inputs.target }}
-    #     tags: |
-    #       ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
-    #       ${{ env.REPO_URL_STAGE }}:latest
+    - id: stage-cache-prod
+      name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
+          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          ${{ env.build_args_env }}
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
+        cache-to: |
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache,mode=max
+        context: ${{ inputs.context }}
+        target: ${{ inputs.target }}
+        tags: |
+          ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL_STAGE }}:latest
 
     - id: registry-cache-staging
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -200,25 +200,25 @@ runs:
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
 
-    # - id: registry-cache-prod
-    #   name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
-    #   uses: docker/build-push-action@v5
-    #   if: (inputs.cache_type == 'registry' ||
-    #       (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
-    #       (inputs.branch_name == 'master' || inputs.branch_name == 'main')
-    #   with:
-    #     push: ${{ inputs.push }}
-    #     pull: ${{ inputs.pull }}
-    #     file: ${{ inputs.file }}
-    #     build-args: |
-    #       ${{ env.build_args_env }}
-    #     cache-from: |
-    #       type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
-    #       type=registry,ref=${{ env.REPO_URL }}:latest-cache
-    #     cache-to: |
-    #       type=registry,ref=${{ env.REPO_URL }}:latest-cache,mode=max
-    #     context: ${{ inputs.context }}
-    #     tags: |
-    #       ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-    #       ${{ env.REPO_URL }}:${{ inputs.image_tag }}
-    #       ${{ env.REPO_URL }}:latest
+    - id: registry-cache-prod
+      name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
+      uses: docker/build-push-action@v5
+      if: (inputs.cache_type == 'registry' ||
+          (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
+          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+      with:
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+        file: ${{ inputs.file }}
+        build-args: |
+          ${{ env.build_args_env }}
+        cache-from: |
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
+          type=registry,ref=${{ env.REPO_URL }}:latest-cache
+        cache-to: |
+          type=registry,ref=${{ env.REPO_URL }}:latest-cache,mode=max
+        context: ${{ inputs.context }}
+        tags: |
+          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:latest
