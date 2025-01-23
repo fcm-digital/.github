@@ -179,8 +179,8 @@ runs:
     - id: registry-cache-staging
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
-      if: (inputs.cache_type == 'registry' ||
-          (inputs.cache_type == 'stage-and-registry' && inputs.target != "" && steps.stage-cache-staging.outcome == 'success')) &&
+      if: inputs.cache_type == 'registry' ||
+          (inputs.cache_type == 'stage-and-registry' && inputs.target != "" && steps.stage-cache-staging.outcome == 'success') &&
           (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
