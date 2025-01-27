@@ -56,7 +56,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
             if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_IMAGE_TAG_ENV" == "latest" || "$CURRENT_ENV" == "sandbox" ]]; then
 
                 # Skip the deployment on sandbox if the DEPLOY_ON_SANDBOX is false.
-                [[ $DEPLOY_ON_SANDBOX == false ]] && continue
+                [[ $DEPLOY_ON_SANDBOX == false && "$CURRENT_ENV" == "sandbox"]] && continue
 
                 # Update the currentTag to the new image tag if it is not empty.
                 if [ "$IMAGE_TAG" != "" ]; then
