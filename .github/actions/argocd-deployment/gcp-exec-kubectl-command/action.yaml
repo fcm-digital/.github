@@ -1,0 +1,43 @@
+---
+name: 'GCP Execute Kubectl Command'
+description: 'Execute a kubectl command on a GKE cluster.'
+
+inputs:
+  gcp_json:
+    description: 'The Service Account that contains the permissions to GKE.'
+    required: true
+  cluster_name:
+    description: 'The name of the GKE cluster.'
+    required: true
+    default: 'fcm-platform-stg-euw1'
+  location:
+    description: 'The location of the GKE cluster.'
+    required: true
+    default: 'europe-west1'
+  kubectl_command:
+    description: 'The kubectl command to be executed.'
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - id: setup-gcp-credentials
+      name: 'Set Up Google Credentials'
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.gcp_json }}
+        install_components: 'gke-gcloud-auth-plugin'
+
+    - id: get-credentials
+      name: 'Get GKE Credentials'
+      uses: 'google-github-actions/get-gke-credentials@v2'
+      with:
+        cluster_name: ${{ inputs.cluster_name }}
+        location: ${{ inputs.location }}
+
+    - id: execute-kubectl-command
+      name: 'Execute Kubectl Command'
+      run: |
+        kubectl ${{ inputs.kubectl_command }}
+      shell: bash
