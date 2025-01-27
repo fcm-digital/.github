@@ -6,14 +6,17 @@ inputs:
   gcp_json:
     description: 'The Service Account that contains the permissions to GKE.'
     required: true
-  cluster_name:
-    description: 'The name of the GKE cluster.'
+  project_id:
+    description: 'The GCP project ID.'
     required: true
-    default: 'fcm-platform-stg-euw1'
   location:
     description: 'The location of the GKE cluster.'
     required: true
     default: 'europe-west1'
+  cluster_name:
+    description: 'The name of the GKE cluster.'
+    required: true
+    default: 'fcm-platform-stg-euw1'
   kubectl_command:
     description: 'The kubectl command to be executed.'
     required: true
@@ -26,6 +29,7 @@ runs:
       name: 'Set Up Google Credentials'
       uses: google-github-actions/auth@v2
       with:
+        project_id: ${{ inputs.project_id }}
         credentials_json: ${{ inputs.gcp_json }}
 
     - name: 'Set up Cloud SDK'
