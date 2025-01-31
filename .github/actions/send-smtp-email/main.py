@@ -9,7 +9,7 @@ from email import encoders
 def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port: int,
         smtp_username: str, smtp_password: str, email_from: str, email_to: str,
         email_cc: str, email_bcc: str, email_subject: str, email_body: str,
-        email_attachments: str) -> None:
+        email_body_hyperlink: str, email_body_hyperlink_msg: str, email_attachments: str) -> None:
   """Sends an email with attachment.
   Args:
     smtp_enable_tls (bool): Enable TLS for SMTP.
@@ -23,6 +23,8 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     email_bcc (str): BCC email addresses.
     email_subject (str): Email subject.
     email_body (str): Email body.
+    email_body_hyperlink (str): Email body hyperlink.
+    email_body_hyperlink_msg: (str): Email body hyperlink message.
     email_attachments (str): Email attachments.
   """
 
@@ -36,7 +38,10 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     msg['Bcc'] = ",".join([email_bcc])
   msg['Date'] = formatdate(localtime=True)
   msg['Subject'] = email_subject
-  msg.attach(MIMEText(email_body))
+  msg.attach(MIMEText(email_body, "plain"))
+
+  if email_body_hyperlink in locals() and email_body_hyperlink_msg in locals():
+    msg.attach(MIMEText(f'<a href="{email_body_hyperlink}">{email_body_hyperlink_msg}</a>', 'html'))
 
   if email_attachments in locals():
     with open(email_attachments, "rb") as attachment:
@@ -73,6 +78,8 @@ def main() -> None:
     email_bcc=getenv('EMAIL_BCC'),
     email_subject=getenv('EMAIL_SUBJECT'),
     email_body=getenv('EMAIL_BODY'),
+    email_body_hyperlink=getenv('EMAIL_BODY_HYPERLINK'),
+    email_body_hyperlink_msg=getenv('EMAIL_BODY_HYPERLINK_MSG'),
     email_attachments=getenv('EMAIL_ATTACHMENTS'),
   )
 

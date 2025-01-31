@@ -36,6 +36,12 @@ inputs:
   email_body:
     description: 'Email body to be sent.'
     required: true
+  email_body_hyperlink:
+    description: 'Email body hyperlink.'
+    required: false
+  email_body_hyperlink_msg:
+    description: 'Email body hyperlink message.'
+    required: false
   email_attachments:
     description: 'Email attachment Files.'
     required: false
@@ -60,6 +66,8 @@ runs:
         EMAIL_BCC: ${{ inputs.email_bcc }}
         EMAIL_SUBJECT: ${{ inputs.email_subject }}
         EMAIL_BODY: ${{ inputs.email_body }}
+        EMAIL_BODY_HYPERLINK: ${{ inputs.email_body_hyperlink }}
+        EMAIL_BODY_HYPERLINK_MSG: ${{ inputs.email_body_hyperlink_msg }}
         EMAIL_ATTACHMENTS: ${{ inputs.email_attachments }}
       run: python ${{ github.action_path }}/main.py
       shell: bash
