@@ -40,10 +40,10 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body, "plain"))
 
-  if email_body_hyperlink in locals() and email_body_hyperlink_msg in locals():
-    msg.attach(MIMEText(f'<a href="{email_body_hyperlink}">{email_body_hyperlink_msg}</a>', 'html'))
+  if email_body_hyperlink and email_body_hyperlink_msg:
+    msg.attach(MIMEText(f'<a href="{email_body_hyperlink}">{email_body_hyperlink_msg}</a>', "html"))
 
-  if email_attachments in locals():
+  if email_attachments:
     with open(email_attachments, "rb") as attachment:
       part = MIMEBase('application', "octet-stream")
       part.set_payload(attachment.read())
