@@ -40,14 +40,19 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   msg['Subject'] = email_subject
 
   if email_body:
-    body_msg = MIMEText(email_body, "plain")
-    msg.attach(body_msg)
+    msg.attach(MIMEText(email_body, "plain"))
 
   print("message1: ", msg)
 
   if email_body_hyperlink and email_body_hyperlink_msg:
-    body_msg_hyperlink = MIMEText(f'<a href="{email_body_hyperlink}">{email_body_hyperlink_msg}</a>', "html")
-    msg.attach(body_msg_hyperlink)
+    html=f"""
+    <html>
+      <body>
+        <a href="{email_body_hyperlink}">{email_body_hyperlink_msg}</a>.
+      </body>
+    </html>
+    """
+    msg.attach(MIMEText(html, "html"))
 
   print("message2: ", msg)
 
