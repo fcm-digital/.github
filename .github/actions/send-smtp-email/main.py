@@ -38,12 +38,13 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   msg['Subject'] = email_subject
   msg.attach(MIMEText(email_body))
 
-  with open(email_attachments, "rb") as attachment:
-    part = MIMEBase('application', "octet-stream")
-    part.set_payload(attachment.read())
-    encoders.encode_base64(part)
-    part.add_header('Content-Disposition', 'attachment', filename=email_attachments)
-    msg.attach(part)
+  if email_attachments in locals():
+    with open(email_attachments, "rb") as attachment:
+      part = MIMEBase('application', "octet-stream")
+      part.set_payload(attachment.read())
+      encoders.encode_base64(part)
+      part.add_header('Content-Disposition', 'attachment', filename=email_attachments)
+      msg.attach(part)
 
   try:
     smtp = SMTP(smtp_server_address, smtp_server_port)
