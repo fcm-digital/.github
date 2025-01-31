@@ -42,8 +42,6 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
   if email_body:
     msg.attach(MIMEText(email_body, "plain"))
 
-  print("message1: ", msg)
-
   if email_body_hyperlink and email_body_hyperlink_msg:
     html=f"""
     <html>
@@ -53,8 +51,6 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     </html>
     """
     msg.attach(MIMEText(html, "html"))
-
-  print("message2: ", msg)
 
   if email_attachments:
     with open(email_attachments, "rb") as attachment:
