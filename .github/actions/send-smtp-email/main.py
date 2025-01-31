@@ -28,7 +28,7 @@ def send_mail(smtp_enable_tls: bool, smtp_server_address: str, smtp_server_port:
     email_attachments (str): Email attachments.
   """
 
-  msg = MIMEMultipart()
+  msg = MIMEMultipart("alternative")
   recipients = email_cc.split(",") + email_bcc.split(",") + [email_to]
   msg['From'] = email_from
   msg['To'] = email_to
