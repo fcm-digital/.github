@@ -102,7 +102,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
     if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
     fi
-    cp -f "./../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
+    cp -f -r "./../kube/values/$APP_NAME/prod/" "./prod/"
 
 else
     cd helm-chart-$APP_NAME-values-staging/
