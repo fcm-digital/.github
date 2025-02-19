@@ -15,6 +15,11 @@ inputs:
     description: 'The GCP repository that contains the Artifact Registry.'
     required: false
 
+outputs:
+  last_master_image:
+    description: 'The last master image from Google Artifact Registry.'
+    value: ${{ steps.get-last-master-image.outputs.last_master_image }}
+
 runs:
   using: "composite"
   steps:
