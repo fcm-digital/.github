@@ -30,8 +30,17 @@ runs:
           --include-tags \
           --filter="tags:(master) AND tags:(master-*)" \
           --sort-by=~createTime --limit=1)
+        echo "--------"
         echo $MASTER_IMAGE
+        echo "--------"
+        echo $MASTER_IMAGE | tail -n +2
+        echo "--------"
+        echo $MASTER_IMAGE | tail -n +2 | grep latest
+        echo "--------"
+        echo $MASTER_IMAGE | tail -n +2 | grep latest | awk '{print $3}'
+        echo "--------"
         echo $MASTER_IMAGE | tail -n +2 | grep latest | awk '{print $3}' | awk -F, '{print $3}'
+        echo "--------"
         echo "last_master_image=$(echo $MASTER_IMAGE | tail -n +2 | grep latest | awk '{print $3}' | awk -F, '{print $3}')" >> $GITHUB_OUTPUT
       shell: bash
       
