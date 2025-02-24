@@ -16,15 +16,14 @@ outputs:
     description: 'Name of the environment'
     value: ${{ steps.get-env.outputs.env }}
 
-env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-
 runs:
   using: 'composite'
   steps:
     - shell: bash
       name: "Get environment from branch name"
       id: get-env
+      env:
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       run: |
         if [[ "${{ env.BRANCH_NAME }}" != "${{ inputs.main_branch }}" ]]
         then
