@@ -25,7 +25,7 @@ inputs:
   helm_version:
     description: 'Helm Version'
     required: false
-    default: 'v3.14.3'
+    default: 'v3.15.4'
   kube_linter_version:
     description: 'Kube Linter Version'
     required: false

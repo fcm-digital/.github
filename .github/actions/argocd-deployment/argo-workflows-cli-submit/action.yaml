@@ -1,0 +1,39 @@
+---
+name: 'Argo Workflows CLI Submit workflow'
+description: 'Argo Workflows commands for its CLI submission.'
+
+inputs:
+  argo_namespace:
+    description: 'Argo Workflows namespace.'
+    required: false
+    default: 'argo-workflows'
+  argo_server:
+    description: 'Argo Workflows server URL.'
+    required: false
+    default: 'argo-workflows.stg.fcm.digital:443'
+  argo_token:
+    description: 'Argo Workflows auth token.'
+    required: true
+  environments:
+    description: 'Environments list.'
+    required: true
+  workflow_name:
+    description: 'Workflow Name.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: submit-workflow
+      name: 'Submit Argo Workflow'
+      shell: bash
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        ARGO_NAMESPACE: ${{ inputs.argo_namespace }}
+        ARGO_SERVER: ${{ inputs.argo_server }}
+        ARGO_TOKEN: ${{ inputs.argo_token }}
+        ARGO_HTTP1: true
+        ARGO_SECURE: true
+        KUBECONFIG: /dev/null
+        ENVIRONMENTS: ${{ inputs.environments }}
+        WORKFLOW_NAME: ${{ inputs.workflow_name }}
