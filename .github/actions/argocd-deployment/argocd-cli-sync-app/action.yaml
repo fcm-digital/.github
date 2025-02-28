@@ -24,8 +24,12 @@ inputs:
     required: false
     default: 'false'
   env_to_deploy:
-    description: 'Environment where the image will be deployed.'
+    description: 'Environment or Environments where the image will be deployed.'
     required: true
+  sync_for_all_envs:
+    description: 'If true, the action will sync the app for all environments (ALL_ENV).'
+    required: false
+    default: 'false'
 
 outputs:
   live_image_tag:
@@ -35,9 +39,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get live Image Tag
+    - id: get-live-image-tag
       if: inputs.changelog_slack_message == 'true' && inputs.env_to_deploy == 'prod'
-      id: get-live-image-tag
+      name: 'Get live Image Tag'
       shell: bash
       run: ${{ github.action_path }}/get_live_imagetag_entrypoint.sh
       env:
@@ -48,8 +52,22 @@ runs:
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
 
     - id: argocd-cli-sync-app
+      if: inputs.sync_for_all_envs == 'false'
       name: 'ArgoCD CLI Sync app'
       run: ${{ github.action_path }}/sync_app_entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+      shell: bash
+
+    - id: argocd-cli-sync-all-staging-envs
+      if: inputs.sync_for_all_envs == 'true'
+      name: 'ArgoCD CLI Sync All Staging Envs'
+      run: ${{ github.action_path }}/sync_apps_staging_entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}
         APP_REGION: ${{ inputs.app_region }}

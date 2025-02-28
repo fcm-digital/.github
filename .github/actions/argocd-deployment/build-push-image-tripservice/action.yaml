@@ -1,6 +1,6 @@
 ---
-name: 'Build & Push Docker image'
-description: 'Build and Push Docker image using default tags'
+name: 'Build & Push Docker image for TripService'
+description: 'Build and Push Docker image using default tags for TripService'
 inputs:
   app_name:
     description: 'Name of the app to deploy.'
@@ -15,9 +15,6 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
-  build_args:
-    description: 'Build arguments for the docker image.'
-    required: false
   cache_type:
     description: 'Enable cache for docker building (Available options: none, inline, registry)'
     required: false
@@ -27,6 +24,12 @@ inputs:
     required: true
   commit_at:
     description: 'The time where the commit was created.'
+    required: true
+  oban_pro_fingerprint:
+    description: 'Oban Pro fingerprint.'
+    required: true
+  oban_pro_key:
+    description: 'Oban Pro key.'
     required: true
   context:
     description: 'Context to build image (default: ./).'
@@ -47,9 +50,6 @@ inputs:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
-  target:
-    description: 'Sets the target stage to build.'
-    required: false
 
 
 runs:
@@ -62,24 +62,16 @@ runs:
           echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
         fi
 
-        echo "build_args_output<<EOF" >> $GITHUB_ENV
-
         if [[ -z "$GITHUB_ACTOR" ]]; then
           echo "USER_BUILDER=ArgoCD-Unknown-User" >> $GITHUB_ENV
         else
-          echo "USER_BUILDER=${GITHUB_ACTOR}" >> $GITHUB_ENV
+          echo "USER_BUILDER=$GITHUB_ACTOR" >> $GITHUB_ENV
         fi
 
-        echo "APP_REVISION=${{ inputs.image_tag }}" >> $GITHUB_ENV
-        echo "BRANCH=${{ inputs.branch_name }}" >> $GITHUB_ENV
-        echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
-        echo "COMMIT_AT=${{ inputs.commit_at }}" >> $GITHUB_ENV
-
-        for build_arg in $(echo ${{ inputs.build_args }} | tr -d '[:space:][:blank:]' | tr ',' '\n'); do
-          echo "${build_arg}" >> $GITHUB_ENV
-        done
-
-        echo "EOF" >> $GITHUB_ENV
+        if [[ -z "$PRIVATE_GIT_REPO_KEY" ]]; then
+          echo "PRIVATE_GIT_REPO_KEY Must be defined as environment variable."
+          exit 1
+        fi
       shell: bash
 
     - name: Set up Docker Buildx
@@ -94,9 +86,15 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          ${{ env.build_args_output }}
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
+          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
-        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -110,11 +108,17 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          ${{ env.build_args_output }}
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
+          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
         cache-to: type=inline
         context: ${{ inputs.context }}
-        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -128,11 +132,17 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          ${{ env.build_args_output }}
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
+          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         cache-from: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
         cache-to: type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
         context: ${{ inputs.context }}
-        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
@@ -145,9 +155,15 @@ runs:
         pull: ${{ inputs.pull }}
         file: ${{ inputs.file }}
         build-args: |
-          ${{ env.build_args_output }}
+          APP_REVISION=${{ inputs.image_tag }}
+          BRANCH=${{ inputs.branch_name }}
+          USER_BUILDER=${{ env.USER_BUILDER }}
+          COMMIT_SHA=${{ inputs.commit }}
+          COMMIT_AT=${{ inputs.commit_at }}
+          OBAN_PRO_FINGERPRINT=${{ inputs.oban_pro_fingerprint }}
+          OBAN_PRO_KEY=${{ inputs.oban_pro_key }}
+          "PRIVATE_GIT_REPO_KEY=${{ env.PRIVATE_GIT_REPO_KEY }}"
         context: ${{ inputs.context }}
-        target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}

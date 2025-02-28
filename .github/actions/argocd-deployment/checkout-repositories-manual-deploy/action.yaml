@@ -17,7 +17,7 @@ inputs:
     required: true
   image_tag:
     description: 'Specific Image Tag to Deploy.'
-    required: true
+    required: false
 
 outputs:
   env_to_deploy:
