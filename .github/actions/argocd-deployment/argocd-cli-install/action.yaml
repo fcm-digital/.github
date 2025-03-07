@@ -5,8 +5,8 @@ description: 'ArgoCD commands for its CLI installation.'
 inputs:
   argocd_cli_version:
     required: false
-    default: 'v2.8.1'
-    description: 'ArgoCD CLI version (default: v2.8.1).'
+    default: 'v2.10.9'
+    description: 'ArgoCD CLI version (default: v2.10.9).'
 
 runs:
   using: "composite"
