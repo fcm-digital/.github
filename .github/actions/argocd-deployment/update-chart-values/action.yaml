@@ -9,6 +9,10 @@ inputs:
   branch_name:
     description: 'Current branch name.'
     required: true
+  deploy_on_sandbox:
+    description: 'If "true" the deployment in the ALL_ENV stage will be done on the sandbox environment.'
+    required: false
+    default: 'true'
   env_to_deploy:
     description: >
       Environment where the image will be deployed.
@@ -50,6 +54,7 @@ runs:
       env:
         APP_NAME: ${{ inputs.app_name }}
         BRANCH_NAME: ${{ inputs.branch_name }}
+        DEPLOY_ON_SANDBOX: ${{ inputs.deploy_on_sandbox }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         MANUAL: ${{ inputs.manual }}
