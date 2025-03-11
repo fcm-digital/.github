@@ -26,7 +26,7 @@ outputs:
     value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
   image_tag:
     description: 'The new Image Tag that will be built.'
-    value: ${{ steps.init-context-vars.outputs.image_tag }}
+    value: ${{ steps.init-image-tag.outputs.image_tag }}
   commit:
     description: 'The commit Id.'
     value: ${{ steps.init-context-vars.outputs.short_sha }}
@@ -49,14 +49,21 @@ runs:
           if [[ "${{ inputs.create_image }}" == "true" ]]; then
             echo "current_time=$( date -u +"%Y-%m-%dT%H%M" )" >> $GITHUB_OUTPUT
             echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
-            echo "image_tag=$( echo ${{ inputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }} )" >> $GITHUB_OUTPUT
           else
             echo "current_time=NO_TIME" >> $GITHUB_OUTPUT
             echo "short_sha=NO_SHA" >> $GITHUB_OUTPUT
-            echo "image_tag=NO_TAG_BUILT" >> $GITHUB_OUTPUT
           fi
         else
           exit 1
+        fi
+      shell: bash
+
+    - id: init-image-tag
+      run: |
+        if [[ "${{ inputs.create_image }}" == "true" ]]; then
+          echo "image_tag=$( echo ${{ inputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }} )" >> $GITHUB_OUTPUT
+        else
+          echo "image_tag=NO_TAG_BUILT" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
