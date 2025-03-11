@@ -18,8 +18,11 @@ add_synced_staging_envs() {
 # The branch name can only start with 'master' or 'main' if the branch is MASTER/MAIN ref.
 if [[ "$ENV_TO_DEPLOY" == "prod" ]] && 
    [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
-    echo "The Environment to Deploy cannot be 'prod' if the branches are not 'master' or 'main'."
-    exit 1
+
+    if [[ -z "$RELEASE_VERSION" ]]; then
+        echo "The Environment to Deploy cannot be 'prod' if the branches are not 'master' or 'main', and the RELEASE_VERSION is not set."
+        exit 1
+    fi
 fi
 
 # The Environment name to Deploy cannot be 'master' or 'main'.
