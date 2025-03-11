@@ -129,7 +129,7 @@ else
     if [[ $ROLLOUT == true ]]; then
         git commit -m "ROLLOUT UNDO in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
     elif [[ $MANUAL == true ]] && [[ "$IMAGE_TAG" != "" ]]; then
-        git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
+        git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}${RELEASE_VERSION:+-$RELEASE_VERSION}]"
     elif [[ $MANUAL == true ]]; then
         git commit -m "MANUAL DEPLOYMENT in ${APP_NAME^^} -> [${ENV_TO_DEPLOY^^}]"
     else
