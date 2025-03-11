@@ -32,6 +32,9 @@ inputs:
     description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
     required: false
     default: 'false'
+  release_version:
+    description: 'The release version that will be deployed.'
+    required: false
 
 outputs:
   old_image_tag:
@@ -56,4 +59,5 @@ runs:
         ROLLOUT: ${{ inputs.rollout }}
         SYNCED_ENVS_AS_OUTPUTS: ${{ inputs.synced_envs_as_outputs }}
         UPDATE_DEPLOYED_AT: ${{ inputs.update_deployed_at }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
       shell: bash
