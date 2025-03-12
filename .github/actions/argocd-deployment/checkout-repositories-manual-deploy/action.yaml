@@ -15,14 +15,24 @@ inputs:
   env_to_deploy:
     description: 'Target Environment: prod, sandbox...'
     required: true
-  image_tag:
-    description: 'Specific Image Tag to Deploy.'
+  create_image:
+    description: 'Create a new image tag.'
     required: false
+    default: "false"
 
 outputs:
   env_to_deploy:
-    description: 'The current Environment name.'
+    description: 'The environment to deploy on.'
     value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
+  image_tag:
+    description: 'The new Image Tag that will be built.'
+    value: ${{ steps.init-image-tag.outputs.image_tag }}
+  commit:
+    description: 'The commit Id.'
+    value: ${{ steps.init-context-vars.outputs.short_sha }}
+  workflow_at:
+    description: 'The time where the workflow was executed.'
+    value: ${{ steps.init-context-vars.outputs.current_time }}
 
 runs:
   using: "composite"
@@ -33,10 +43,27 @@ runs:
 
     - id: init-context-vars
       run: |
-        if [[ '${{ inputs.env_to_deploy }}' == 'master' || '${{ inputs.env_to_deploy }}' == 'main' ]]; then
-          echo "env_to_deploy=prod" >> $GITHUB_OUTPUT
-        else
+        if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
           echo "env_to_deploy=$( echo ${{ inputs.env_to_deploy }} )" >> $GITHUB_OUTPUT
+
+          if [[ "${{ inputs.create_image }}" == "true" ]]; then
+            echo "current_time=$( date -u +"%Y-%m-%dT%H%M" )" >> $GITHUB_OUTPUT
+            echo "short_sha=$( git rev-parse --short=7 HEAD )" >> $GITHUB_OUTPUT
+          else
+            echo "current_time=NO_TIME" >> $GITHUB_OUTPUT
+            echo "short_sha=NO_SHA" >> $GITHUB_OUTPUT
+          fi
+        else
+          exit 1
+        fi
+      shell: bash
+
+    - id: init-image-tag
+      run: |
+        if [[ "${{ inputs.create_image }}" == "true" ]]; then
+          echo "image_tag=$( echo ${{ inputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }} )" >> $GITHUB_OUTPUT
+        else
+          echo "image_tag=NO_TAG_BUILT" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
