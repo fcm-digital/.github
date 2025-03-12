@@ -51,22 +51,31 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
         if [[ -e $CURRENT_SOURCE_FILE ]]; then
             export CURRENT_IMAGE_TAG=$(cat "./staging/$CURRENT_ENV/values-stg-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')
             export CURRENT_IMAGE_TAG_ENV=$(cut -d '-' -f 1 <<< $( echo $CURRENT_IMAGE_TAG ))
+
             # Check if the currentTag is an old 'master' image -> Then, sync the values.
-            # Sandbox will always be synced when a new 'master' image is deployed.
-            if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_ENV" == "sandbox" ]]; then
-                if [[ "$CURRENT_IMAGE_TAG" != "$IMAGE_TAG" ]]; then
-                    if [ "$IMAGE_TAG" != "" ]; then
-                        sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
-                    fi
-                    if [ ! -z ${DEPLOYED_AT+x} ]; then
-                        sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
-                    fi
-                    if [[ $SYNCED_ENVS_AS_OUTPUTS == true ]]; then
-                        add_synced_staging_envs $CURRENT_ENV
-                        echo $CURRENT_ENV
-                        echo $synced_staging_envs
-                    fi
+            if [[ "$CURRENT_IMAGE_TAG_ENV" == "master" || "$CURRENT_IMAGE_TAG_ENV" == "main" || "$CURRENT_IMAGE_TAG_ENV" == "latest" || "$CURRENT_ENV" == "sandbox" ]]; then
+
+                # Skip the deployment on sandbox if the DEPLOY_ON_SANDBOX is false.
+                if [[ $DEPLOY_ON_SANDBOX == false && "$CURRENT_ENV" == "sandbox" ]]; then
+                    continue
                 fi
+
+                # Update the currentTag to the new image tag if it is not empty.
+                if [ "$IMAGE_TAG" != "" ]; then
+                    sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
+                fi
+
+                # Update the DEPLOYED_AT env variable if it is not empty.
+                if [ ! -z ${DEPLOYED_AT+x} ]; then
+                    sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" $CURRENT_SOURCE_FILE
+                fi
+
+                # Add the current environment to the synced_staging_envs variable if SYNCED_ENVS_AS_OUTPUTS is true.
+                if [[ $SYNCED_ENVS_AS_OUTPUTS == true ]]; then
+                    add_synced_staging_envs $CURRENT_ENV
+                fi
+
+                # Sync the values of the current environment from the local code repository to the helm-chart-$APP_NAME-values/staging repository.
                 cp -f -r "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
             fi
         else
@@ -93,7 +102,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
     if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
     fi
-    cp -f "./../kube/values/$APP_NAME/prod/values-prod.yaml" "./prod/values-prod.yaml"
+    cp -f -r "./../kube/values/$APP_NAME/prod/" "./"
 
 else
     cd helm-chart-$APP_NAME-values-staging/
