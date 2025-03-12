@@ -4,40 +4,39 @@ description: 'Update current_tag value locally and commit changes.'
 
 inputs:
   app_name:
-    description: 'The application name that will be deployed.'
+    description: 'The name of the application to be deployed.'
     required: true
   branch_name:
-    description: 'Current branch name.'
+    description: 'The name of the branch currently being deployed.'
     required: true
   deploy_on_sandbox:
-    description: 'If "true" the deployment in the ALL_ENV stage will be done on the sandbox environment.'
+    description: 'Set to "true" to enable deployment to the sandbox environment during the ALL_ENV stage.'
     required: false
     default: 'true'
   env_to_deploy:
     description: >
-      Environment where the image will be deployed.
-      If the value is 'ALL_ENV', then all environments will be updated.
-      If the value is 'NO_SYNC', then the action will only update the common staging values.
+      Specifies the target environment for deployment.
+      Use 'ALL_ENV' to update all environments, or 'NO_SYNC' to only update common staging values.
     required: true
   image_tag:
-    description: 'The image tag that will be deployed.'
+    description: 'The specific image tag to deploy.'
     required: false
   manual:
-    description: 'If true, the commit message will specify that is a Manual deployment.'
+    description: 'Set to true if the deployment is manual, to reflect this in the commit message.'
     required: false
   rollout:
-    description: 'If true, the commit message will specify that is a Rollout.'
+    description: 'Set to true if the deployment is a rollout, to reflect this in the commit message.'
     required: false
   synced_envs_as_outputs:
-    description: 'If true, the action will output the environments that were sycned.'
+    description: 'Set to true to output the list of environments that were synchronized.'
     required: false
     default: 'false'
   update_deployed_at:
-    description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
+    description: 'Set to "true" to update the DEPLOYED_AT environment variable with the current date and time.'
     required: false
     default: 'false'
   release_version:
-    description: 'The release version that will be deployed.'
+    description: 'The version of the PROD release to be deployed.'
     required: false
 
 outputs:
