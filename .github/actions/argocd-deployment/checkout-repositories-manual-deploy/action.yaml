@@ -68,7 +68,8 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v4
-      if: steps.init-context-vars.outputs.env_to_deploy == 'prod'
+      if: steps.init-context-vars.outputs.env_to_deploy == 'prod' &&
+          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
