@@ -33,7 +33,8 @@ runs:
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
-        ENVIRONMENTS=$(find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)}' 2>/dev/null)
+        ENVIRONMENTS=$(find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)}')
+        echo $ENVIRONMENTS
         if [ -n "$ENVIRONMENTS" ]; then
           if [ $(echo "$ENVIRONMENTS" | wc -l) -gt 1 ]; then
             echo "Error: More than one environment found for branch ${{ inputs.branch_name }}"
