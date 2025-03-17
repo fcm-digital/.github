@@ -33,6 +33,12 @@ runs:
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
+        find ./helm-chart-values/staging -name '*tag.*'
+        echo "----------"
+        find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {}
+        echo "----------"
+        find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)}'
+        echo "----------"
         ENVIRONMENTS=$(find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)}')
         echo $ENVIRONMENTS
         if [ -n "$ENVIRONMENTS" ]; then
