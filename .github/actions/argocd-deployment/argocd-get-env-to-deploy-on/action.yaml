@@ -33,5 +33,14 @@ runs:
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
-        echo "env_to_deploy_on=$(find ./helm-chart-values/staging -name \"*tag.*\" | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)} 2>/dev/null)" >> $GITHUB_OUTPUT
+        ENVIRONMENTS=$(find ./helm-chart-values/staging -name '*tag.*' | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)} 2>/dev/null)
+        if [ $(echo "$ENVIRONMENTS" | xargs | wc -c) -gt 1 ]; then
+          echo "Error: More than one environment found for branch ${{ inputs.branch_name }}"
+          exit 1
+        elif [ -z "$ENVIRONMENTS" ]; then
+          echo "Error: No environment found for branch ${{ inputs.branch_name }}"
+        else
+          echo "env_to_deploy_on=$ENVIRONMENTS" >> $GITHUB_OUTPUT
+        fi
+
       shell: bash
