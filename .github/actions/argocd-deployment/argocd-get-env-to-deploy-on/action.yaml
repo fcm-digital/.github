@@ -1,0 +1,37 @@
+---
+name: 'ArgoCD Get Env to Deploy On (Staging)'
+description: 'Get environment to deploy on based on the image tag.'
+
+inputs:
+  app_name:
+    description: 'The application name.'
+    required: true
+  branch_name:
+    description: 'The branch name.'
+    required: true
+  github_token_checkout:
+    description: 'The GitHub token to checkout the repositories.'
+    required: true
+
+outputs:
+  env_to_deploy_on:
+    description: 'The environment to deploy on.'
+    value: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: checkout-helm-chart-values
+      name: Checkout helm-chart-values repository
+      uses: actions/checkout@v4
+      with:
+        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.github_token_checkout }}
+        ref: staging
+        path: helm-chart-values
+
+    - id: get-env-to-deploy-on
+      name: Get Environment to Deploy On
+      run: |
+        echo "env_to_deploy_on=$(find ./helm-chart-values/staging -name \"*tag.*\" | xargs -I {} grep -l ${{ inputs.branch_name }} {} | awk -F/ '{print $(NF-1)} 2>/dev/null)" >> $GITHUB_OUTPUT
+      shell: bash
