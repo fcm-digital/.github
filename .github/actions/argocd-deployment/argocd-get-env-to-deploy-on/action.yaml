@@ -43,8 +43,9 @@ runs:
             echo "Error: More than one environment found for branch ${{ inputs.branch_name }}"
             exit 1
           fi
+          echo "OK: Environment found for branch ${{ inputs.branch_name }} -> $ENVIRONMENTS"
           echo "env_to_deploy_on=$ENVIRONMENTS" >> $GITHUB_OUTPUT
         else
-          echo "Error: No environment found for branch ${{ inputs.branch_name }}"
+          echo "OK: No environment found for branch ${{ inputs.branch_name }}"
         fi
       shell: bash
