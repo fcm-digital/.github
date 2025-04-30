@@ -47,10 +47,12 @@ inputs:
     description: 'Whether to push image to registry, or build locally.'
     required: false
     default: 'true'
+  secrets:
+    description: 'Secrets to pass to the docker build process.'
+    required: false
   target:
     description: 'Sets the target stage to build.'
     required: false
-
 
 runs:
   using: 'composite'
@@ -113,6 +115,8 @@ runs:
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+        secrets: |
+          ${{ inputs.secrets }}
 
     - id: inline-cache-prod
       name: "(INLINE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -133,6 +137,8 @@ runs:
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
           ${{ env.REPO_URL }}:latest
+        secrets: |
+          ${{ inputs.secrets }}
 
     - id: stage-cache-staging
       name: "(STAGE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -154,6 +160,8 @@ runs:
         target: ${{ inputs.target }}
         tags: |
           ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
+        secrets: |
+          ${{ inputs.secrets }}
 
     - id: stage-cache-prod
       name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -175,6 +183,8 @@ runs:
         tags: |
           ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL_STAGE }}:latest
+        secrets: |
+          ${{ inputs.secrets }}
 
     - id: registry-cache-staging
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -199,6 +209,8 @@ runs:
         tags: |
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+        secrets: |
+          ${{ inputs.secrets }}
 
     - id: registry-cache-prod
       name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
@@ -222,3 +234,5 @@ runs:
           ${{ env.REPO_URL }}:${{ inputs.branch_name }}
           ${{ env.REPO_URL }}:${{ inputs.image_tag }}
           ${{ env.REPO_URL }}:latest
+        secrets: |
+          ${{ inputs.secrets }}
