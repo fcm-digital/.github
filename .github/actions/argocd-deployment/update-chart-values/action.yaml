@@ -17,7 +17,7 @@ inputs:
     description: >
       Environment where the image will be deployed.
       If the value is 'ALL_ENV', then all environments will be updated.
-      If the value is 'NO_SYNC', then the action will only update the common staging values.
+      If the value is 'ONLY_COMMON_STG_VALUES', then the action will only update the common staging values.
     required: true
   image_tag:
     description: 'The image tag that will be deployed.'
