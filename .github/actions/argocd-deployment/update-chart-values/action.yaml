@@ -1,52 +1,54 @@
 ---
 name: 'Update local values'
-description: 'Update current_tag value locally and commit changes.'
+description: 'Update the `current_tag` value in local configuration files and commit the changes to the repository.'
 
 inputs:
   app_name:
-    description: 'The application name that will be deployed.'
+    description: 'The name of the application to be deployed.'
     required: true
   branch_name:
-    description: 'Current branch name.'
+    description: 'The name of the current Git branch.'
     required: true
   deploy_on_sandbox:
-    description: 'If "true" the deployment in the ALL_ENV stage will be done on the sandbox environment.'
+    description: 'Determines if the deployment in the ALL_ENV stage should occur in the sandbox environment. Defaults to "true".'
     required: false
     default: 'true'
   env_to_deploy:
     description: >
-      Environment where the image will be deployed.
-      If the value is 'ALL_ENV', then all environments will be updated.
-      If the value is 'NO_SYNC', then the action will only update the common staging values.
+      Specifies the target environment for image deployment.
+      - '<env>': Updates the <env> staging environment.
+      - 'prod': Updates the production environment.
+      - 'ALL_ENV': Updates all staging environments.
+      - 'ONLY_COMMON_STG_VALUES': Updates only the common staging values.
     required: true
   image_tag:
-    description: 'The image tag that will be deployed.'
+    description: 'The specific image tag to be deployed.'
     required: false
   manual:
-    description: 'If true, the commit message will specify that is a Manual deployment.'
+    description: 'If set to true, the commit message will indicate a Manual deployment.'
     required: false
   rollout:
-    description: 'If true, the commit message will specify that is a Rollout.'
+    description: 'If set to true, the commit message will indicate a Rollout.'
     required: false
   synced_envs_as_outputs:
-    description: 'If true, the action will output the environments that were sycned.'
+    description: 'If set to true, the action will output the environments that were synchronized. Defaults to "false".'
     required: false
     default: 'false'
   update_deployed_at:
-    description: 'If "true" the env DEPLOYED_AT will be updated with the current deployment date.'
+    description: 'If set to "true", updates the DEPLOYED_AT environment variable with the current deployment date. Defaults to "false".'
     required: false
     default: 'false'
   release_version:
-    description: 'The release version that will be deployed.'
+    description: 'The version of the release to be deployed. Required when deploying to "prod" when branch is not "master" or "main".'
     required: false
 
 outputs:
   old_image_tag:
-    description: 'The old Branch name.'
+    description: 'The image tag used in the previous deployment. Required for a potencial Rollback.'
     value: ${{ steps.remote-values-sync.outputs.old_image_tag }}
   synced_staging_envs:
-    description: 'The synced staging environments.'
-    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}
+    description: 'The list of staging environments that were synchronized.'
+    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}¡
 
 runs:
   using: "composite"
