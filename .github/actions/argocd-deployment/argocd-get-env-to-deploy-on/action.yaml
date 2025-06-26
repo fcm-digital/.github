@@ -41,7 +41,7 @@ runs:
           if grep -q "${{ inputs.branch_name }}" "$file"; then
             echo "$file"
           fi
-        done | awk -F'/' '{printf "%s\"%s\"", sep, $(NF-1); sep=", "} END {print ""}'
+        done | awk -F'/' '{printf "%s\"%s\"", sep, $(NF-1); sep=", "} END {print ""}')
         if [ -n "$ENVIRONMENTS" ]; then
           if [ $(echo "$ENVIRONMENTS" | wc -w) -gt 1 ] && [ "${{ inputs.allow_multiple_environments }}" = 'false' ]; then
             echo "Error: More than one environment found for branch ${{ inputs.branch_name }} -> $ENVIRONMENTS"
