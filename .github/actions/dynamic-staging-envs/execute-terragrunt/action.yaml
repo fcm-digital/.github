@@ -59,9 +59,11 @@ inputs:
   terraform_version:
     description: 'The terraform version to use.'
     required: false
+    default: ''
   opentofu_version:
     description: 'The opentofu version to use.'
     required: false
+    default: ''
 
 
 outputs:
@@ -89,16 +91,6 @@ runs:
         if [ -z "${{ inputs.terraform_version }}" && -z "${{ inputs.opentofu_version }}" ]; then
             echo "error: terraform_version or opentofu_version is required"
             exit 1
-        fi
-
-        if [ ! -z "${{ inputs.terraform_version }}" ]; then
-          echo "TERRAFORM_VERSION=${{ inputs.opentofu_version }}" >> $GITHUB_ENV
-          echo "OPENTOFU_VERSION=null" >> $GITHUB_ENV
-        fi
-
-        if [ ! -z "${{ inputs.opentofu_version }}" ]; then
-          echo "TERRAFORM_VERSION=null" >> $GITHUB_ENV
-          echo "OPENTOFU_VERSION=${{ inputs.terraform_version }}" >> $GITHUB_ENV
         fi
 
     - id: checkout-infrastructure-repository
@@ -133,8 +125,8 @@ runs:
         ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
       with:
         tg_version: ${{ inputs.terragrunt_version }}
-        tf_version: ${{ env.TERRAFORM_VERSION }}
-        tofu_version: ${{ env.OPENTOFU_VERSION }}
+        tf_version: ${{ inputs.terraform_version || none }}
+        tofu_version: ${{ inputs.opentofu_version || none }}
         tg_dir: ${{ inputs.terragrunt_path }}
         tg_add_approve: false #ToDo: Update to `true` when tests are ready
         tg_command: plan #ToDo: Upload to `apply` when tests are ready
