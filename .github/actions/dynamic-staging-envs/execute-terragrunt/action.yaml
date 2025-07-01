@@ -125,8 +125,8 @@ runs:
         ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
       with:
         tg_version: ${{ inputs.terragrunt_version }}
-        tf_version: ${{ inputs.terraform_version || none }}
-        tofu_version: ${{ inputs.opentofu_version || none }}
+        tf_version: ${{ inputs.terraform_version || null }}
+        tofu_version: ${{ inputs.opentofu_version || null }}
         tg_dir: ${{ inputs.terragrunt_path }}
         tg_add_approve: false #ToDo: Update to `true` when tests are ready
         tg_command: plan #ToDo: Upload to `apply` when tests are ready
