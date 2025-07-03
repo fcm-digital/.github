@@ -36,6 +36,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - id: checkout
+      name: Checkout Local Repository
+      uses: actions/checkout@v4
+
     - id: auth-gcp-with
       name: Authenticate to GCP via WIF
       uses: google-github-actions/auth@v2
