@@ -1,0 +1,59 @@
+---
+name: 'Execute GCloud SDK'
+description: 'Execute gcloud sdk command based on the inputs provided.'
+
+inputs:
+  gcp_wif_project_id:
+    description: 'The GCP project ID to use for WIF authentication.'
+    required: false
+    default: '874800047694' #seed project
+  gcp_wif_pool:
+    description: 'The GCP WIF Pool to use for authentication.'
+    required: false
+    default: 'terraform'
+  gcp_wif_provider:
+    description: 'The GCP WIF Provider to use for authentication.'
+    required: false
+    default: 'terraform-actions'
+  gcp_wif_service_account:
+    description: 'The GCP SA to use for authentication.'
+    required: false
+    default: 'org-terraform@seed-5ee1.iam.gserviceaccount.com'
+
+  gcp_project_id:
+    description: 'The GCP project ID. If provided, this will configure gcloud to use this project ID by default for commands.'
+    required: false
+    default: 'fcm-platform-stg-a3dc' #fcmp-stg project
+  gcloud_version:
+    description: 'The gcloud version to use.'
+    required: false
+    default: '522.0.0'
+  gcloud_command:
+    description: 'The gcloud command to execute.'
+    required: true  
+
+
+runs:
+  using: "composite"
+  steps:
+    - id: auth-gcp-with
+      name: Authenticate to GCP via WIF
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: "access_token"
+        workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
+        service_account: ${{ inputs.gcp_wif_service_account }}
+
+    - id: setup-gcloud-sdk
+      name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+      with:
+        version: '>= ${{ inputs.gcloud_version }}'
+        project_id: ${{ inputs.gcp_project_id }}
+
+    - id: execute-gcloud
+      name: 'Execute gcloud command'
+      shell: bash
+      run: |
+        gcloud version
+        echo "${{ inputs.gcloud_command }}"

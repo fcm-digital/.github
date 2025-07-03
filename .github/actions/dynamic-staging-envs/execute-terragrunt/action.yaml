@@ -1,9 +1,9 @@
 ---
-name: 'Get Output Resources'
-description: 'Get the output resources from the terragrunt configuration.'
+name: 'Execute Terragrunt'
+description: 'Execute terragrunt command based on the inputs provided.'
 
 inputs:
-  gcp_project_id:
+  gcp_wif_project_id:
     description: 'The GCP project ID to use for WIF authentication.'
     required: false
     default: '874800047694' #seed project
@@ -15,7 +15,7 @@ inputs:
     description: 'The GCP WIF Provider to use for authentication.'
     required: false
     default: 'terraform-actions'
-  gcp_service_account:
+  gcp_wif_service_account:
     description: 'The GCP SA to use for authentication.'
     required: false
     default: 'org-terraform@seed-5ee1.iam.gserviceaccount.com'
@@ -107,8 +107,8 @@ runs:
       uses: google-github-actions/auth@v2
       with:
         token_format: "access_token"
-        workload_identity_provider: "projects/${{ inputs.gcp_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
-        service_account: ${{ inputs.gcp_service_account }}
+        workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
+        service_account: ${{ inputs.gcp_wif_service_account }}
 
     - id: terragrunt-apply
       if: inputs.terragrunt_command == 'apply'
