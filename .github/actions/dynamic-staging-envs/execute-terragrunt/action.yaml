@@ -6,19 +6,19 @@ inputs:
   gcp_wif_project_id:
     description: 'The GCP project ID to use for WIF authentication.'
     required: false
-    default: '874800047694' #seed project
+    default: '896400447443' #fcm-platform-stg-a3dc project
   gcp_wif_pool:
     description: 'The GCP WIF Pool to use for authentication.'
     required: false
-    default: 'terraform'
+    default: 'dynamic-staging-envs'
   gcp_wif_provider:
     description: 'The GCP WIF Provider to use for authentication.'
     required: false
-    default: 'terraform-actions'
+    default: 'github-actions'
   gcp_wif_service_account:
     description: 'The GCP SA to use for authentication.'
     required: false
-    default: 'org-terraform@seed-5ee1.iam.gserviceaccount.com'
+    default: 'dynamic-staging-envs@fcm-platform-stg-a3dc.iam.gserviceaccount.com'
 
   github_token:
     description: 'The GitHub token.'
