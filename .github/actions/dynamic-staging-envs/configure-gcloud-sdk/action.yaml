@@ -59,4 +59,4 @@ runs:
       uses: 'google-github-actions/setup-gcloud@v2'
       with:
         version: '>= ${{ inputs.gcloud_version }}'
-        project_id: ${{ inputs.gcp_project_id }} --project ${{ inputs.gcp_project_id }}
+        project_id: ${{ inputs.gcp_project_id }}
