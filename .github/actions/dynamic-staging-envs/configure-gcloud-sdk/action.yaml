@@ -47,19 +47,19 @@ runs:
   using: "composite"
   steps:
     - id: checkout
-      if: ${{ inputs.checkout_local_repository }}
+      if: inputs.checkout_local_repository
       name: Checkout Local Repository
       uses: actions/checkout@v4
 
     - id: setup-gcp-credentials
-      if: ${{ inputs.gcp_json }} != ''
+      if: inputs.gcp_json != ''
       name: 'Set Up Google Credentials'
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ inputs.gcp_json }}
 
     - id: auth-gcp-with
-      if: ${{ inputs.gcp_json }} == ''
+      if: inputs.gcp_json == ''
       name: Authenticate to GCP via WIF
       uses: google-github-actions/auth@v2
       with:
