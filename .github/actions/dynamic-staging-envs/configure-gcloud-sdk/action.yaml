@@ -11,6 +11,10 @@ inputs:
     description: 'Whether to configure GKE.'
     required: false
     default: 'false'
+  install_kubectl:
+    description: 'Whether to install kubectl.'
+    required: false
+    default: 'true'
 
   cluster_name:
     description: 'The name of the GKE cluster.'
@@ -106,3 +110,9 @@ runs:
       with:
         cluster_name: ${{ inputs.cluster_name }}
         location: ${{ inputs.location }}
+
+    - id: kubectl-version
+      name: 'Print kubectl version'
+      shell: bash
+      run: |
+        kubectl version
