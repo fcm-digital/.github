@@ -81,13 +81,23 @@ runs:
         workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
         service_account: ${{ inputs.gcp_wif_service_account }}
 
+    - id: generate-sdk-components
+      name: 'Generate SDK Components'
+      shell: bash
+      run: |
+        SDK_COMPONENTS=''
+        if [ '${{ inputs.configure_gke }}' == 'true' ]; then
+          SDK_COMPONENTS+='gke-gcloud-auth-plugin,'
+        fi
+        echo "SDK_COMPONENTS=${echo $SDK_COMPONENTS | sed 's/,$//'}" >> $GITHUB_ENV
+
     - id: setup-gcloud-sdk
       name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v2'
       with:
         version: '>= ${{ inputs.gcloud_version }}'
         project_id: ${{ inputs.gcp_project_id }}
-        install_components: if(${{ inputs.configure_gke }} == 'true', 'gke-gcloud-auth-plugin', '')
+        install_components: ${{ env.SDK_COMPONENTS }}
 
     - id: get-credentials
       if: inputs.configure_gke == 'true'
