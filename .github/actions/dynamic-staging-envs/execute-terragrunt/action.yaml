@@ -26,7 +26,7 @@ inputs:
   argocd_host:
     description: 'The ArgoCD host.'
     required: false
-    default: 'http://argocd-server.argocd.svc.cluster.local:443'
+    default: 'argocd-server.argocd.svc.cluster.local:443'
   argocd_token:
     description: 'The ArgoCD token.'
     required: true
