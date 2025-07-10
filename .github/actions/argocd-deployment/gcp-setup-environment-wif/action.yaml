@@ -19,6 +19,10 @@ inputs:
     description: "The GCP SA to use for authentication."
     required: false
     default: "github-actions@seed-5ee1.iam.gserviceaccount.com"
+  artifact_region:
+    description: "Region or zone for Google Artifact Registry."
+    required: false
+    default: "europe"
 
 runs:
   using: "composite"
