@@ -1,6 +1,6 @@
 ---
-name: ""
-description: "Configure GCP WIF"
+name: "Authenticate to GCP via WIF"
+description: "GCP auth via WIF"
 
 inputs:
   gcp_wif_project_id:
