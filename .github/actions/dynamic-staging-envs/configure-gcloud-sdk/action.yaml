@@ -59,7 +59,7 @@ runs:
         credentials_json: ${{ inputs.gcp_json }}
         project_id: ${{ inputs.gcp_project_id }}
 
-    - id: auth-gcp-with
+    - id: auth-gcp-wif
       if: inputs.gcp_json == ''
       name: Authenticate to GCP via WIF
       uses: google-github-actions/auth@v2

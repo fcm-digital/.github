@@ -102,7 +102,7 @@ runs:
         path: infrastructure
         token: ${{ inputs.github_token }}
 
-    - id: auth-gcp-with
+    - id: auth-gcp-wif
       name: Authenticate to GCP via WIF
       uses: google-github-actions/auth@v2
       with:
