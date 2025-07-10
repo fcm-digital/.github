@@ -57,6 +57,7 @@ runs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ inputs.gcp_json }}
+        project_id: ${{ inputs.gcp_project_id }}
 
     - id: auth-gcp-with
       if: inputs.gcp_json == ''
