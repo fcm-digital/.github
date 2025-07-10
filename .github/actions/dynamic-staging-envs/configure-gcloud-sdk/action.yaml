@@ -7,6 +7,19 @@ inputs:
     description: 'Whether to checkout the local repository.'
     required: false
     default: 'true'
+  configure_gke:
+    description: 'Whether to configure GKE.'
+    required: false
+    default: 'true'
+
+  cluster_name:
+    description: 'The name of the GKE cluster.'
+    required: false
+    default: 'fcm-platform-stg-euw1'
+  location:
+    description: 'The location of the GKE cluster.'
+    required: false
+    default: 'europe-west1'
 
   gcp_json:
     description: 'The Service Account that contains the permissions to GCP.'
@@ -74,3 +87,12 @@ runs:
       with:
         version: '>= ${{ inputs.gcloud_version }}'
         project_id: ${{ inputs.gcp_project_id }}
+        install_components: if(${{ inputs.configure_gke }} == 'true', 'gke-gcloud-auth-plugin', '')
+
+    - id: get-credentials
+      if: inputs.configure_gke == 'true'
+      name: 'Get GKE Credentials'
+      uses: 'google-github-actions/get-gke-credentials@v2'
+      with:
+        cluster_name: ${{ inputs.cluster_name }}
+        location: ${{ inputs.location }}
