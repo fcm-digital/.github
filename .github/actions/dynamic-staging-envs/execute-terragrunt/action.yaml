@@ -128,7 +128,7 @@ runs:
         tf_version: ${{ inputs.terraform_version || null }}
         tofu_version: ${{ inputs.opentofu_version || null }}
         tg_dir: ${{ inputs.terragrunt_path }}
-        tg_add_approve: true
+        tg_add_approve: 1
         tg_command: apply
 
     - id: terragrunt-outputs
