@@ -89,7 +89,7 @@ runs:
         if [ '${{ inputs.configure_gke }}' == 'true' ]; then
           SDK_COMPONENTS+='gke-gcloud-auth-plugin,'
         fi
-        echo "install_components=${echo "$SDK_COMPONENTS" | sed 's/,$//'}" >> $GITHUB_ENV
+        echo "install_components=$(echo "$SDK_COMPONENTS" | sed 's/,$//')" >> $GITHUB_ENV
 
     - id: setup-gcloud-sdk
       name: 'Set up Cloud SDK'
