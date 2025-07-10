@@ -48,6 +48,9 @@ inputs:
       - `output`: Output the terragrunt resources to the file specified by `terragrunt_output_file_name`.
       - `destroy`: Destroy the specific terragrunt resources.
     required: true
+  terragrunt_command_vars:
+    description: 'The variables to pass to the terragrunt command.'
+    required: false
   terragrunt_output_file_name:
     description: 'The name of the file to output the terragrunt outputs to.'
     required: false
@@ -93,6 +96,14 @@ runs:
             exit 1
         fi
 
+        if [ ! -z "${{ inputs.terragrunt_command_vars }}" ]; then
+            COMMAND_VARS=""
+            for var in ${{ inputs.terragrunt_command_vars }}; do
+                COMMAND_VARS="$COMMAND_VARS -var $var"
+            done
+            echo "command_vars=$COMMAND_VARS" >> $GITHUB_ENV
+        fi
+
     - id: checkout-infrastructure-repository
       name: Checkout Infrastructure Repository
       uses: actions/checkout@v4
@@ -128,8 +139,9 @@ runs:
         tf_version: ${{ inputs.terraform_version || null }}
         tofu_version: ${{ inputs.opentofu_version || null }}
         tg_dir: ${{ inputs.terragrunt_path }}
-        tg_add_approve: 1
-        tg_command: apply
+        tg_add_approve: 0 # 1
+        tg_command: plan ${{ env.command_vars }}
+        # tg_command: apply ${{ env.command_vars }}
 
     - id: terragrunt-outputs
       if: inputs.terragrunt_command == 'outputs'
@@ -151,26 +163,5 @@ runs:
         tf_version: ${{ inputs.terraform_version || null }}
         tofu_version: ${{ inputs.opentofu_version || null }}
         tg_dir: ${{ inputs.terragrunt_path }}
-        tg_add_approve: false
-        tg_command: init
-
-    # - id: terragrunt-destroy
-    #   if: inputs.terragrunt_command == 'destroy'
-    #   name: Terragrunt Destroy
-    #   uses: gruntwork-io/terragrunt-action@v2
-    #   env:
-    #     INPUT_PRE_EXEC_1: |
-    #       git config --global url."https://x-access-token:${{ inputs.github_token }}@github.com/fcm-digital/".insteadOf "ssh://git@github.com/fcm-digital/"
-    #       git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
-    #     TG_NON_INTERACTIVE: true
-    #     OP_CONNECT_HOST: ${{ inputs.openpassword_host }}
-    #     OP_CONNECT_TOKEN: ${{ inputs.onepassword_token }}
-    #     ARGOCD_SERVER: ${{ inputs.argocd_host }}
-    #     ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
-    #   with:
-    #     tg_version: ${{ inputs.terragrunt_version }}
-    #     tf_version: ${{ inputs.terraform_version || null }}
-    #     tofu_version: ${{ inputs.opentofu_version || null }}  
-    #     tg_dir: ${{ inputs.terragrunt_path }}
-    #     tg_add_approve: false #ToDo: Update to `true` when tests are ready
-    #     # tg_command: destroy
+        tg_add_approve: 0
+        tg_command: init ${{ env.command_vars }}
