@@ -97,9 +97,8 @@ runs:
         fi
 
         if [ ! -z "${{ inputs.terragrunt_command_vars }}" ]; then
-            COMMAND_VARS=""
-            for var in ${{ inputs.terragrunt_command_vars }}; do
-                COMMAND_VARS="$COMMAND_VARS -var $var"
+            for var in $(echo ${{ inputs.terragrunt_command_vars }} | tr -d '\n'); do
+                COMMAND_VARS+="-var $var"
             done
             echo "command_vars=$COMMAND_VARS" >> $GITHUB_ENV
         fi
