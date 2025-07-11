@@ -96,7 +96,7 @@ runs:
             exit 1
         fi
 
-        INPUT_COMMANDS=$(echo ${{ inputs.terragrunt_command }} | tr '\n' ' ')
+        INPUT_COMMANDS=$(echo ${{ inputs.terragrunt_command_vars }} | tr '\n' ' ')
         if [ ! -z "$INPUT_COMMANDS" ]; then
             for var in $INPUT_COMMANDS; do
                 COMMAND_VARS+="-var $var "
