@@ -40,7 +40,7 @@ runs:
       name: 'Get Last Snapshot'
       shell: bash
       run: |
-        if [[ -z '${{ inputs.snapshot-id }}' ]];
+        if [[ -z '${{ inputs.snapshot-id }}' ]]; then
           echo "No Snapshot ID provided, getting last snapshot from ${{ inputs.snapshot-instance }}..."
           LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --limit=1 | tail -n 1 | awk '{print $1}') 
           if [ $? -ne 0 ] && [ -z "$LAST_INSTANCE_BACKUP" ]; then
