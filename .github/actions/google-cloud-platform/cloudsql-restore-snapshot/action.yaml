@@ -70,5 +70,6 @@ runs:
     #   name: 'Set New Owner for Restored Instance'
     #   uses: fcm-digital/.github/.github/actions/google-cloud-platform/cloudsql-instance-new-owner@sc-23004-dynamic-staging-envs
     #   with:
-    #     gcloud-sdk-configure: 'false'
+    #     gcloud-sdk-configure: 'true'
+    #     instance: ${{ inputs.restore-instance }}
     #     destination-environment: ${{ inputs.destination-environment }}

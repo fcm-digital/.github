@@ -15,6 +15,9 @@ inputs:
     description: 'The destination environment.'
     required: true
 
+  instance:
+    description: 'The CloudSQL instance to reassign the owner of.'
+    required: true
   db-postgres-password:
     description: 'The password for the PostgreSQL database.'
     required: false
@@ -87,16 +90,11 @@ runs:
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends postgresql-client
 
-    - id: test-instance-connection
-      name: Test Instance Connection
-      shell: bash
-      env:
-        DB_HOST: ${{ env.DB_HOST }}
-        DB_USER: ${{ env.appuser_pgusr }}
-        DB_NAME: ${{ env.app_name }}-${{ inputs.destination_environment }}
-        DB_PASSWORD: ${{ env.appuser_pgpwd }}
-      run: |
-        psql -h ${{ env.DB_HOST }} -U ${{ env.appuser_pgusr }} -W ${{ env.appuser_pgpwd }}-d ${{ env.app_name }} -c 'SELECT 1'
+    - id: instance-connection
+      name: Instance Connection
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/cloudsql-instance-connection@sc-23004-dynamic-staging-envs
+      with:
+        instance: ${{ inputs.instance }}
 
     - id: 'run-postgres-config'
       name: 'Configure restored PostgreSQL database'

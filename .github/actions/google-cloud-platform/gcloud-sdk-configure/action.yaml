@@ -122,7 +122,7 @@ runs:
         location: ${{ inputs.location }}
 
     - id: install-kubectl
-      if: inputs.install_kubectl == 'true'
+      if: inputs.install_kubectl == 'true' && inputs.configure_gke == 'true'
       uses: azure/setup-kubectl@v4
       with:
         version: ${{ inputs.kubectl_version }}
