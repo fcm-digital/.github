@@ -12,24 +12,6 @@ inputs:
     required: false
     default: 'false'
 
-  install_kubectl:
-    description: 'Whether to install kubectl.'
-    required: false
-    default: 'true'
-  kubectl_version:
-    description: 'The version of kubectl to install.'
-    required: false
-    default: 'v1.33.1'
-
-  cluster_name:
-    description: 'The name of the GKE cluster.'
-    required: false
-    default: 'fcm-platform-stg-euw1'
-  location:
-    description: 'The location of the GKE cluster.'
-    required: false
-    default: 'europe-west1'
-
   gcp_json:
     description: 'The Service Account that contains the permissions to GCP.'
     required: false
@@ -63,6 +45,29 @@ inputs:
   gcloud_command:
     description: 'The gcloud command to execute.'
     required: true
+
+  # -----------------------------
+  #   Additional configurations
+  # -----------------------------
+
+  # Kubectl
+  install_kubectl:
+    description: 'Whether to install kubectl.'
+    required: false
+    default: 'true'
+  kubectl_version:
+    description: 'The version of kubectl to install.'
+    required: false
+    default: 'v1.33.1'
+
+  cluster_name:
+    description: 'The name of the GKE cluster.'
+    required: false
+    default: 'fcm-platform-stg-euw1'
+  location:
+    description: 'The location of the GKE cluster.'
+    required: false
+    default: 'europe-west1'
 
 
 runs:

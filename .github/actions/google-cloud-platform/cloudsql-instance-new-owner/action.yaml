@@ -1,0 +1,112 @@
+---
+name: 'CloudSQL Instance New Owner'
+description: 'Reassign the owner of a CloudSQL instance to a new owner.'
+
+inputs:
+  gcloud-sdk-configure:
+    description: 'Whether to configure GCloud SDK.'
+    required: false
+    default: 'false'
+
+  app_name:
+    description: 'The name of the application.'
+    required: true
+  destination-environment:
+    description: 'The destination environment.'
+    required: true
+
+  db-postgres-password:
+    description: 'The password for the PostgreSQL database.'
+    required: false
+    default: ''
+  db-appuser-password:
+    description: 'The password for the App User.'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - id: gcloud-sdk-configure
+      if: inputs.gcloud-sdk-configure == 'true'
+      name: 'Configure GCloud SDK'
+      uses: fcm-digital/.github/.github/actions/dynamic-staging-envs/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+
+    - id: onepassword-secret-postgres
+      if: inputs.db-postgres-password == ''
+      name: Load OnePassword secret [postgres user]
+      uses: 1password/load-secrets-action@v2
+      env:
+        POSTGRES_PGUSER: postgres
+        POSTGRES_PGPASSWORD: op://staging-secrets/restored-db-credentials/password
+      with:
+        export-env: true
+
+    - id: onepassword-secret-appuser
+      if: inputs.db-appuser-password == ''
+      name: Load OnePassword secret [appuser user]
+      uses: 1password/load-secrets-action@v2
+      env:
+        APPUSER_PGUSER: op://infra-stg/cloudsql-${{ inputs.app_name }}-stg-${{  }}-${{ inputs.destination-environment }}/username
+        APPUSER_PGPASSWORD: op://infra-stg/cloudsql-${{ inputs.app_name }}-stg-${{  }}-${{ inputs.destination-environment }}/password
+      with:
+        export-env: true
+
+    - id: get-db-instance-secrets
+      name: Get DB Instance Secrets
+      shell: bash
+      run: |
+        if [[ -z "${{ env.POSTGRES_PGPASSWORD }}" ]]; then
+          echo "postgres_pgpas=${{ inputs.db-postgres-password }}" >> $GITHUB_ENV
+        else
+          echo "postgres_pgpas=${{ env.POSTGRES_PGPASSWORD }}" >> $GITHUB_ENV
+        fi
+        echo "postgres_pgusr=postgres" >> $GITHUB_ENV
+
+        if [[ -z "${{ env.APPUSER_PGPASSWORD }}" || & -z "${{ env.APPUSER_PGUSER }}" ]]; then
+          echo "appuser_pgusr=${{ inputs.db-appuser-user }}" >> $GITHUB_ENV
+          echo "appuser_pgpwd=${{ inputs.db-appuser-password }}" >> $GITHUB_ENV
+        else
+          echo "appuser_pgusr=${{ env.APPUSER_PGUSER }}" >> $GITHUB_ENV
+          echo "appuser_pgpwd=${{ env.APPUSER_PGPASSWORD }}" >> $GITHUB_ENV
+        fi
+
+    - id: restore-postgres-user-password
+      name: Restore Postgres User Password
+      env:
+        DESTINATION_INSTANCE_ID: ${{ steps.destination-instance-id.outputs.destination_instance_id }}
+        PGUSER: 'postgres'
+      shell: bash
+      run: |
+        gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}
+
+    - id: install-psql
+      name: Install PostgreSQL Client
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends postgresql-client
+
+    - id: test-instance-connection
+      name: Test Instance Connection
+      shell: bash
+      env:
+        DB_HOST: ${{ env.DB_HOST }}
+        DB_USER: ${{ env.appuser_pgusr }}
+        DB_NAME: ${{ env.app_name }}-${{ inputs.destination_environment }}
+        DB_PASSWORD: ${{ env.appuser_pgpwd }}
+      run: |
+        psql -h ${{ env.DB_HOST }} -U ${{ env.appuser_pgusr }} -W ${{ env.appuser_pgpwd }}-d ${{ env.app_name }} -c 'SELECT 1'
+
+    - id: 'run-postgres-config'
+      name: 'Configure restored PostgreSQL database'
+      shell: bash
+      run: |-
+        psql --host=localhost --port=5432 --username=postgres <<EOF
+          \x
+          GRANT "itinerary-core-${{ inputs.destination_environment }}" TO "postgres";
+          ALTER DATABASE "itinerary_core_prod" RENAME TO "itinerary_core_${{ inputs.destination_environment }}";
+          ALTER DATABASE "itinerary_core_${{ inputs.destination_environment }}" OWNER TO "itinerary-core-${{ inputs.destination_environment }}";
+          \c "itinerary_core_${{ inputs.destination_environment }}"
+          REASSIGN OWNED BY "itinerary-core-pro" TO "itinerary-core-${{ inputs.destination_environment }}";
+          EOF
