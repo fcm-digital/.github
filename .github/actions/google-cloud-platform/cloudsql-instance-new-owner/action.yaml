@@ -30,7 +30,7 @@ runs:
     - id: gcloud-sdk-configure
       if: inputs.gcloud-sdk-configure == 'true'
       name: 'Configure GCloud SDK'
-      uses: fcm-digital/.github/.github/actions/dynamic-staging-envs/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
 
     - id: onepassword-secret-postgres
       if: inputs.db-postgres-password == ''

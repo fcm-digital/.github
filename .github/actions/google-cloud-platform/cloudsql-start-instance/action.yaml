@@ -16,14 +16,14 @@ runs:
     - id: gcloud-sdk-configure
       if: inputs.gcloud-sdk-configure == 'true'
       name: 'Configure GCloud SDK'
-      uses: fcm-digital/.github/.github/actions/dynamic-staging-envs/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
 
     - id: start-instance
       name: 'Start CloudSQL Instance'
       shell: bash
       run: |
         echo "Starting CloudSQL instance...: ${{ inputs.instance }}"
-        gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS
+        echo "gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS"
         if [ $? -ne 0 ]; then
           echo "Failed to start CloudSQL instance: ${{ inputs.instance }}"
           exit 1
