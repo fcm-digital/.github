@@ -91,6 +91,7 @@ runs:
       name: Setup versions
       shell: bash
       run: |
+        sleep 300
         if [ -z "${{ inputs.terraform_version }}" && -z "${{ inputs.opentofu_version }}" ]; then
             echo "error: terraform_version or opentofu_version is required"
             exit 1
