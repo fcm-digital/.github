@@ -140,8 +140,8 @@ runs:
         tofu_version: ${{ inputs.opentofu_version || null }}
         tg_dir: ${{ inputs.terragrunt_path }}
         tg_add_approve: 0 # 1
-        tg_command: plan ${{ env.command_vars }}
-        # tg_command: apply ${{ env.command_vars }}
+        # tg_command: plan ${{ env.command_vars }}
+        tg_command: apply ${{ env.command_vars }}
 
     - id: terragrunt-outputs
       if: inputs.terragrunt_command == 'outputs'
