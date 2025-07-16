@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         echo "Starting CloudSQL instance...: ${{ inputs.instance }}"
-        echo "gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS"
+        gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS
         if [ $? -ne 0 ]; then
           echo "Failed to start CloudSQL instance: ${{ inputs.instance }}"
           exit 1
