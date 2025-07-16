@@ -7,7 +7,7 @@ inputs:
     description: 'Whether to configure GCloud SDK.'
     required: false
     default: 'false'
-  
+
   set-instance-new-owner:
     description: 'Whether to set the new owner of the restored instance.'
     required: false
@@ -42,7 +42,7 @@ runs:
       run: |
         if [[ -z '${{ inputs.snapshot-id }}' ]]; then
           echo "No Snapshot ID provided, getting last snapshot from ${{ inputs.snapshot-instance }}..."
-          LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --limit=1 | tail -n 1 | awk '{print $1}') 
+          LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --limit=1 | tail -n 1 | awk '{print $1}')
           if [ $? -ne 0 ] && [ -z "$LAST_INSTANCE_BACKUP" ]; then
             echo "Failed to get last backup for CloudSQL instance: $SNAPSHOT_FROM"
             exit 1
@@ -58,7 +58,7 @@ runs:
       shell: bash
       run: |
           echo "Restoring CloudSQL instance ${{ inputs.restore-instance }} using backup: ${{ env.last_instance_backup }} from ${{ inputs.snapshot-instance }}..."
-          echo "gcloud sql backups restore ${{ env.last_instance_backup }} --restore-instance=${{ inputs.restore-instance }} --backup-instance=${{ inputs.snapshot-instance }}"
+          gcloud sql backups restore ${{ env.last_instance_backup }} --restore-instance=${{ inputs.restore-instance }} --backup-instance=${{ inputs.snapshot-instance }}
           if [ $? -ne 0 ]; then
             echo "Failed to restore CloudSQL instance: ${{ inputs.restore-instance }}"
             exit 1
