@@ -84,13 +84,13 @@ runs:
       shell: bash
       run: |-
         psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres <<EOF
-          \x
-          GRANT "${{ inputs.service-name }}-${{ inputs.restore-environment }}" TO "postgres";
-          ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.snapshot-environment }}" RENAME TO "${{ inputs.database-name }}_${{ inputs.restore-environment }}";
-          ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.restore-environment }}" OWNER TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
-          \c "${{ inputs.database-name }}_${{ inputs.restore-environment }}"
-          REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
-          EOF
+        \x
+        GRANT "${{ inputs.service-name }}-${{ inputs.restore-environment }}" TO "postgres";
+        ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.snapshot-environment }}" RENAME TO "${{ inputs.database-name }}_${{ inputs.restore-environment }}";
+        ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.restore-environment }}" OWNER TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
+        \c "${{ inputs.database-name }}_${{ inputs.restore-environment }}"
+        REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
+        EOF
 
     - id: 'remove-snapshot-app-user'
       name: Remove Snapshot App User
