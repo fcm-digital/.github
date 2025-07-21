@@ -59,7 +59,7 @@ runs:
         PGUSER: 'postgres'
         PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       shell: bash
-      run: echo "gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}"
+      run: gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}
 
     - id: create-app-user
       name: 'Create database user and password'
@@ -68,7 +68,7 @@ runs:
         PGUSER: '${{ inputs.service-name }}-${{ inputs.restore-environment }}'
         PGPASSWORD: ${{ inputs.appname-user-pwd }}
       shell: bash
-      run: echo "gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}"
+      run: gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}
 
     - id: install-psql
       name: Install PostgreSQL Client

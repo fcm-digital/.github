@@ -6,6 +6,9 @@ inputs:
     description: 'Whether to configure GCloud SDK.'
     required: false
     default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
   instance:
     description: 'The CloudSQL instance to start.'
     required: true
@@ -23,7 +26,7 @@ runs:
       shell: bash
       run: |
         echo "Starting CloudSQL instance...: ${{ inputs.instance }}"
-        gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS
+        gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS --project=${{ inputs.gcp-project-id }}
         if [ $? -ne 0 ]; then
           echo "Failed to start CloudSQL instance: ${{ inputs.instance }}"
           exit 1
