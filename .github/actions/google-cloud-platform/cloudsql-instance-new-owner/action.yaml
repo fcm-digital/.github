@@ -7,6 +7,9 @@ inputs:
     description: 'Whether to configure GCloud SDK.'
     required: false
     default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
 
   app-name:
     description: 'The name of the application.'
@@ -46,6 +49,8 @@ runs:
       if: inputs.gcloud-sdk-configure == 'true'
       name: 'Configure GCloud SDK'
       uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
 
     - id: restore-postgres-user-password
       name: Restore Postgres User Password
@@ -54,7 +59,7 @@ runs:
         PGUSER: 'postgres'
         PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       shell: bash
-      run: echo "gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}"
+      run: echo "gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}"
 
     - id: create-app-user
       name: 'Create database user and password'
@@ -63,7 +68,7 @@ runs:
         PGUSER: '${{ inputs.service-name }}-${{ inputs.restore-environment }}'
         PGPASSWORD: ${{ inputs.appname-user-pwd }}
       shell: bash
-      run: echo "gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}"
+      run: echo "gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}"
 
     - id: install-psql
       name: Install PostgreSQL Client
@@ -76,7 +81,7 @@ runs:
       env:
         PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       run: |
-        psql --host=localhost --port=5432 --username=postgres -c "SELECT 1;"
+        psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres -c "SELECT 1;"
       shell: bash
 
     - id: 'run-postgres-config'

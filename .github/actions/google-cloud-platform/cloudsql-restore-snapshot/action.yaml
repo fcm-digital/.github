@@ -7,6 +7,9 @@ inputs:
     description: 'Whether to configure GCloud SDK.'
     required: false
     default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
 
   restore-instance:
     description: 'The CloudSQL instance to restore the snapshot to.'
@@ -27,6 +30,8 @@ runs:
       if: inputs.gcloud-sdk-configure == 'true'
       name: 'Configure GCloud SDK'
       uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
 
     - id: get-last-snapshot
       name: 'Get Last Snapshot'
@@ -34,7 +39,7 @@ runs:
       run: |
         if [[ -z '${{ inputs.snapshot-id }}' ]]; then
           echo "No Snapshot ID provided, getting last snapshot from ${{ inputs.snapshot-instance }}..."
-          LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --limit=1 | tail -n 1 | awk '{print $1}')
+          LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --project=${{ inputs.gcp-project-id }} --limit=1 | tail -n 1 | awk '{print $1}')
           if [ $? -ne 0 ] && [ -z "$LAST_INSTANCE_BACKUP" ]; then
             echo "Failed to get last backup for CloudSQL instance: $SNAPSHOT_FROM"
             exit 1
@@ -50,7 +55,7 @@ runs:
       shell: bash
       run: |
           echo "Restoring CloudSQL instance ${{ inputs.restore-instance }} using backup: ${{ env.last_instance_backup }} from ${{ inputs.snapshot-instance }}..."
-          gcloud sql backups restore ${{ env.last_instance_backup }} --restore-instance=${{ inputs.restore-instance }} --backup-instance=${{ inputs.snapshot-instance }}
+          gcloud sql backups restore ${{ env.last_instance_backup }} --restore-instance=${{ inputs.restore-instance }} --backup-instance=${{ inputs.snapshot-instance }} --project=${{ inputs.gcp-project-id }}
           if [ $? -ne 0 ]; then
             echo "Failed to restore CloudSQL instance: ${{ inputs.restore-instance }}"
             exit 1
