@@ -77,26 +77,25 @@ runs:
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends postgresql-client
 
-    - id: test-connection
-      env:
-        PGPASSWORD: ${{ inputs.postgres-user-pwd }}
-      run: |
-        psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres -c "SELECT 1;"
-      shell: bash
-
     - id: 'run-postgres-config'
       name: 'Configure restored PostgreSQL database'
       env:
         PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       shell: bash
       run: |-
-        psql --host=localhost --port=5432 --username=postgres <<EOF
+        psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres <<EOF
           \x
-          GRANT "${{ inputs.service-name }}-${{ inputs.destination_environment }}" TO "postgres";
+          GRANT "${{ inputs.service-name }}-${{ inputs.restore-environment }}" TO "postgres";
           ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.snapshot-environment }}" RENAME TO "${{ inputs.database-name }}_${{ inputs.restore-environment }}";
           ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.restore-environment }}" OWNER TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
           \c "${{ inputs.database-name }}_${{ inputs.restore-environment }}"
           REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
           EOF
 
-    # - id: 'remove-old-user'
+    - id: 'remove-snapshot-app-user'
+      name: Remove Snapshot App User
+      env:
+        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+        PGUSER: '${{ inputs.service-name }}-${{ inputs.snapshot-environment }}'
+      shell: bash
+      run: gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
