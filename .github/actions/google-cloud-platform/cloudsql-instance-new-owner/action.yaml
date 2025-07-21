@@ -98,4 +98,4 @@ runs:
         DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
         PGUSER: '${{ inputs.service-name }}-${{ inputs.snapshot-environment }}'
       shell: bash
-      run: gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
+      run: gcloud sql users delete "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
