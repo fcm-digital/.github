@@ -8,24 +8,36 @@ inputs:
     required: false
     default: 'false'
 
-  app_name:
+  app-name:
     description: 'The name of the application.'
     required: true
-  destination-environment:
-    description: 'The destination environment.'
+  service-name:
+    description: 'The name of the specific service (part of the app-name).'
+    required: true
+  database-name:
+    description: 'The prefix name of the database.'
     required: true
 
-  instance:
-    description: 'The CloudSQL instance to reassign the owner of.'
+  restore-environment:
+    description: 'The environment to which the instance is being restored.'
     required: true
-  db-postgres-password:
+  snapshot-environment:
+    description: 'The environment from which the snapshot was taken.'
+    required: true
+
+  restore-instance:
+    description: 'The CloudSQL instance ID to reassign the owner of.'
+    required: true
+  private-ip-instance:
+    description: 'The CloudSQL private IP of the restored instance.'
+    required: true
+
+  postgres-user-pwd:
     description: 'The password for the PostgreSQL database.'
-    required: false
-    default: ''
-  db-appuser-password:
+    required: true
+  appname-user-pwd:
     description: 'The password for the App User.'
-    required: false
-    default: ''
+    required: true
 
 runs:
   using: "composite"
@@ -35,53 +47,23 @@ runs:
       name: 'Configure GCloud SDK'
       uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
 
-    - id: onepassword-secret-postgres
-      if: inputs.db-postgres-password == ''
-      name: Load OnePassword secret [postgres user]
-      uses: 1password/load-secrets-action@v2
-      env:
-        POSTGRES_PGUSER: postgres
-        POSTGRES_PGPASSWORD: op://staging-secrets/restored-db-credentials/password
-      with:
-        export-env: true
-
-    - id: onepassword-secret-appuser
-      if: inputs.db-appuser-password == ''
-      name: Load OnePassword secret [appuser user]
-      uses: 1password/load-secrets-action@v2
-      env:
-        APPUSER_PGUSER: op://infra-stg/cloudsql-${{ inputs.app_name }}-stg-${{  }}-${{ inputs.destination-environment }}/username
-        APPUSER_PGPASSWORD: op://infra-stg/cloudsql-${{ inputs.app_name }}-stg-${{  }}-${{ inputs.destination-environment }}/password
-      with:
-        export-env: true
-
-    - id: get-db-instance-secrets
-      name: Get DB Instance Secrets
-      shell: bash
-      run: |
-        if [[ -z "${{ env.POSTGRES_PGPASSWORD }}" ]]; then
-          echo "postgres_pgpas=${{ inputs.db-postgres-password }}" >> $GITHUB_ENV
-        else
-          echo "postgres_pgpas=${{ env.POSTGRES_PGPASSWORD }}" >> $GITHUB_ENV
-        fi
-        echo "postgres_pgusr=postgres" >> $GITHUB_ENV
-
-        if [[ -z "${{ env.APPUSER_PGPASSWORD }}" || & -z "${{ env.APPUSER_PGUSER }}" ]]; then
-          echo "appuser_pgusr=${{ inputs.db-appuser-user }}" >> $GITHUB_ENV
-          echo "appuser_pgpwd=${{ inputs.db-appuser-password }}" >> $GITHUB_ENV
-        else
-          echo "appuser_pgusr=${{ env.APPUSER_PGUSER }}" >> $GITHUB_ENV
-          echo "appuser_pgpwd=${{ env.APPUSER_PGPASSWORD }}" >> $GITHUB_ENV
-        fi
-
     - id: restore-postgres-user-password
       name: Restore Postgres User Password
       env:
-        DESTINATION_INSTANCE_ID: ${{ steps.destination-instance-id.outputs.destination_instance_id }}
+        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
         PGUSER: 'postgres'
+        PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       shell: bash
-      run: |
-        gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}
+      run: echo "gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}"
+
+    - id: create-app-user
+      name: 'Create database user and password'
+      env:
+        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+        PGUSER: '${{ inputs.service-name }}-${{ inputs.restore-environment }}'
+        PGPASSWORD: ${{ inputs.appname-user-pwd }}
+      shell: bash
+      run: echo "gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD}"
 
     - id: install-psql
       name: Install PostgreSQL Client
@@ -90,21 +72,17 @@ runs:
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends postgresql-client
 
-    - id: instance-connection
-      name: Instance Connection
-      uses: fcm-digital/.github/.github/actions/google-cloud-platform/cloudsql-instance-connection@sc-23004-dynamic-staging-envs
-      with:
-        instance: ${{ inputs.instance }}
-
     - id: 'run-postgres-config'
       name: 'Configure restored PostgreSQL database'
+      env:
+        PGPASSWORD: ${{ inputs.postgres-user-pwd }}
       shell: bash
       run: |-
-        psql --host=localhost --port=5432 --username=postgres <<EOF
+        psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres <<EOF
           \x
-          GRANT "itinerary-core-${{ inputs.destination_environment }}" TO "postgres";
-          ALTER DATABASE "itinerary_core_prod" RENAME TO "itinerary_core_${{ inputs.destination_environment }}";
-          ALTER DATABASE "itinerary_core_${{ inputs.destination_environment }}" OWNER TO "itinerary-core-${{ inputs.destination_environment }}";
-          \c "itinerary_core_${{ inputs.destination_environment }}"
-          REASSIGN OWNED BY "itinerary-core-pro" TO "itinerary-core-${{ inputs.destination_environment }}";
+          GRANT "${{ inputs.service-name }}-${{ inputs.destination_environment }}" TO "postgres";
+          ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.snapshot-environment }}" RENAME TO "${{ inputs.database-name }}_${{ inputs.restore-environment }}";
+          ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.restore-environment }}" OWNER TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
+          \c "${{ inputs.database-name }}_${{ inputs.restore-environment }}"
+          REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
           EOF

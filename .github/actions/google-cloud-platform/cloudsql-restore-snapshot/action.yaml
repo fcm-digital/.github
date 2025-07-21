@@ -8,14 +8,6 @@ inputs:
     required: false
     default: 'false'
 
-  set-instance-new-owner:
-    description: 'Whether to set the new owner of the restored instance.'
-    required: false
-    default: 'false'
-  destination-environment:
-    description: 'The destination environment. (Required if set-instance-new-owner is true).'
-    required: false
-
   restore-instance:
     description: 'The CloudSQL instance to restore the snapshot to.'
     required: true
@@ -64,12 +56,3 @@ runs:
             exit 1
           fi
           echo "CloudSQL instance ${{ inputs.restore-instance }} restored successfully."
-
-    # - id: set-instance-new-owner
-    #   if: inputs.set-instance-new-owner == 'true' && inputs.destination-environment != ''
-    #   name: 'Set New Owner for Restored Instance'
-    #   uses: fcm-digital/.github/.github/actions/google-cloud-platform/cloudsql-instance-new-owner@sc-23004-dynamic-staging-envs
-    #   with:
-    #     gcloud-sdk-configure: 'true'
-    #     instance: ${{ inputs.restore-instance }}
-    #     destination-environment: ${{ inputs.destination-environment }}
