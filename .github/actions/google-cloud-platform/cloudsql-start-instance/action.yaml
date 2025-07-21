@@ -20,6 +20,8 @@ runs:
       if: inputs.gcloud-sdk-configure == 'true'
       name: 'Configure GCloud SDK'
       uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
 
     - id: start-instance
       name: 'Start CloudSQL Instance'
