@@ -1,0 +1,101 @@
+---
+name: 'CloudSQL Instance New Owner'
+description: 'Reassign the owner of a CloudSQL instance to a new owner.'
+
+inputs:
+  gcloud-sdk-configure:
+    description: 'Whether to configure GCloud SDK.'
+    required: false
+    default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
+
+  app-name:
+    description: 'The name of the application.'
+    required: true
+  service-name:
+    description: 'The name of the specific service (part of the app-name).'
+    required: true
+  database-name:
+    description: 'The prefix name of the database.'
+    required: true
+
+  restore-environment:
+    description: 'The environment to which the instance is being restored.'
+    required: true
+  snapshot-environment:
+    description: 'The environment from which the snapshot was taken.'
+    required: true
+
+  restore-instance:
+    description: 'The CloudSQL instance ID to reassign the owner of.'
+    required: true
+  private-ip-instance:
+    description: 'The CloudSQL private IP of the restored instance.'
+    required: true
+
+  postgres-user-pwd:
+    description: 'The password for the PostgreSQL database.'
+    required: true
+  appname-user-pwd:
+    description: 'The password for the App User.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: gcloud-sdk-configure
+      if: inputs.gcloud-sdk-configure == 'true'
+      name: 'Configure GCloud SDK'
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
+
+    - id: restore-postgres-user-password
+      name: Restore Postgres User Password
+      env:
+        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+        PGUSER: 'postgres'
+        PGPASSWORD: ${{ inputs.postgres-user-pwd }}
+      shell: bash
+      run: gcloud sql users set-password "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}
+
+    - id: create-app-user
+      name: 'Create database user and password'
+      env:
+        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+        PGUSER: '${{ inputs.service-name }}-${{ inputs.restore-environment }}'
+        PGPASSWORD: ${{ inputs.appname-user-pwd }}
+      shell: bash
+      run: gcloud sql users create "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --password=${PGPASSWORD} --project=${{ inputs.gcp-project-id }}
+
+    - id: install-psql
+      name: Install PostgreSQL Client
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends postgresql-client
+
+    - id: 'run-postgres-config'
+      name: 'Configure restored PostgreSQL database'
+      env:
+        PGPASSWORD: ${{ inputs.postgres-user-pwd }}
+      shell: bash
+      run: |-
+        psql --host=${{ inputs.private-ip-instance }} --port=5432 --username=postgres <<EOF
+        \x
+        GRANT "${{ inputs.service-name }}-${{ inputs.restore-environment }}" TO "postgres";
+        ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.snapshot-environment }}" RENAME TO "${{ inputs.database-name }}_${{ inputs.restore-environment }}";
+        ALTER DATABASE "${{ inputs.database-name }}_${{ inputs.restore-environment }}" OWNER TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
+        \c "${{ inputs.database-name }}_${{ inputs.restore-environment }}"
+        REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
+        EOF
+
+    # - id: 'remove-snapshot-app-user'
+    #   name: Remove Snapshot App User
+    #   env:
+    #     DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+    #     PGUSER: '${{ inputs.service-name }}-${{ inputs.snapshot-environment }}'
+    #   shell: bash
+    #   run: gcloud sql users delete "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
