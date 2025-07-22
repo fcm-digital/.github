@@ -11,6 +11,9 @@ inputs:
   dd-api-key:
     description: 'The DataDog API key to use. (Leave empty to disable DataDog integration.)'
     required: true
+  dd-languages:
+    description: 'The languages to use for DataDog integration.'
+    required: true
   dd-site:
     description: 'The DataDog site to use.'
     required: false
@@ -26,9 +29,10 @@ runs:
         k6-version: ${{ inputs.k6-version }}
 
     - id: setup-dd-agent
-      if: dd-api-key != ''
-      name: Setup DataDog Agent
-      uses: datadog/agent-github-action@v1
+      if: inputs.dd-api-key != ''
+      name: Configure Datadog Test Optimization
+      uses: datadog/test-visibility-github-action@v2
       with:
+        languages: ${{ inputs.dd-languages }}
         api_key: ${{ inputs.dd-api-key }}
-        datadog_site: ${{ inputs.datadog-site }}
+        site: ${{ inputs.dd-site }}
