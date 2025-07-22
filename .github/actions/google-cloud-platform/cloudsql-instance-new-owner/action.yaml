@@ -92,10 +92,10 @@ runs:
         REASSIGN OWNED BY "${{ inputs.service-name }}-${{ inputs.snapshot-environment }}" TO "${{ inputs.service-name }}-${{ inputs.restore-environment }}";
         EOF
 
-    - id: 'remove-snapshot-app-user'
-      name: Remove Snapshot App User
-      env:
-        DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
-        PGUSER: '${{ inputs.service-name }}-${{ inputs.snapshot-environment }}'
-      shell: bash
-      run: gcloud sql users delete "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
+    # - id: 'remove-snapshot-app-user'
+    #   name: Remove Snapshot App User
+    #   env:
+    #     DESTINATION_INSTANCE_ID: ${{ inputs.restore-instance }}
+    #     PGUSER: '${{ inputs.service-name }}-${{ inputs.snapshot-environment }}'
+    #   shell: bash
+    #   run: gcloud sql users delete "${PGUSER}" --instance="${DESTINATION_INSTANCE_ID}" --project=${{ inputs.gcp-project-id }}
