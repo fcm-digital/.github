@@ -13,6 +13,7 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
     VALUES_GLOBAL_FILE=$(find $VALUES_DIR/ -maxdepth 1 -iname "*.yaml*")
     if [ ! -z "${VALUES_GLOBAL_FILE}" ]; then
         for value in $VALUES_GLOBAL_FILE; do
+            echo $value
             VALUES+=$(echo "-f .$value ")
         done
     fi
@@ -20,11 +21,13 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
     VALUES_LOCAL_FILE=$(find "$VALUES_DIR/$env/" -iname "*.yaml*")
     if [ ! -z "${VALUES_LOCAL_FILE}" ]; then
         for value in $VALUES_LOCAL_FILE; do
+            echo $value
             VALUES+=$(echo "-f .$value ")
         done
     fi
 
     cd ./helm-chart-template
+    echo $VALUES
     helm template . -s templates/job.yaml --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "jobs-$env.yaml"
 
     delimiter="---"
@@ -38,7 +41,7 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
             mv "$file" "${file_name}-${env}.yaml"
         fi
     done
-
+    echo "helm template . -s templates/argo-workflows-orchestration.yaml --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > argo-workflows-$env.yaml"
     helm template . -s templates/argo-workflows-orchestration.yaml --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > argo-workflows-$env.yaml
 
     csplit -zs --suppress-matched argo-workflows-$env.yaml /"$delimiter"/ '{*}'
