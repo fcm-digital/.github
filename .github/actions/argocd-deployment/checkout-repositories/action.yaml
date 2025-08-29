@@ -26,23 +26,20 @@ inputs:
 
 outputs:
   branch_name:
-    description: 'The current Branch name.'
+    description: 'The name of the branch being deployed.'
     value: ${{ steps.init-context-vars.outputs.branch_name }}
   env_to_deploy:
-    description: 'The current Environment name.'
+    description: 'The target environment for deployment.'
     value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
-  image_tag:
-    description: 'The new Image Tag that will be deployed.'
-    value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
-  commit:
-    description: 'The commit Id.'
-    value: ${{ steps.init-context-vars.outputs.short_sha }}
   commit_at:
-    description: 'The time where the commit was created.'
+    description: 'The timestamp of the commit.'
     value: ${{ steps.init-context-vars.outputs.current_time }}
-  deploy_on_existing_env:
-    description: 'If the environment exists -> `true`. Else (branch_name without an env) -> `false`'
-    value: ${{ steps.check-environment.outputs.deploy_on_existing_env }}
+  commit:
+    description: 'The unique identifier for the commit.'
+    value: ${{ steps.init-context-vars.outputs.short_sha }}
+  image_tag:
+    description: 'The tag of the new image to be deployed.'
+    value: ${{ steps.init-context-vars.outputs.image_tag }}
 
 runs:
   using: "composite"
