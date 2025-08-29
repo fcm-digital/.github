@@ -111,7 +111,7 @@ runs:
 
     - uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.branch_name }}
+        ref: ${{ steps.init-context-vars.outputs.branch_name }}
 
     - uses: actions/checkout@v4
       if: github.event_name == 'push' && 
