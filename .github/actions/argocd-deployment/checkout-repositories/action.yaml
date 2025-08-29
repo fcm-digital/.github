@@ -102,6 +102,13 @@ runs:
           export IMAGE_TAG=${{ inputs.image_tag }}
         fi
 
+        if [[ "$IMAGE_TAG" == "master" || "$IMAGE_TAG" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
+          echo "# 🚨 Deployment failed" > $GITHUB_STEP_SUMMARY
+          echo "## Reason" >> $GITHUB_STEP_SUMMARY
+          echo "You can't deploy \`master\` or \`latest\` image on PROD" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
         echo "branch_name=$( echo $BRANCH_NAME )" >> $GITHUB_OUTPUT
         echo "env_to_deploy=$( echo $ENV_TO_DEPLOY )" >> $GITHUB_OUTPUT
         echo "current_time=$( echo $CURRENT_TIME )" >> $GITHUB_OUTPUT
