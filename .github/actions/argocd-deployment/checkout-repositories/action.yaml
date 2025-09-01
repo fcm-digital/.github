@@ -90,11 +90,6 @@ runs:
             exit 1
           fi
         fi
-
-        if [[ -z "${{ inputs.image_tag }}" ]]; then
-          echo "COMMIT_TIME=$( git show -s --format=%ct )" >> $GITHUB_ENV
-          echo "Commit Time: $COMMIT_TIME"
-        fi
       shell: bash
 
     - id: set-outputs
@@ -102,11 +97,24 @@ runs:
       run: |
         echo "Commit Time: $COMMIT_TIME"
         if [[ -z "${{ inputs.image_tag }}" ]]; then
-          echo "CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+
+          echo "Current Time: $( date -d@$( git show -s --format=%ct ) -u +"%Y-%m-%dT%H%M" )"
+          echo "Short SHA: $( git rev-parse --short=7 "$GITHUB_SHA" )"
+
+          echo "CURRENT_TIME=$( date -d@$( git show -s --format=%ct ) -u +"%Y-%m-%dT%H%M" )" >> $GITHUB_ENV
           echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_ENV
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - id: test-envs
+      name: Test Envs
+      run: |
+        echo "Current Time: $CURRENT_TIME"
+        echo "Short SHA: $SHORT_SHA"
+        echo "Branch Name: $BRANCH_NAME"
+        echo "Env To Deploy: $ENV_TO_DEPLOY"
       shell: bash
 
     - id: set-outputs-image-tag
