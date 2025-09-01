@@ -92,9 +92,12 @@ runs:
         fi
 
         if [[ -z "${{ inputs.image_tag }}" ]]; then
-          echo "COMMIT_TIME=$( git show -s --format=%ct )" >> $GITHUB_ENV
-          echo "CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
-          echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_ENV
+          COMMIT_TIME=$( git show -s --format=%ct )
+          CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")
+          SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )
+          echo "COMMIT_TIME=$COMMIT_TIME" >> $GITHUB_ENV
+          echo "CURRENT_TIME=$CURRENT_TIME" >> $GITHUB_ENV
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           echo "IMAGE_TAG=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_ENV
         else
           echo "CURRENT_TIME=NO_TIME" >> $GITHUB_ENV
