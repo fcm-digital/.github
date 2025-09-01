@@ -27,19 +27,19 @@ inputs:
 outputs:
   branch_name:
     description: 'The name of the branch being deployed.'
-    value: ${{ steps.init-context-vars.outputs.branch_name }}
+    value: ${{ steps.set-outputs.outputs.branch_name }}
   env_to_deploy:
     description: 'The target environment for deployment.'
-    value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
+    value: ${{ steps.set-outputs.outputs.env_to_deploy }}
   commit_at:
     description: 'The timestamp of the commit.'
-    value: ${{ steps.init-context-vars.outputs.current_time }}
+    value: ${{ steps.set-outputs.outputs.current_time }}
   commit:
     description: 'The unique identifier for the commit.'
-    value: ${{ steps.init-context-vars.outputs.short_sha }}
+    value: ${{ steps.set-outputs.outputs.short_sha }}
   image_tag:
     description: 'The tag of the new image to be deployed.'
-    value: ${{ steps.set-output-image-tag.outputs.image_tag }}
+    value: ${{ steps.set-outputs.outputs.image_tag }}
 
 runs:
   using: "composite"
@@ -97,42 +97,21 @@ runs:
     - id: set-outputs
       name: Set Outputs
       run: |
-        if [[ -z "${{ inputs.image_tag }}" ]]; then
-
-          echo "Current Time: $( date -d@$( git show -s --format=%ct ) -u +"%Y-%m-%dT%H%M" )"
-          echo "Short SHA: $( git rev-parse --short=7 "$GITHUB_SHA" )"
-
-          echo "CURRENT_TIME=$( date -d@$( git show -s --format=%ct ) -u +"%Y-%m-%dT%H%M" )" >> $GITHUB_ENV
-          echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_ENV
-        fi
-        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-        echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - id: test-envs
-      name: Test Envs
-      run: |
-        echo "Current Time: $CURRENT_TIME"
-        echo "Short SHA: $SHORT_SHA"
-        echo "Branch Name: $BRANCH_NAME"
-        echo "Env To Deploy: $ENV_TO_DEPLOY"
-      shell: bash
-
-    - id: set-outputs-image-tag
-      name: Set Outputs for Image Tag
-      run: |
         if [[ "${{ inputs.image_tag }}" == "master" || "${{ inputs.image_tag }}" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
           echo "# 🚨 Deployment failed" > $GITHUB_STEP_SUMMARY
           echo "## Reason" >> $GITHUB_STEP_SUMMARY
           echo "You can't deploy \`master\` or \`latest\` image on PROD" >> $GITHUB_STEP_SUMMARY
           exit 1
         elif [[ -z "${{ inputs.image_tag }}" ]]; then
-          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          export COMMIT_TIME=$( git show -s --format=%ct )
+          echo "CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M" )" >> $GITHUB_OUTPUT
+          echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_OUTPUT
           echo "image_tag=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
         else
           echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
         fi
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v4
