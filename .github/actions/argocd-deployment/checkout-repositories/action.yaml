@@ -93,12 +93,14 @@ runs:
 
         if [[ -z "${{ inputs.image_tag }}" ]]; then
           echo "COMMIT_TIME=$( git show -s --format=%ct )" >> $GITHUB_ENV
+          echo "Commit Time: $COMMIT_TIME"
         fi
       shell: bash
 
     - id: set-outputs
       name: Set Outputs
       run: |
+        echo "Commit Time: $COMMIT_TIME"
         if [[ -z "${{ inputs.image_tag }}" ]]; then
           echo "CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
           echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_ENV
@@ -116,11 +118,11 @@ runs:
           echo "You can't deploy \`master\` or \`latest\` image on PROD" >> $GITHUB_STEP_SUMMARY
           exit 1
         elif [[ -z "${{ inputs.image_tag }}" ]]; then
-          echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
-        else
           echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           echo "image_tag=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
+        else
+          echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
