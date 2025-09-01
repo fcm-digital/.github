@@ -108,7 +108,11 @@ runs:
           echo "You can't deploy \`master\` or \`latest\` image on PROD" >> $GITHUB_STEP_SUMMARY
           exit 1
         fi
+      shell: bash
 
+    - id: set-output
+      name: Set Output
+      run: |
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
         echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
