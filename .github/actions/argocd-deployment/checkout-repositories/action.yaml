@@ -54,7 +54,7 @@ runs:
             echo "Branch name not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
-            export BRANCH_NAME=${{ inputs.branch_name }}
+            echo "BRANCH_NAME=${{ inputs.branch_name }}" >> $GITHUB_ENV
           fi
 
           if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
@@ -63,24 +63,24 @@ runs:
             echo "Environment not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
-            export ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}
+            echo "ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}" >> $GITHUB_ENV
           fi
 
         else
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            export BRANCH_NAME=${{ github.head_ref }}
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
 
             echo "The \`env_to_deploy\` extraction from the \`branch_name\` in a PR event is no longer available."
             echo "You must use the \`argocd-get-env-to-deploy-on\` action to obtain the \`env_to_deploy\` value."
-            export ENV_TO_DEPLOY=NOT_DEFINED
+            echo "ENV_TO_DEPLOY=NOT_DEFINED" >> $GITHUB_ENV
 
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            export BRANCH_NAME=${{ github.ref_name }}
+            echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
 
             if [[ "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/heads/main" ]]; then
-              export ENV_TO_DEPLOY=prod
+              echo "ENV_TO_DEPLOY=prod" >> $GITHUB_ENV
             else
-              export ENV_TO_DEPLOY=${{ github.ref_name }}
+              echo "ENV_TO_DEPLOY=${{ github.ref_name }}" >> $GITHUB_ENV
             fi
 
           else
@@ -92,14 +92,14 @@ runs:
         fi
 
         if [[ -z "${{ inputs.image_tag }}" ]]; then
-          export COMMIT_TIME=$( git show -s --format=%ct )
-          export CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")
-          export SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )
-          export IMAGE_TAG=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA
+          echo "COMMIT_TIME=$( git show -s --format=%ct )" >> $GITHUB_ENV
+          echo "CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_ENV
+          echo "SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_ENV
         else
-          export CURRENT_TIME=NO_TIME
-          export SHORT_SHA=NO_SHA
-          export IMAGE_TAG=${{ inputs.image_tag }}
+          echo "CURRENT_TIME=NO_TIME" >> $GITHUB_ENV
+          echo "SHORT_SHA=NO_SHA" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ inputs.image_tag }}" >> $GITHUB_ENV
         fi
 
         if [[ "$IMAGE_TAG" == "master" || "$IMAGE_TAG" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
@@ -109,11 +109,11 @@ runs:
           exit 1
         fi
 
-        echo "branch_name=$( echo $BRANCH_NAME )" >> $GITHUB_OUTPUT
-        echo "env_to_deploy=$( echo $ENV_TO_DEPLOY )" >> $GITHUB_OUTPUT
-        echo "current_time=$( echo $CURRENT_TIME )" >> $GITHUB_OUTPUT
-        echo "short_sha=$( echo $SHORT_SHA )" >> $GITHUB_OUTPUT
-        echo "image_tag=$( echo $IMAGE_TAG )" >> $GITHUB_OUTPUT
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
+        echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+        echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+        echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v4
