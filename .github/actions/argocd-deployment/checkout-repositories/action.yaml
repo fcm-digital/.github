@@ -119,8 +119,8 @@ runs:
     - uses: actions/checkout@v4
       if: github.event_name == 'push' && 
           (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-          steps.init-context-vars.outputs.env_to_deploy == 'prod' &&
-          (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main')
+          steps.set-outputs.outputs.env_to_deploy == 'prod' &&
+          (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
