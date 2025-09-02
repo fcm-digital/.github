@@ -1,37 +1,45 @@
 ---
 name: 'Checkout Repositories'
-description: 'Checkout repositories (Local & helm-chart-app-values) for ArgoCD deployment.'
+description: 'Checkout repositories and init context variables for ArgoCD deployment.'
 
 inputs:
   app_name:
-    description: 'Name of the app to deploy.'
+    description: 'App Name to Deploy.'
     required: true
+
+  branch_name:
+    description: 'Branch Name to Checkout (Required for manual deploy).'
+    required: false
+  env_to_deploy:
+    description: 'Target Environment to Deploy. (Required for manual deploy).'
+    required: false
+  image_tag: 
+    description: 'Image Tag to Deploy. If not provided, the image will be built from the workflow branch.'
+    required: false
+
   github_token_checkout:
     description: 'The GitHub token to checkout helm_chart_template repository.'
     required: true
   helm_chart_template_ref:
-    description: 'The helm-chart-template branch name.'
+    description: 'If provided, the helm-chart-template repository will be checked out to this branch.'
     required: false
 
 outputs:
   branch_name:
-    description: 'The current Branch name.'
-    value: ${{ steps.init-context-vars.outputs.branch_name }}
+    description: 'The name of the branch being deployed.'
+    value: ${{ steps.set-outputs.outputs.branch_name }}
   env_to_deploy:
-    description: 'The current Environment name.'
-    value: ${{ steps.init-context-vars.outputs.env_to_deploy }}
-  image_tag:
-    description: 'The new Image Tag that will be deployed.'
-    value: ${{ steps.init-context-vars.outputs.branch_name }}-${{ steps.init-context-vars.outputs.current_time }}-${{ steps.init-context-vars.outputs.short_sha }}
-  commit:
-    description: 'The commit Id.'
-    value: ${{ steps.init-context-vars.outputs.short_sha }}
+    description: 'The target environment for deployment.'
+    value: ${{ steps.set-outputs.outputs.env_to_deploy }}
   commit_at:
-    description: 'The time where the commit was created.'
-    value: ${{ steps.init-context-vars.outputs.current_time }}
-  deploy_on_existing_env:
-    description: 'If the environment exists -> `true`. Else (branch_name without an env) -> `false`'
-    value: ${{ steps.check-environment.outputs.deploy_on_existing_env }}
+    description: 'The timestamp of the commit.'
+    value: ${{ steps.set-outputs.outputs.current_time }}
+  commit:
+    description: 'The unique identifier for the commit.'
+    value: ${{ steps.set-outputs.outputs.short_sha }}
+  image_tag:
+    description: 'The tag of the new image to be deployed.'
+    value: ${{ steps.set-outputs.outputs.image_tag }}
 
 runs:
   using: "composite"
@@ -39,72 +47,95 @@ runs:
     - uses: actions/checkout@v4
 
     - id: init-context-vars
+      name: Init Context Variables
       run: |
-        export COMMIT_TIME=$( git show -s --format=%ct )
-        if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-          export BRANCH_NAME_LOCAL=$( echo $GITHUB_HEAD_REF )
-        elif [[ '${{ github.event_name }}' == 'push' ]]; then
-          export BRANCH_NAME_LOCAL=$( cut -d '/' -f 3 <<< "$GITHUB_REF" )
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ -z "${{ inputs.branch_name }}" ]]; then
+            echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
+            echo "## Reason" >> $GITHUB_STEP_SUMMARY
+            echo "Branch name not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "BRANCH_NAME=${{ inputs.branch_name }}" >> $GITHUB_ENV
+          fi
+
+          if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
+            echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
+            echo "## Reason" >> $GITHUB_STEP_SUMMARY
+            echo "Environment not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}" >> $GITHUB_ENV
+          fi
+
         else
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+
+            echo "The \`env_to_deploy\` extraction from the \`branch_name\` in a PR event is no longer available."
+            echo "You must use the \`argocd-get-env-to-deploy-on\` action to obtain the \`env_to_deploy\` value."
+            echo "ENV_TO_DEPLOY=NOT_DEFINED" >> $GITHUB_ENV
+
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+
+            if [[ "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/heads/main" ]]; then
+              echo "ENV_TO_DEPLOY=prod" >> $GITHUB_ENV
+            else
+              echo "ENV_TO_DEPLOY=${{ github.ref_name }}" >> $GITHUB_ENV
+            fi
+
+          else
+            echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
+            echo "## Reason" >> $GITHUB_STEP_SUMMARY
+            echo "Event \`${{ github.event_name }}\` not supported." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        fi
+      shell: bash
+
+    - id: set-outputs
+      name: Set Outputs
+      run: |
+        if [[ "${{ inputs.image_tag }}" == "master" || "${{ inputs.image_tag }}" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
+          echo "# 🚨 Deployment failed" > $GITHUB_STEP_SUMMARY
+          echo "## Reason" >> $GITHUB_STEP_SUMMARY
+          echo "You can't deploy \`master\` or \`latest\` image on PROD" >> $GITHUB_STEP_SUMMARY
           exit 1
-        fi
-        echo "branch_name=$( echo $BRANCH_NAME_LOCAL )" >> $GITHUB_OUTPUT
-
-        if [[ "$BRANCH_NAME_LOCAL" == "master" || "$BRANCH_NAME_LOCAL" == "main" ]] &&
-           [[ "$GITHUB_REF" == "refs/heads/master" || "$GITHUB_REF" == "refs/heads/main" ]]; then
-          echo "env_to_deploy=prod" >> $GITHUB_OUTPUT
+        elif [[ -z "${{ inputs.image_tag }}" ]]; then
+          export COMMIT_TIME=$( git show -s --format=%ct )
+          export CURRENT_TIME=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M" )
+          export SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )
+          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "image_tag=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
         else
-          echo "env_to_deploy=$( cut -d '-' -f 1 <<< "$BRANCH_NAME_LOCAL" )" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
         fi
-
-        echo "current_time=$( date -d@$COMMIT_TIME -u +"%Y-%m-%dT%H%M")" >> $GITHUB_OUTPUT
-        echo "short_sha=$( git rev-parse --short=7 "$GITHUB_SHA" )" >> $GITHUB_OUTPUT
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/checkout@v4
-      if: (inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]') &&
-          (github.event_name == 'push') && 
+      if: github.event_name == 'push' && 
           (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-          (steps.init-context-vars.outputs.branch_name == 'master' || steps.init-context-vars.outputs.branch_name == 'main') &&
-          (steps.init-context-vars.outputs.env_to_deploy == 'prod')
+          steps.set-outputs.outputs.env_to_deploy == 'prod' &&
+          (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
-        ref: ${{ env.BRANCH_NAME }}
+        ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
     - uses: actions/checkout@v4
-      if: (inputs.github_token_checkout != '' && github.event.pull_request.user.login != 'dependabot[bot]')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
 
-    - id: check-environment
-      run: |
-        if [ ! -d helm-chart-${{ inputs.app_name }}-values-staging ] && [ ! -d helm-chart-${{ inputs.app_name }}-values-prod ]; then
-            echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
-            echo "No deployment will be needed."
-        elif [ "${{ steps.init-context-vars.outputs.env_to_deploy }}" = "prod" ]; then
-          echo "All Repositories were properly cloned!"
-          echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
-        else
-          cd helm-chart-${{ inputs.app_name }}-values-staging/staging
-          if [ ! -d ${{ steps.init-context-vars.outputs.env_to_deploy }} ]; then
-            echo "Environment does not exist. No deployment will be needed."
-            echo "deploy_on_existing_env=false" >> $GITHUB_OUTPUT
-          else
-            echo "All Repositories were properly cloned!"
-            echo "deploy_on_existing_env=true" >> $GITHUB_OUTPUT
-          fi
-        fi
-      shell: bash
-
     - uses: actions/checkout@v4
-      if: inputs.github_token_checkout != '' &&
-          github.event.pull_request.user.login != 'dependabot[bot]' && 
-          inputs.helm_chart_template_ref != ''
+      if: inputs.helm_chart_template_ref != ''
       with:
         repository: fcm-digital/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
