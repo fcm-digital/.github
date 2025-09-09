@@ -17,6 +17,10 @@ inputs:
   environment:
     description: 'Environment.'
     required: true
+  labels:
+    description: 'Labels to be used for filtering.'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -33,3 +37,4 @@ runs:
         ARGO_SECURE: true
         KUBECONFIG: /dev/null
         ENVIRONMENTS: ${{ inputs.environments }}
+        LABELS: ${{ inputs.labels }}
