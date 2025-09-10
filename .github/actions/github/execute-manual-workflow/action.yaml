@@ -52,7 +52,7 @@ runs:
       run: |
         echo $EXEC_WORKFLOW_PARAMS
         
-        WORKFLOW_OUTPUT$(curl -L \
+        WORKFLOW_OUTPUT=$(curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.github_token }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -61,7 +61,7 @@ runs:
           -d '{ $EXEC_WORKFLOW_PARAMS }')
 
         echo $WORKFLOW_OUTPUT
-        echo $WORKFLOW_OUTPUT | jq '.status'
+        echo $WORKFLOW_OUTPUT | jq '.status')
 
         if [[ $? -ne 0 ]]; then
           echo "Failed to execute workflow $workflow_id for repository ${{ matrix.apps }}"
