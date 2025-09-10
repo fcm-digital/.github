@@ -60,10 +60,9 @@ runs:
           https://api.github.com/repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows/${{ inputs.workflow_id }}/dispatches \
           -d '{ $EXEC_WORKFLOW_PARAMS }')
 
-        echo "WORKFLOW_OUTPUT: $WORKFLOW_OUTPUT"
-        echo "STATUS: $(echo $WORKFLOW_OUTPUT | jq '.status')"
-
-        if [[ $? -ne 0 ]]; then
+        WORKFLOW_CURL_STATUS=$(echo $WORKFLOW_OUTPUT | jq '.status')
+        #? https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event--status-codes
+        if [[ $? -ne 0 ]] || [[ "$WORKFLOW_CURL_STATUS" != "204" ]]; then
           echo "Failed to execute workflow $workflow_id for repository ${{ matrix.apps }}"
           exit 1
         fi
