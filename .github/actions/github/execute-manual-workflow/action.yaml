@@ -38,10 +38,12 @@ runs:
             FORMAT_INPUTS=$(echo { '"'${FORMAT_INPUTS//=/'"': '"'}'"' })
         fi
 
+        echo "format_inputs: $FORMAT_INPUTS"
+
         if [[ -z $FORMAT_INPUTS ]]; then
-            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"''
+            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"'' >> $GITHUB_ENV
         else
-            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"', '"'inputs'"': '"'${FORMAT_INPUTS}'"''
+            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"', '"'inputs'"': '"'${FORMAT_INPUTS}'"'' >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -50,7 +52,7 @@ runs:
       env:
         EXEC_WORKFLOW_PARAMS: ${{ env.exec_workflow_params }}
       run: |
-        echo $EXEC_WORKFLOW_PARAMS
+        echo "exec_workflow_params: $EXEC_WORKFLOW_PARAMS"
         
         WORKFLOW_OUTPUT=$(curl -L \
           -H "Accept: application/vnd.github+json" \
@@ -64,6 +66,7 @@ runs:
         #? https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event--status-codes
         if [[ $? -ne 0 ]] || [[ "$WORKFLOW_CURL_STATUS" != "204" ]]; then
           echo "Failed to execute workflow ${{ inputs.workflow_id }} for repository ${{ inputs.repository_name }}"
+          echo "Error: $WORKFLOW_OUTPUT"
           exit 1
         fi
       shell: bash

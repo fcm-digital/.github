@@ -24,8 +24,8 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - id: list-workflows
-      name: List Workflows
+    - id: get-workflow-id
+      name: Get Workflow ID
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GITHUB_ORGANIZATION_NAME: ${{ inputs.github_organization_name }}
