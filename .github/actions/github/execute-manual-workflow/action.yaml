@@ -1,0 +1,65 @@
+---
+name: 'Execute Manual Workflow'
+description: 'Execute a manual workflow based on .'
+
+inputs:
+  branch_name:
+    description: 'The branch name to execute the workflow on.'
+    required: false
+    default: "master"
+  github_token:
+    description: 'The GitHub token to list workflows.'
+    required: true
+  github_organization_name:
+    description: 'The GitHub organization name.'
+    required: true
+  repository_name:
+    description: 'The repository name.'
+    required: true
+  workflow_id:
+    description: 'The workflow ID.'
+    required: true
+  workflow_inputs:
+    description: 'The workflow inputs.'
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - id: init-workflow-inputs
+      name: Init Workflow Inputs
+      env:
+        INPUTS: ${{ inputs.workflow_inputs }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+      run: |
+        if [[ ! -z $INPUTS ]]; then
+            FORMAT_INPUTS=$(echo ${INPUTS//,/'"', '"'})
+            FORMAT_INPUTS=$(echo { '"'${FORMAT_INPUTS//=/'"': '"'}'"' })
+        fi
+
+        if [[ -z $FORMAT_INPUTS ]]; then
+            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"''
+        else
+            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"', '"'inputs'"': '"'${FORMAT_INPUTS}'"''
+        fi
+      shell: bash
+
+    - id: exec-workflow
+      name: Execute Workflow
+      env:
+        EXEC_WORKFLOW_PARAMS: ${{ env.exec_workflow_params }}
+      run: |
+        curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          -X POST \
+          https://api.github.com/repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows/${{ inputs.workflow_id }}/dispatches \
+          -d '{ $EXEC_WORKFLOW_PARAMS }'
+
+        if [[ $? -ne 0 ]]; then
+          echo "Failed to execute workflow $workflow_id for repository ${{ matrix.apps }}"
+          exit 1
+        fi
+      shell: bash
