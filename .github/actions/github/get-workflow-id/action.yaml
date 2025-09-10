@@ -44,6 +44,7 @@ runs:
         fi
 
         echo $WORKFLOWS_DATA
+        echo $WORKFLOWS_DATA | jq '.workflows[]'
 
         WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq '.workflows[] | select(.path | contains("$WORKFLOW_FILE_NAME"))' | jq '.id')
 
