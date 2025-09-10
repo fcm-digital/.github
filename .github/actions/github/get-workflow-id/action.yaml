@@ -43,6 +43,8 @@ runs:
           exit 1
         fi
 
+        echo $WORKFLOWS_DATA
+
         WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq '.workflows[] | select(.path | contains("$WORKFLOW_FILE_NAME"))' | jq '.id')
 
         if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
