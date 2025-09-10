@@ -60,8 +60,8 @@ runs:
           https://api.github.com/repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows/${{ inputs.workflow_id }}/dispatches \
           -d '{ $EXEC_WORKFLOW_PARAMS }')
 
-        echo $WORKFLOW_OUTPUT
-        echo $WORKFLOW_OUTPUT | jq '.status')
+        echo "WORKFLOW_OUTPUT: $WORKFLOW_OUTPUT"
+        echo "STATUS: $(echo $WORKFLOW_OUTPUT | jq '.status')"
 
         if [[ $? -ne 0 ]]; then
           echo "Failed to execute workflow $workflow_id for repository ${{ matrix.apps }}"
