@@ -46,7 +46,7 @@ runs:
         echo $WORKFLOWS_DATA | jq '.workflows[]'
         echo $WORKFLOWS_DATA | jq '.workflows[].path'
 
-        WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq '.workflows[] | select(.path | contains("$WORKFLOW_FILE_NAME"))' | jq '.id')
+        WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq --arg workflowFileName "$WORKFLOW_FILE_NAME" '.workflows[] | select(.path | contains($workflowFileName))' | jq '.id')
 
         if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
           echo "Failed to get workflow ID"

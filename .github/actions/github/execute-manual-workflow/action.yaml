@@ -50,6 +50,8 @@ runs:
       env:
         EXEC_WORKFLOW_PARAMS: ${{ env.exec_workflow_params }}
       run: |
+        echo $EXEC_WORKFLOW_PARAMS
+        
         curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.github_token }}" \
