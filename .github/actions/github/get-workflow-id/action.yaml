@@ -30,6 +30,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GITHUB_ORGANIZATION_NAME: ${{ inputs.github_organization_name }}
         REPOSITORY_NAME: ${{ inputs.repository_name }}
+        WORKFLOW_FILE_NAME: ${{ inputs.workflow_file_name }}
       run: |
         WORKFLOWS_DATA=$(curl -L \
           -H "Accept: application/vnd.github+json" \
@@ -41,13 +42,8 @@ runs:
           echo "Failed to list workflows"
           exit 1
         fi
-        echo "workflows_data=$WORKFLOWS_DATA" >> $GITHUB_ENV
-      shell: bash
 
-    - id: get-workflow-id
-      name: Get Workflow ID
-      run: |
-        WORKFLOW_ID=$(echo $workflows_data | jq '.workflows[] | select(.path | contains("${{ inputs.workflow_file_name }}"))' | jq '.id')
+        WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq '.workflows[] | select(.path | contains("$WORKFLOW_FILE_NAME"))' | jq '.id')
 
         if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
           echo "Failed to get workflow ID"
