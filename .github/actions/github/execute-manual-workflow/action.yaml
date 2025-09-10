@@ -63,7 +63,7 @@ runs:
         WORKFLOW_CURL_STATUS=$(echo $WORKFLOW_OUTPUT | jq '.status')
         #? https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event--status-codes
         if [[ $? -ne 0 ]] || [[ "$WORKFLOW_CURL_STATUS" != "204" ]]; then
-          echo "Failed to execute workflow $workflow_id for repository ${{ matrix.apps }}"
+          echo "Failed to execute workflow ${{ inputs.workflow_id }} for repository ${{ inputs.repository_name }}"
           exit 1
         fi
       shell: bash
