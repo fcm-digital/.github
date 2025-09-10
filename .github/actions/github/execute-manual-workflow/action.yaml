@@ -41,9 +41,9 @@ runs:
         echo "format_inputs: $FORMAT_INPUTS"
 
         if [[ -z $FORMAT_INPUTS ]]; then
-            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"'' >> $GITHUB_ENV
+            echo 'exec_workflow_params="ref": "${BRANCH_NAME}"' >> $GITHUB_ENV
         else
-            echo 'exec_workflow_params='"'ref'"': '"'${BRANCH_NAME}'"', '"'inputs'"': '"'${FORMAT_INPUTS}'"'' >> $GITHUB_ENV
+            echo 'exec_workflow_params="ref": "${BRANCH_NAME}", "inputs": ${FORMAT_INPUTS}' >> $GITHUB_ENV
         fi
       shell: bash
 
