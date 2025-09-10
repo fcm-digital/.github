@@ -93,7 +93,8 @@ runs:
 
       shell: bash
 
-    - name: Set up Docker Buildx
+    - id: setup-docker-buildx
+      name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
     - id: inline-cache-staging
@@ -236,3 +237,10 @@ runs:
           ${{ env.REPO_URL }}:latest
         secrets: |
           ${{ inputs.secrets }}
+
+    - id: display-new-image
+      name: Display New Image Built
+      run: |
+        echo "## 🚀 New Image Built 🚀" >> $GITHUB_STEP_SUMMARY
+        echo "\`${{ inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+      shell: bash
