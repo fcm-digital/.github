@@ -32,6 +32,13 @@ runs:
         REPOSITORY_NAME: ${{ inputs.repository_name }}
         WORKFLOW_FILE_NAME: ${{ inputs.workflow_file_name }}
       run: |
+        gh auth status
+
+        if [[ $? -ne 0 ]]; then
+          echo "Failed to authenticate with GitHub"
+          exit 1
+        fi
+
         WORKFLOWS_DATA=$(gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
