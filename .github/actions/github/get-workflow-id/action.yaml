@@ -39,23 +39,23 @@ runs:
           exit 1
         fi
 
-        WORKFLOWS_DATA=$(gh api \
+        gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/$GITHUB_ORGANIZATION_NAME/$REPOSITORY_NAME/actions/workflows)
+          /repos/$GITHUB_ORGANIZATION_NAME/$REPOSITORY_NAME/actions/workflows
 
-        if [[ $? -ne 0 ]] || [[ -z $WORKFLOWS_DATA ]]; then
-          echo "Failed to list workflows"
-          exit 1
-        fi
+        # if [[ $? -ne 0 ]] || [[ -z $WORKFLOWS_DATA ]]; then
+        #   echo "Failed to list workflows"
+        #   exit 1
+        # fi
 
-        echo "WORKFLOWS_DATA: $WORKFLOWS_DATA"
+        # echo "WORKFLOWS_DATA: $WORKFLOWS_DATA"
 
-        WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq --arg workflowFileName "$WORKFLOW_FILE_NAME" '.workflows[] | select(.path | contains($workflowFileName))' | jq '.id')
+        # WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq --arg workflowFileName "$WORKFLOW_FILE_NAME" '.workflows[] | select(.path | contains($workflowFileName))' | jq '.id')
 
-        if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
-          echo "Failed to get workflow ID"
-          exit 1
-        fi
-        echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
+        # if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
+        #   echo "Failed to get workflow ID"
+        #   exit 1
+        # fi
+        # echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
       shell: bash
