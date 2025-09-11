@@ -28,7 +28,9 @@ runs:
       name: Get Workflow ID
       env:
         GH_TOKEN: ${{ inputs.github_token }}
+        GH_DEBUG: api
       run: |
+        gh auth status
         gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.repository_name }} --json id,name
 
         # gh api \
