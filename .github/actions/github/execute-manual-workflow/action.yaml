@@ -53,15 +53,13 @@ runs:
     - id: exec-workflow
       name: Execute Workflow
       run: |
-        echo "exec_workflow_params: $EXEC_WORKFLOW_PARAMS"
-
         WORKFLOW_OUTPUT=$(curl -L \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{ inputs.github_token }}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           -X POST \
           https://api.github.com/repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows/${{ inputs.workflow_id }}/dispatches \
-          -d '${{ env.exec_workflow_params }}')
+          -d '{ ${{ env.exec_workflow_params }} }')
 
         WORKFLOW_CURL_STATUS=$(echo $WORKFLOW_OUTPUT | jq '.status')
         #? https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event--status-codes
