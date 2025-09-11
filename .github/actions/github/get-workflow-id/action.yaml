@@ -28,21 +28,11 @@ runs:
       name: Get Workflow ID
       env:
         GH_TOKEN: ${{ inputs.github_token }}
-        GITHUB_ORGANIZATION_NAME: ${{ inputs.github_organization_name }}
-        REPOSITORY_NAME: ${{ inputs.repository_name }}
-        WORKFLOW_FILE_NAME: ${{ inputs.workflow_file_name }}
       run: |
-        gh auth status
-
-        if [[ $? -ne 0 ]]; then
-          echo "Failed to authenticate with GitHub"
-          exit 1
-        fi
-
         gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/$GITHUB_ORGANIZATION_NAME/$REPOSITORY_NAME/actions/workflows
+          /repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows
 
         # if [[ $? -ne 0 ]] || [[ -z $WORKFLOWS_DATA ]]; then
         #   echo "Failed to list workflows"
@@ -51,7 +41,7 @@ runs:
 
         # echo "WORKFLOWS_DATA: $WORKFLOWS_DATA"
 
-        # WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq --arg workflowFileName "$WORKFLOW_FILE_NAME" '.workflows[] | select(.path | contains($workflowFileName))' | jq '.id')
+        # WORKFLOW_ID=$(echo $WORKFLOWS_DATA | jq --arg workflowFileName "${{ inputs.workflow_file_name }}" '.workflows[] | select(.path | contains($workflowFileName))' | jq '.id')
 
         # if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
         #   echo "Failed to get workflow ID"
