@@ -30,7 +30,6 @@ runs:
         GH_TOKEN: ${{ inputs.github_token }}
         GH_DEBUG: api
       run: |
-        gh auth login --with-token < "${{ inputs.github_token }}"
         gh auth status
 
         gh api \
