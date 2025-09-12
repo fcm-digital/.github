@@ -37,6 +37,8 @@ runs:
       with:
         app-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_app_private_key }}
+        owner: ${{ inputs.github_organization_name }}
+        repositories: ${{ inputs.repository_name }}
 
     - id: get-workflow-id
       name: Get Workflow ID
