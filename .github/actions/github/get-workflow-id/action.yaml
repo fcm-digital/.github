@@ -31,12 +31,13 @@ runs:
         GH_DEBUG: api
       run: |
         gh auth status
-        gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.repository_name }} --json id,name
 
-        # gh api \
-        #   -H "Accept: application/vnd.github+json" \
-        #   -H "X-GitHub-Api-Version: 2022-11-28" \
-        #   /repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows
+        gh api \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows
+
+        # gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.repository_name }} --json id,name
 
         # if [[ $? -ne 0 ]] || [[ -z $WORKFLOWS_DATA ]]; then
         #   echo "Failed to list workflows"
