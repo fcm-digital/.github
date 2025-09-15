@@ -30,7 +30,7 @@ runs:
         GH_TOKEN: ${{ inputs.github_token }}
         GH_OUTPUT_FILE_NAME: gh-output.json
       run: |
-        gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --json id,path) > $GH_OUTPUT_FILE_NAME
+        gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --json id,path > $GH_OUTPUT_FILE_NAME
 
         if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
           echo "Failed to list workflows"
