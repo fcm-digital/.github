@@ -39,6 +39,7 @@ runs:
     - id: exec-workflow
       name: Execute Workflow
       env:
+        GH_DEBUG: api
         GH_TOKEN: ${{ inputs.github_token }}
       run: |
         gh workflow run --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} ${{ inputs.workflow_id }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
