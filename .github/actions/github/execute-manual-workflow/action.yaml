@@ -8,64 +8,40 @@ inputs:
     required: false
     default: "master"
   github_token:
-    description: 'The GitHub token to list workflows.'
-    required: true
+    description: 'The GitHub Token. (Required if github_app_id and github_app_private_key are not provided)'
+    required: false
   github_organization_name:
     description: 'The GitHub organization name.'
     required: true
-  repository_name:
+  github_repository_name:
     description: 'The repository name.'
     required: true
   workflow_id:
     description: 'The workflow ID.'
     required: true
   workflow_inputs:
-    description: 'The workflow inputs. Valid format: "key1=value1,key2=value2"'
+    description: 'The workflow inputs. Valid format: "--field key1=value1 --field key2=value2"'
     required: false
     default: ""
+  workflow_watch:
+    description: 'Whether to watch the workflow run or not. If true, the workflow will wait for the workflow to finish.'
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
   steps:
-    - id: init-workflow-inputs
-      name: Init Workflow Inputs
-      env:
-        INPUTS: ${{ inputs.workflow_inputs }}
-        BRANCH_NAME: ${{ inputs.branch_name }}
-      run: |
-        #? "key1=value1,key2=value2" -> {"key1":"value1","key2":"value2"}
-        if [[ ! -z $INPUTS ]]; then
-            FORMAT_INPUTS=$(echo ${INPUTS//,/'"','"'})
-            FORMAT_INPUTS=$(echo {'"'${FORMAT_INPUTS//=/'"':'"'}'"'})
-        fi
-
-        echo "format_inputs: $FORMAT_INPUTS"
-
-        if [[ -z $FORMAT_INPUTS ]]; then
-            #? "ref":"branch_name"
-            echo 'exec_workflow_params="ref":"'"${BRANCH_NAME}"'"' >> $GITHUB_ENV
-        else
-            #? "ref":"branch_name","inputs":{"key1":"value1","key2":"value2"}
-            echo 'exec_workflow_params="ref":"'"${BRANCH_NAME}"'","inputs":'${FORMAT_INPUTS}'' >> $GITHUB_ENV
-        fi
-      shell: bash
-
     - id: exec-workflow
       name: Execute Workflow
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
       run: |
-        WORKFLOW_OUTPUT=$(curl -L \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ inputs.github_token }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          -X POST \
-          https://api.github.com/repos/${{ inputs.github_organization_name }}/${{ inputs.repository_name }}/actions/workflows/${{ inputs.workflow_id }}/dispatches \
-          -d '{ ${{ env.exec_workflow_params }} }')
+        gh workflow run --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} ${{ inputs.workflow_id }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
+      shell: bash
 
-        WORKFLOW_CURL_STATUS=$(echo $WORKFLOW_OUTPUT | jq '.status')
-        #? https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event--status-codes
-        if [[ $? -ne 0 ]] || [[ "$WORKFLOW_CURL_STATUS" != "204" ]]; then
-          echo "Failed to execute workflow ${{ inputs.workflow_id }} for repository ${{ inputs.repository_name }}"
-          echo "Error: $WORKFLOW_OUTPUT"
-          exit 1
-        fi
+    - id: watch-workflow
+      if: inputs.workflow_watch == 'true'
+      name: Watch Workflow
+      run: |
+        echo "Workflow is running."
       shell: bash
