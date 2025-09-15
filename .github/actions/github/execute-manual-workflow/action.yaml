@@ -24,9 +24,14 @@ inputs:
     required: false
     default: ""
   workflow_watch:
-    description: 'Whether to watch the workflow run or not. If true, the workflow will wait for the workflow to finish.'
+    description: 'Whether to watch the workflow run or not. If true, the workflow will wait for the new workflow to finish.'
     required: false
-    default: "true"
+    default: "false"
+  # This input is necessary because `gh workflow run` doesn't return the database ID of the workflow run and `gh run watch` requires the database ID.
+  workflow_watch_name_filter:
+    description: 'Filter the workflow run by name (Only available if workflow_watch is true).'
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -42,6 +47,23 @@ runs:
     - id: watch-workflow
       if: inputs.workflow_watch == 'true'
       name: Watch Workflow
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GH_OUTPUT_FILE_NAME: gh-output.json
       run: |
-        echo "Workflow is running."
+        gh run list --workflow=${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --json name,databaseId > $GH_OUTPUT_FILE_NAME
+
+        if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
+          echo "Failed to list workflow runs"
+          exit 1
+        fi
+
+        WORKFLOW_RUN_DBID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg name "${{ inputs.workflow_watch_name_filter }}" '.[] | select(.name | contains($name))' | jq '.databaseId')
+
+        if [[ -z "$WORKFLOW_RUN_DBID" ]]; then
+          echo "Failed to get workflow run database ID"
+          exit 1
+        fi
+
+        gh run watch --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} $WORKFLOW_RUN_DBID
       shell: bash
