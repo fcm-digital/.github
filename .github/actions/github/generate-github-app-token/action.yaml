@@ -39,6 +39,8 @@ runs:
         if [[ $? -ne 0 ]]; then
           echo "Failed to get GitHub App Token using GH App ID: ${{ inputs.github_app_id }} credentials."
           exit 1
+        else
+          echo "GitHub App Token generated successfully. Token saved to output 'gh_token'."
         fi
       shell: bash
       
