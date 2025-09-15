@@ -9,7 +9,7 @@ inputs:
     default: "master"
   github_token:
     description: 'The GitHub Token. (Required if github_app_id and github_app_private_key are not provided)'
-    required: false
+    required: true
   github_organization_name:
     description: 'The GitHub organization name.'
     required: true
@@ -42,7 +42,7 @@ runs:
         GH_DEBUG: api
         GH_TOKEN: ${{ inputs.github_token }}
       run: |
-        gh workflow run --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} ${{ inputs.workflow_id }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
+        gh workflow run ${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
       shell: bash
 
     - id: watch-workflow

@@ -5,7 +5,7 @@ description: 'Get the ID of a GitHub workflow based on the workflow file name an
 inputs:
   github_token:
     description: 'The GitHub Token.'
-    required: false
+    required: true
   github_organization_name:
     description: 'The GitHub organization name.'
     required: true
