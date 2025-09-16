@@ -39,7 +39,6 @@ runs:
     - id: exec-workflow
       name: Execute Workflow
       env:
-        GH_DEBUG: api
         GH_TOKEN: ${{ inputs.github_token }}
       run: |
         gh workflow run ${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
@@ -52,19 +51,36 @@ runs:
         GH_TOKEN: ${{ inputs.github_token }}
         GH_OUTPUT_FILE_NAME: gh-output.json
       run: |
-        gh run list --workflow=${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --json name,databaseId > $GH_OUTPUT_FILE_NAME
+        echo "Waiting for new run to appear..."
+        for i in {1..12}; do
+          sleep 10
+          gh run list --workflow=${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --limit=1 --json name,databaseId,createdAt > $GH_OUTPUT_FILE_NAME
+          
+          if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
+            echo "Workflow run not found. Still waiting... ($i/12)"
+            continue
+          fi
 
-        if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
-          echo "Failed to list workflow runs"
-          exit 1
-        fi
+          WORKFLOW_RUN_TIMESTAMP=$(cat $GH_OUTPUT_FILE_NAME | jq '.[0].createdAt' | | xargs -I {} date -d {} +%s)
+          CURRENT_TIMESTAMP=$(date +%s)
 
-        WORKFLOW_RUN_DBID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg name "${{ inputs.workflow_watch_name_filter }}" '.[] | select(.name | contains($name))' | jq '.databaseId')
+          WORKFLOW_RUN_AGE=$((CURRENT_TIMESTAMP - WORKFLOW_RUN_TIMESTAMP))
+          if [[ $WORKFLOW_RUN_AGE -lt 120 ]]; then
+            echo "Workflow run found with age of $WORKFLOW_RUN_AGE seconds"
+            
+            WORKFLOW_RUN_DBID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg name "${{ inputs.workflow_watch_name_filter }}" '.[] | select(.name | contains($name))' | jq '.databaseId')
 
-        if [[ -z "$WORKFLOW_RUN_DBID" ]]; then
-          echo "Failed to get workflow run database ID"
-          exit 1
-        fi
+            if [[ -z "$WORKFLOW_RUN_DBID" ]]; then
+              echo "Workflow run not found. Still waiting... ($i/12)"
+              continue
+            fi
+            echo "Workflow run found with database ID: $WORKFLOW_RUN_DBID"
+            break            
+          else
+            echo "Workflow run not found. Still waiting... ($i/12)"
+            continue
+          fi
+        done
 
         gh run watch --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} $WORKFLOW_RUN_DBID
       shell: bash
