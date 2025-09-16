@@ -58,6 +58,7 @@ runs:
         echo "Waiting for new run to appear..."
         for i in {1..12}; do
           sleep 10
+          # Get the latest run of the workflow as the user specified
           gh run list --workflow=${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --limit=1 --user "${{ inputs.workflow_watch_user }}" --json name,databaseId,createdAt > $GH_OUTPUT_FILE_NAME
           
           if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
@@ -71,7 +72,8 @@ runs:
           WORKFLOW_RUN_AGE=$((CURRENT_TIMESTAMP - WORKFLOW_RUN_TIMESTAMP))
           if [[ $WORKFLOW_RUN_AGE -lt 120 ]]; then
             echo "Workflow run found with age of $WORKFLOW_RUN_AGE seconds"
-            
+
+            # Get the database ID of the workflow run            
             WORKFLOW_RUN_DBID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg name "${{ inputs.workflow_watch_name_filter }}" '.[] | select(.name | contains($name))' | jq '.databaseId')
 
             if [[ -z "$WORKFLOW_RUN_DBID" ]]; then
@@ -86,5 +88,6 @@ runs:
           fi
         done
 
-        gh run watch --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} $WORKFLOW_RUN_DBID
+        # Wait for the workflow to finish and exit with the same status.
+        gh run watch --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} $WORKFLOW_RUN_DBID --interval 15 --compact --exit-status
       shell: bash
