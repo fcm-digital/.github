@@ -66,6 +66,11 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
                     continue
                 fi
 
+                # Skip performance deployment if not required
+                if [[ $DEPLOY_ON_PERFORMANCE == false && "$CURRENT_ENV" == "performance" ]]; then
+                    continue
+                fi
+
                 # Update the currentTag if IMAGE_TAG is set
                 if [ "$IMAGE_TAG" != "" ]; then
                     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
