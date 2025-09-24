@@ -66,6 +66,11 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
                     continue
                 fi
 
+                # Skip performance deployment if not required
+                if [[ $DEPLOY_ON_PERFORMANCE == false && "$CURRENT_ENV" == "performance" ]]; then
+                    continue
+                fi
+
                 # Update the currentTag if IMAGE_TAG is set
                 if [ "$IMAGE_TAG" != "" ]; then
                     sed -i "{s/currentTag:.*/currentTag: $IMAGE_TAG/;}" "./staging/$CURRENT_ENV/values-stg-tag.yaml"
@@ -82,14 +87,14 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
                 fi
 
                 # Sync values from local to helm-chart repository
-                cp -f -r "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
+                cp --force --recursive "./../kube/values/$APP_NAME/staging/$CURRENT_ENV/" "./staging/"
             fi
         else
             echo "$CURRENT_ENV not found in local code repository, but existing in helm-chart-$APP_NAME-values/staging repository."
         fi
     done
-    # Always sync values-stg.yaml when a Pull Request is closed
-    cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
+    # Always sync common values-stg.yaml when a Pull Request is closed
+    find "./../kube/values/$APP_NAME/staging/*" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
     if [ ! -z ${synced_staging_envs+x} ]; then
         echo "synced_staging_envs=$( echo $synced_staging_envs )" >> $GITHUB_OUTPUT
     fi
@@ -97,7 +102,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
 # Sync common staging values if deploying to 'ONLY_GLOBAL_STG_VALUES' on 'master' or 'main' branch
 elif [[ "$ENV_TO_DEPLOY" == "ONLY_COMMON_STG_VALUES" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
-    cp -f "./../kube/values/$APP_NAME/staging/values-stg.yaml" "./staging/values-stg.yaml"
+    find "./../kube/values/$APP_NAME/staging/*" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
 
 # Sync prod values if deploying to 'prod' on 'master' or 'main' branch
 elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
@@ -110,7 +115,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRAN
     if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod/values-prod.yaml"
     fi
-    cp -f -r "./../kube/values/$APP_NAME/prod/" "./"
+    cp --force --recursive "./../kube/values/$APP_NAME/prod/" "./"
 
 # Sync prod values if deploying to 'prod' for a specific 'release version'
 elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ ! -z "$RELEASE_VERSION" ]]; then
@@ -121,7 +126,7 @@ elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ ! -z "$RELEASE_VERSION" ]]; then
     if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/prod-$RELEASE_VERSION/values-prod.yaml"
     fi
-    cp -f -r "./../kube/values/$APP_NAME/prod-$RELEASE_VERSION/" "./"
+    cp --force --recursive "./../kube/values/$APP_NAME/prod-$RELEASE_VERSION/" "./"
 else
     cd helm-chart-$APP_NAME-values-staging/
     # Store the currentTag for potential rollback
@@ -132,7 +137,7 @@ else
     if [ ! -z ${DEPLOYED_AT} ]; then
         sed -i "{s/DEPLOYED_AT:.*/DEPLOYED_AT: $DEPLOYED_AT/;}" "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/values-stg.yaml"
     fi
-    cp -f -r "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/" "./staging/"
+    cp --force --recursive "./../kube/values/$APP_NAME/staging/$ENV_TO_DEPLOY/" "./staging/"
 fi
 
 # Check for changes and commit if there are any
