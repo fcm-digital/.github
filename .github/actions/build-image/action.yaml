@@ -45,6 +45,13 @@ runs:
         fi
       shell: bash
 
+    - name: Sanitize tag
+      id: sanitize
+      uses: ./.github/.github/actions/sanitize-docker-tag
+      with:
+        tag: ${{ github.ref_name }}
+        force-lowercase: "true"
+
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v6
       with:
@@ -52,8 +59,8 @@ runs:
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
         tags: |-
-          ${{ env.REPO_URL }}:${{ github.ref_name }}
-          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize.outputs.sanitized_tag }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
     - name: "Build Docker image [latest tag]"
       uses: docker/build-push-action@v6
