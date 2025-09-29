@@ -1,0 +1,77 @@
+name: Sanitize Docker Tag
+description: "Sanitize and validate a Docker image tag to conform to Docker's tag rules"
+
+inputs:
+  tag:
+    description: "The Docker image tag to sanitize"
+    required: true
+  force-lowercase:
+    description: "If true, convert the tag to lowercase (Docker Hub normalizes to lowercase)"
+    required: false
+    default: "false"
+  fallback:
+    description: "Fallback tag to use if the sanitized tag becomes empty"
+    required: false
+    default: "latest"
+
+outputs:
+  sanitized_tag:
+    description: "The sanitized Docker image tag"
+    value: ${{ steps.sanitize.outputs.sanitized_tag }}
+
+runs:
+  using: composite
+  steps:
+    - id: sanitize
+      name: Sanitize tag
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        input_tag="${{ inputs.tag }}"
+        force_lower="${{ inputs["force-lowercase"] }}"
+        fallback="${{ inputs.fallback }}"
+
+        sanitized="$input_tag"
+
+        # Optionally force lowercase (Docker Hub converts to lowercase)
+        if [[ "${force_lower,,}" == "true" ]]; then
+          sanitized="$(printf '%s' "$sanitized" | tr '[:upper:]' '[:lower:]')"
+        fi
+
+        # Replace any disallowed chars with '-'. Allowed: A-Za-z0-9_.-
+        sanitized="$(printf '%s' "$sanitized" | sed -E 's/[^A-Za-z0-9_.-]+/-/g')"
+
+        # Remove leading '.' or '-' characters, repeatedly
+        while [[ "$sanitized" =~ ^[.-] ]]; do
+          sanitized="${sanitized#?}"
+        done
+
+        # Truncate to max 128 characters
+        sanitized="${sanitized:0:128}"
+
+        # If empty, use fallback
+        if [[ -z "$sanitized" ]]; then
+          sanitized="$fallback"
+        fi
+
+        # Ensure fallback also conforms (no leading '.' or '-', max length)
+        while [[ "$sanitized" =~ ^[.-] ]]; do
+          sanitized="${sanitized#?}"
+        done
+        sanitized="${sanitized:0:128}"
+
+        if [[ -z "$sanitized" ]]; then
+          echo "::warning::Sanitized tag became empty; using 'latest' as ultimate fallback"
+          sanitized="latest"
+        fi
+
+        # Final validation check: only allowed characters remain
+        if ! [[ "$sanitized" =~ ^[A-Za-z0-9_.-]+$ ]]; then
+          echo "::warning::Sanitized tag contains unexpected characters after processing; replacing invalid characters with '-'"
+          sanitized="$(printf '%s' "$sanitized" | sed -E 's/[^A-Za-z0-9_.-]+/-/g')"
+        fi
+
+        echo "Sanitized tag: $sanitized"
+        printf 'sanitized_tag=%s\n' "$sanitized" >> "$GITHUB_OUTPUT"
+
