@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    echo "argocd app sync $ARGOCD_FULL_APP_NAME $resource_args \
+    argocd app sync $ARGOCD_FULL_APP_NAME $resource_args \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --prune \
         --retry-limit 2 \
         --retry-backoff-duration 5s \
-        --retry-backoff-factor 2"
+        --retry-backoff-factor 2
 }
 
 argocd_app_wait () {
@@ -46,12 +46,12 @@ done
 
 ITER=1
 
-# until argocd_app_wait </dev/null
-# do
-#     if [ $ITER -eq 3 ]; then
-#         exit 1
-#     fi
+until argocd_app_wait </dev/null
+do
+    if [ $ITER -eq 3 ]; then
+        exit 1
+    fi
 
-#     sleep $((10 * $ITER))s
-#     ITER=$(($ITER + 1))
-# done
+    sleep $((10 * $ITER))s
+    ITER=$(($ITER + 1))
+done
