@@ -22,6 +22,13 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # We add sanitization because we look for deployed environments using the current docker tag deployed
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: ./.github/.github/actions/sanitize-docker-tag
+      with:
+        tag: ${{ inputs.branch_name }}
+
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
