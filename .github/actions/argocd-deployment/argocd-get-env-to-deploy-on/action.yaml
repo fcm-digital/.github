@@ -33,7 +33,7 @@ runs:
       name: Get Environment to Deploy On
       run: |
         ENVIRONMENTS=$(find ./helm-chart-${{ inputs.app_name }}-values-staging/staging -name '*tag.*' -print0 | while IFS= read -r -d '' file; do
-          if grep -q "${{ inputs.branch_name }}" "$file"; then
+          if grep -q "${{ steps.sanitize-image-tag.outputs.sanitized_tag }}" "$file"; then
             echo "$file"
           fi
         done | awk -F'/' '{printf "%s\"%s\"", sep, $(NF-1); sep=", "} END {print ""}')
