@@ -27,7 +27,9 @@ inputs:
     description: 'Environment or Environments where the image will be deployed.'
     required: true
   resources:
-    description: 'Sync a specific resource - Resource should be formatted as GROUP:KIND:NAME. If no GROUP is specified then :KIND:NAME'
+    description: |
+      'Sync a specific resource - Resource should be formatted as GROUP:KIND:NAME. If no GROUP is specified then :KIND:NAME'
+      'Multiple resources can be specified as a comma-separated list: GROUP:KIND:NAME, GROUP:KIND:NAME'
     required: false
     default: ""
   sync_for_all_envs:
