@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    argocd app sync $ARGOCD_FULL_APP_NAME \
+    argocd app sync $ARGOCD_FULL_APP_NAME ${RESOURCES:+--resource "$RESOURCES"} \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --prune \
