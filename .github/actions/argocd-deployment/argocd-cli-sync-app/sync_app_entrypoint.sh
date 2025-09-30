@@ -11,7 +11,7 @@ argocd_app_sync () {
 }
 
 argocd_app_wait () {
-    argocd app wait $ARGOCD_FULL_APP_NAME \
+    argocd app wait $ARGOCD_FULL_APP_NAME $resource_args \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --health
