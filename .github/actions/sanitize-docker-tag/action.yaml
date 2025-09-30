@@ -8,7 +8,7 @@ inputs:
   force-lowercase:
     description: "If true, convert the tag to lowercase (Docker Hub normalizes to lowercase)"
     required: false
-    default: "false"
+    default: "true"
   fallback:
     description: "Fallback tag to use if the sanitized tag becomes empty"
     required: false
