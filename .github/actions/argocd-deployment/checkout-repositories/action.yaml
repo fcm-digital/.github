@@ -96,7 +96,7 @@ runs:
 
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: ./.github/.github/actions/sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/argocd-deployment/checkout-repositories@sc-27606-sanitize-docker-tag
       if: inputs.image_tag != ''
       with:
         tag: ${{ inputs.image_tag }}

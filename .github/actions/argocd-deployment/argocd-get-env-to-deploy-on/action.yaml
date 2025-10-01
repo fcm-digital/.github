@@ -25,7 +25,7 @@ runs:
     # We add sanitization because we look for deployed environments using the current docker tag deployed
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: ./.github/.github/actions/sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/argocd-deployment/checkout-repositories@sc-27606-sanitize-docker-tag
       with:
         tag: ${{ inputs.branch_name }}
 
