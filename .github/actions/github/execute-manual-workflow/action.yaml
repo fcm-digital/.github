@@ -1,0 +1,93 @@
+---
+name: 'Execute Manual Workflow'
+description: 'Execute a manual workflow based on .'
+
+inputs:
+  branch_name:
+    description: 'The branch name to execute the workflow on.'
+    required: false
+    default: "master"
+  github_token:
+    description: 'The GitHub Token. (Required if github_app_id and github_app_private_key are not provided)'
+    required: true
+  github_organization_name:
+    description: 'The GitHub organization name.'
+    required: true
+  github_repository_name:
+    description: 'The repository name.'
+    required: true
+  workflow_id:
+    description: 'The workflow ID.'
+    required: true
+  workflow_inputs:
+    description: 'The workflow inputs. Valid format: "--field key1=value1 --field key2=value2"'
+    required: false
+    default: ""
+  workflow_watch:
+    description: 'Whether to watch the workflow run or not. If true, the workflow will wait for the new workflow to finish.'
+    required: false
+    default: "false"
+  # This input is necessary because `gh workflow run` doesn't return the database ID of the workflow run and `gh run watch` requires the database ID.
+  workflow_watch_name_filter:
+    description: 'Filter the workflow run by name (Only available if workflow_watch is true).'
+    required: false
+    default: ""
+  workflow_watch_user:
+    description: 'The user to watch the workflow run as (Only available if workflow_watch is true).'
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - id: exec-workflow
+      name: Execute Workflow
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+      run: |
+        gh workflow run ${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --ref ${{ inputs.branch_name }} ${{ inputs.workflow_inputs }}
+      shell: bash
+
+    - id: watch-workflow
+      if: inputs.workflow_watch == 'true'
+      name: Watch Workflow
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GH_OUTPUT_FILE_NAME: gh-output.json
+      run: |
+        echo "Waiting for new run to appear..."
+        for i in {1..12}; do
+          sleep 10
+          # Get the latest run of the workflow as the user specified
+          gh run list --workflow=${{ inputs.workflow_id }} --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --limit=1 --user "${{ inputs.workflow_watch_user }}" --json name,databaseId,createdAt > $GH_OUTPUT_FILE_NAME
+          
+          if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
+            echo "Workflow run not found. Still waiting... ($i/12)"
+            continue
+          fi
+
+          WORKFLOW_RUN_TIMESTAMP=$(cat $GH_OUTPUT_FILE_NAME | jq '.[0].createdAt' | xargs -I {} date -d {} +%s)
+          CURRENT_TIMESTAMP=$(date +%s)
+
+          WORKFLOW_RUN_AGE=$((CURRENT_TIMESTAMP - WORKFLOW_RUN_TIMESTAMP))
+          if [[ $WORKFLOW_RUN_AGE -lt 120 ]]; then
+            echo "Workflow run found with age of $WORKFLOW_RUN_AGE seconds"
+
+            # Get the database ID of the workflow run            
+            WORKFLOW_RUN_DBID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg name "${{ inputs.workflow_watch_name_filter }}" '.[] | select(.name | contains($name))' | jq '.databaseId')
+
+            if [[ -z "$WORKFLOW_RUN_DBID" ]]; then
+              echo "Workflow run not found. Still waiting... ($i/12)"
+              continue
+            fi
+            echo "Workflow run found with database ID: $WORKFLOW_RUN_DBID"
+            break            
+          else
+            echo "Workflow run not found. Still waiting... ($i/12)"
+            continue
+          fi
+        done
+
+        # Wait for the workflow to finish and exit with the same status.
+        gh run watch --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} $WORKFLOW_RUN_DBID --interval 15 --compact --exit-status
+      shell: bash
