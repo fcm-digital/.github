@@ -29,7 +29,7 @@ runs:
         set -euo pipefail
 
         input_tag="${{ inputs.tag }}"
-        force_lower="${{ inputs["force-lowercase"] }}"
+        force_lower="${{ inputs.force-lowercase }}"
         fallback="${{ inputs.fallback }}"
 
         sanitized="$input_tag"
