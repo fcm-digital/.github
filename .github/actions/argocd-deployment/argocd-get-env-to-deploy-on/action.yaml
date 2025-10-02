@@ -22,10 +22,12 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v5
+
     # We add sanitization because we look for deployed environments using the current docker tag deployed
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: fcm-digital/.github/.github/actions/argocd-deployment/checkout-repositories@sc-27606-sanitize-docker-tag
+      uses: ./.github/actions/argocd-deployment/checkout-repositories@sc-27606-sanitize-docker-tag
       with:
         tag: ${{ inputs.branch_name }}
 
