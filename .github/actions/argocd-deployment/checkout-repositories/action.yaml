@@ -99,8 +99,6 @@ runs:
       uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
       with:
         tag: ${{ inputs.branch_name }}
-      env:
-        SANITIZED_IMAGE_TAG: ${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
 
     - id: set-outputs
       name: Set Outputs
@@ -116,9 +114,9 @@ runs:
           export SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )
           echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "image_tag=${{ env.SANITIZED_IMAGE_TAG }}-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ steps.sanitize-image-tag.outputs.sanitized_tag }}-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
         else
-          echo "image_tag=${{ env.SANITIZED_IMAGE_TAG }}" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ steps.sanitize-image-tag.outputs.sanitized_tag }}" >> $GITHUB_OUTPUT
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
