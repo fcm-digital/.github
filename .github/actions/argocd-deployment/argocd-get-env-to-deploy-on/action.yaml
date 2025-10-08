@@ -22,8 +22,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
-
     # We add sanitization because we look for deployed environments using the current docker tag deployed
     - id: sanitize-image-tag
       name: Sanitize image tag
