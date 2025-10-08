@@ -122,7 +122,7 @@ runs:
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: github.event_name == 'push' &&
         (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
         steps.set-outputs.outputs.env_to_deploy == 'prod' &&
@@ -133,14 +133,14 @@ runs:
         ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: inputs.helm_chart_template_ref != ''
       with:
         repository: fcm-digital/helm-chart-template
