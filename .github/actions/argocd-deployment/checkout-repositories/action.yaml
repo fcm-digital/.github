@@ -1,44 +1,44 @@
 ---
-name: 'Checkout Repositories'
-description: 'Checkout repositories and init context variables for ArgoCD deployment.'
+name: "Checkout Repositories"
+description: "Checkout repositories and init context variables for ArgoCD deployment."
 
 inputs:
   app_name:
-    description: 'App Name to Deploy.'
+    description: "App Name to Deploy."
     required: true
 
   branch_name:
-    description: 'Branch Name to Checkout (Required for manual deploy).'
+    description: "Branch Name to Checkout (Required for manual deploy)."
     required: false
   env_to_deploy:
-    description: 'Target Environment to Deploy. (Required for manual deploy).'
+    description: "Target Environment to Deploy. (Required for manual deploy)."
     required: false
-  image_tag: 
-    description: 'Image Tag to Deploy. If not provided, the image will be built from the workflow branch.'
+  image_tag:
+    description: "Image Tag to Deploy. If not provided, the image will be built from the workflow branch."
     required: false
 
   github_token_checkout:
-    description: 'The GitHub token to checkout helm_chart_template repository.'
+    description: "The GitHub token to checkout helm_chart_template repository."
     required: true
   helm_chart_template_ref:
-    description: 'If provided, the helm-chart-template repository will be checked out to this branch.'
+    description: "If provided, the helm-chart-template repository will be checked out to this branch."
     required: false
 
 outputs:
   branch_name:
-    description: 'The name of the branch being deployed.'
+    description: "The name of the branch being deployed."
     value: ${{ steps.set-outputs.outputs.branch_name }}
   env_to_deploy:
-    description: 'The target environment for deployment.'
+    description: "The target environment for deployment."
     value: ${{ steps.set-outputs.outputs.env_to_deploy }}
   commit_at:
-    description: 'The timestamp of the commit.'
+    description: "The timestamp of the commit."
     value: ${{ steps.set-outputs.outputs.current_time }}
   commit:
-    description: 'The unique identifier for the commit.'
+    description: "The unique identifier for the commit."
     value: ${{ steps.set-outputs.outputs.short_sha }}
   image_tag:
-    description: 'The tag of the new image to be deployed.'
+    description: "The tag of the new image to be deployed."
     value: ${{ steps.set-outputs.outputs.image_tag }}
 
 runs:
@@ -123,10 +123,10 @@ runs:
       shell: bash
 
     - uses: actions/checkout@v4
-      if: github.event_name == 'push' && 
-          (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-          steps.set-outputs.outputs.env_to_deploy == 'prod' &&
-          (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
+      if: github.event_name == 'push' &&
+        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
+        steps.set-outputs.outputs.env_to_deploy == 'prod' &&
+        (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}

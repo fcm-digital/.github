@@ -1,18 +1,18 @@
 ---
-name: 'Argo Workflows CLI Installation'
-description: 'Argo Workflows commands for its CLI installation.'
+name: "Argo Workflows CLI Installation"
+description: "Argo Workflows commands for its CLI installation."
 
 inputs:
   argo_workflows_cli_version:
     required: false
-    default: 'v3.6.2'
-    description: 'Argo Workflows CLI version (default: v3.6.2).'
+    default: "v3.6.2"
+    description: "Argo Workflows CLI version (default: v3.6.2)."
 
 runs:
   using: "composite"
   steps:
     - id: argo-workflows-cli-install
-      name: 'Argo Workflows CLI Install'
+      name: "Argo Workflows CLI Install"
       shell: bash
       run: |
         curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${{ inputs.argo_workflows_cli_version }}/argo-linux-amd64.gz

@@ -1,22 +1,22 @@
 ---
-name: 'ArgoCD Get Env to Deploy On (Staging)'
-description: 'Get environment to deploy on based on the image tag and the branch name.'
+name: "ArgoCD Get Env to Deploy On (Staging)"
+description: "Get environment to deploy on based on the image tag and the branch name."
 
 inputs:
   allow_multiple_environments:
-    description: 'Allow multiple environments to be deployed.'
+    description: "Allow multiple environments to be deployed."
     required: false
-    default: 'false'
+    default: "false"
   app_name:
-    description: 'The application name.'
+    description: "The application name."
     required: true
   branch_name:
-    description: 'The branch name.'
+    description: "The branch name."
     required: true
 
 outputs:
   env_to_deploy_on:
-    description: 'The environment to deploy on.'
+    description: "The environment to deploy on."
     value: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
 
 runs:

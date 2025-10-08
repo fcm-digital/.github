@@ -74,4 +74,3 @@ runs:
 
         echo "Sanitized tag: $sanitized"
         printf 'sanitized_tag=%s\n' "$sanitized" >> "$GITHUB_OUTPUT"
-

@@ -1,49 +1,49 @@
 ---
-name: 'Send SMTP Email'
-description: 'Send SMTP Email with TLS.'
+name: "Send SMTP Email"
+description: "Send SMTP Email with TLS."
 
 inputs:
   smtp_enable_tls:
     description: 'If "true" TLS will be enabled.'
-    default: 'true'
+    default: "true"
   smtp_server_address:
-    description: 'SMTP server address.'
+    description: "SMTP server address."
     required: true
   smtp_server_port:
-    description: 'SMTP server port.'
+    description: "SMTP server port."
     required: true
   smtp_username:
-    description: 'SMTP username.'
+    description: "SMTP username."
     required: true
   smtp_password:
-    description: 'SMTP password.'
+    description: "SMTP password."
     required: true
   email_from:
-    description: 'Email from (sender).'
+    description: "Email from (sender)."
     required: true
   email_to:
-    description: 'Email to (recipient).'
+    description: "Email to (recipient)."
     required: true
   email_cc:
-    description: 'Email cc (carbon copy).'
+    description: "Email cc (carbon copy)."
     required: false
   email_bcc:
-    description: 'Email bcc (blind carbon copy).'
+    description: "Email bcc (blind carbon copy)."
     required: false
   email_subject:
-    description: 'Email subject.'
+    description: "Email subject."
     required: true
   email_body:
-    description: 'Email body to be sent.'
+    description: "Email body to be sent."
     required: true
   email_body_hyperlink:
-    description: 'Email body hyperlink.'
+    description: "Email body hyperlink."
     required: false
   email_body_hyperlink_msg:
-    description: 'Email body hyperlink message.'
+    description: "Email body hyperlink message."
     required: false
   email_attachments:
-    description: 'Email attachment Files.'
+    description: "Email attachment Files."
     required: false
 
 runs:
@@ -51,7 +51,7 @@ runs:
   steps:
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: "3.10"
 
     - name: Execute Python Script
       env:
