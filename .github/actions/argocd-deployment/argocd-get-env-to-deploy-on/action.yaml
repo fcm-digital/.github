@@ -34,6 +34,7 @@ runs:
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
+        find . -type f # Debug
         ENVIRONMENTS=$(find ./helm-chart-${{ inputs.app_name }}-values-staging/staging -name '*tag.*' -print0 | while IFS= read -r -d '' file; do
           if grep -q "${{ steps.sanitize-image-tag.outputs.sanitized_tag }}" "$file"; then
             echo "$file"
