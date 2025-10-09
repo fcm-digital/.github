@@ -92,13 +92,15 @@ runs:
             exit 1
           fi
         fi
+        # Create an output with the branch variable to use in the sanitization process
+        echo branch_name=${BRANCH_NAME} >> $GITHUB_OUTPUT
       shell: bash
 
     - id: sanitize-image-tag
       name: Sanitize image tag
       uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
       with:
-        tag: ${{ inputs.branch_name }}
+        tag: ${{ steps.init-context-vars.outputs.branch_name }}
 
     - id: set-outputs
       name: Set Outputs
