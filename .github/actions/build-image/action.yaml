@@ -47,7 +47,7 @@ runs:
 
     - name: Sanitize tag
       id: sanitize
-      uses: ./.github/.github/actions/sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
       with:
         tag: ${{ github.ref_name }}
         force-lowercase: "true"

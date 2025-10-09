@@ -101,7 +101,7 @@ runs:
 
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
       with:
         tag: ${{ steps.init-context-vars.outputs.branch_name }}
 

@@ -64,13 +64,13 @@ runs:
   steps:
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
       with:
         tag: ${{ inputs.image_tag }}
 
     - id: sanitize-branch-name
       name: Sanitize branch tag
-      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
       with:
         tag: ${{ inputs.branch_name }}
         fallback: branch
