@@ -56,8 +56,8 @@ runs:
             echo "Branch name not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
-            echo "BRANCH_NAME=${{ inputs.branch_name }}" >> $GITHUB_ENV
-            export BRANCH_NAME
+            BRANCH_NAME="${{ inputs.branch_name }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           fi
 
           if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
@@ -71,16 +71,16 @@ runs:
 
         else
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
-            export BRANCH_NAME
+            BRANCH_NAME="${{ github.head_ref }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
             echo "The \`env_to_deploy\` extraction from the \`branch_name\` in a PR event is no longer available."
             echo "You must use the \`argocd-get-env-to-deploy-on\` action to obtain the \`env_to_deploy\` value."
             echo "ENV_TO_DEPLOY=NOT_DEFINED" >> $GITHUB_ENV
 
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
-            export BRANCH_NAME
+            BRANCH_NAME="${{ github.ref_name }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
             if [[ "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/heads/main" ]]; then
               echo "ENV_TO_DEPLOY=prod" >> $GITHUB_ENV
