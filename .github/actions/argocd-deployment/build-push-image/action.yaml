@@ -98,8 +98,6 @@ runs:
             echo "USER_BUILDER=${GITHUB_ACTOR}" >> $GITHUB_ENV
         fi
 
-        echo "SANITIZED_BRANCH_TAG=${SANITIZED_BRANCH_TAG}" >> $GITHUB_ENV
-        echo "SANITIZED_IMAGE_TAG=${SANITIZED_TAG}" >> $GITHUB_ENV
         echo "APP_REVISION=${SANITIZED_TAG}" >> $GITHUB_ENV
         echo "BRANCH=${{ inputs.branch_name }}" >> $GITHUB_ENV
         echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
@@ -132,13 +130,13 @@ runs:
         build-args: |
           ${{ env.build_args_env }}
         cache-from: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
+          type=registry,ref=${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           type=registry,ref=${{ env.REPO_URL }}:latest
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -158,8 +156,8 @@ runs:
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -177,13 +175,13 @@ runs:
           ${{ env.build_args_env }}
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}-cache
         cache-to: |
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache,mode=max
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}-cache,mode=max
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
-          ${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL_STAGE }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -205,7 +203,7 @@ runs:
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
-          ${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL_STAGE }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           ${{ env.REPO_URL_STAGE }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -225,14 +223,14 @@ runs:
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
           type=registry,ref=${{ env.REPO_URL }}:latest-cache
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
-          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}-cache
+          type=registry,ref=${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}-cache
         cache-to: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}-cache,mode=max
+          type=registry,ref=${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}-cache,mode=max
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -255,8 +253,8 @@ runs:
           type=registry,ref=${{ env.REPO_URL }}:latest-cache,mode=max
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
-          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -265,5 +263,5 @@ runs:
       name: Display New Image Built
       run: |
         echo "## 🚀 New Image Built 🚀" >> $GITHUB_STEP_SUMMARY
-        echo "\`${{ env.SANITIZED_IMAGE_TAG }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "\`${{ steps.sanitize-image-tag.outputs.sanitized_tag }}\`" >> $GITHUB_STEP_SUMMARY
       shell: bash
