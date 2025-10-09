@@ -1,11 +1,11 @@
 ---
-name: 'Get environment'
-description: 'Return a valid testing environment.'
+name: "Get environment"
+description: "Return a valid testing environment."
 inputs:
   main_branch:
     type: string
     default: master
-    description: 'main branch name'
+    description: "main branch name"
   valid_envs:
     description: "List of allowed environments"
     type: string
@@ -13,11 +13,11 @@ inputs:
     default: "abc ath bcn bne bos hub lhr mad qa sfo svq syd sandbox"
 outputs:
   env:
-    description: 'Name of the environment'
+    description: "Name of the environment"
     value: ${{ steps.get-env.outputs.env }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - shell: bash
       name: "Get environment from branch name"

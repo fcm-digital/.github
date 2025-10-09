@@ -1,29 +1,29 @@
 ---
-name: 'Helm Template'
-description: 'Kube Linter Execution for Helm Chart Templates.'
+name: "Helm Template"
+description: "Kube Linter Execution for Helm Chart Templates."
 
 inputs:
   app_name:
-    description: 'The application name.'
+    description: "The application name."
     required: true
   environments:
-    description: 'Environments list.'
+    description: "Environments list."
     required: true
   github_token_checkout:
-    description: 'The GitHub token to checkout the repositories.'
+    description: "The GitHub token to checkout the repositories."
     required: true
   image_tag:
-    description: 'The image tag that will be used.'
+    description: "The image tag that will be used."
     required: true
   helm_chart_template_version:
-    description: 'Helm Chart Template Version'
+    description: "Helm Chart Template Version"
     required: true
   helm_version:
-    description: 'Helm Version.'
+    description: "Helm Version."
     required: false
-    default: 'v3.15.4'
+    default: "v3.15.4"
   template_file:
-    description: 'Template file name to be used.'
+    description: "Template file name to be used."
     required: false
 
 runs:

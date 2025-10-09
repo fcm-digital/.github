@@ -6,40 +6,40 @@ on:
         required: false
         type: boolean
         default: false
-        description: 'Wether to push to Google Container Registry'
+        description: "Wether to push to Google Container Registry"
       gar:
         required: false
         type: boolean
         default: true
-        description: 'Wether to push to Google Artifcat Registry'
+        description: "Wether to push to Google Artifcat Registry"
       file:
         required: false
         type: string
-        default: 'Dockerfile'
-        description: 'Path to Dockerfile'
+        default: "Dockerfile"
+        description: "Path to Dockerfile"
       context:
         required: false
         type: string
-        default: './'
-        description: 'Context to build image (default: ./)'
+        default: "./"
+        description: "Context to build image (default: ./)"
       app:
         required: true
         type: string
-        description: 'Name of the app, to use for the registry: ${url}/${repo}/${app}'
+        description: "Name of the app, to use for the registry: ${url}/${repo}/${app}"
       region:
         required: false
-        default: 'europe-west1'
+        default: "europe-west1"
         type: string
-        description: 'Region or zone for Google Artifact Registry'
+        description: "Region or zone for Google Artifact Registry"
       export:
         required: false
         default: false
         type: boolean
-        description: 'Set to true if the image should be available to other jobs in the same Action'
+        description: "Set to true if the image should be available to other jobs in the same Action"
       repo:
         required: false
         type: string
-        description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
+        description: "Name of the repo to upload image: ${url}/${repo}/${app}"
     secrets:
       gcp_json:
         required: true

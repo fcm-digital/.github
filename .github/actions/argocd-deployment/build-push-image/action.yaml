@@ -1,62 +1,80 @@
 ---
-name: 'Build & Push Docker image'
-description: 'Build and Push Docker image using default tags'
+name: "Build & Push Docker image"
+description: "Build and Push Docker image using default tags"
 inputs:
   app_name:
-    description: 'Name of the app to deploy.'
+    description: "Name of the app to deploy."
     required: true
   artifact_region:
-    description: 'Region or zone for Google Artifact Registry.'
+    description: "Region or zone for Google Artifact Registry."
     required: false
-    default: 'europe'
+    default: "europe"
   artifact_repository_name:
-    description: 'Name of the repo to upload image: ${url}/${repo}/${app}.'
+    description: "Name of the repo to upload image: ${url}/${repo}/${app}."
     required: false
   branch_name:
-    description: 'Current branch name.'
+    description: "Current branch name."
     required: true
   build_args:
-    description: 'Build arguments for the docker image.'
+    description: "Build arguments for the docker image."
     required: false
   cache_type:
-    description: 'Enable cache for docker building (Available options: none, inline, registry & stage-and-registry)'
+    description: "Enable cache for docker building (Available options: none, inline, registry & stage-and-registry)"
     required: false
-    default: 'inline'
+    default: "inline"
   commit:
-    description: 'The commit Id.'
+    description: "The commit Id."
     required: true
   commit_at:
-    description: 'The time where the commit was created.'
+    description: "The time where the commit was created."
     required: true
   context:
-    description: 'Context to build image (default: ./).'
+    description: "Context to build image (default: ./)."
     required: false
-    default: './'
+    default: "./"
   file:
-    description: 'Path to Dockerfile.'
+    description: "Path to Dockerfile."
     required: false
-    default: 'Dockerfile'
+    default: "Dockerfile"
   image_tag:
-    description: 'Tags for the docker image.'
+    description: "Tags for the docker image."
     required: true
   pull:
-    description: 'Whether to pull image from registry for cache building.'
+    description: "Whether to pull image from registry for cache building."
     required: false
-    default: 'false'
+    default: "false"
   push:
-    description: 'Whether to push image to registry, or build locally.'
+    description: "Whether to push image to registry, or build locally."
     required: false
-    default: 'true'
+    default: "true"
   secrets:
-    description: 'Secrets to pass to the docker build process.'
+    description: "Secrets to pass to the docker build process."
     required: false
   target:
-    description: 'Sets the target stage to build.'
+    description: "Sets the target stage to build."
     required: false
 
+outputs:
+  sanitized_image_tag:
+    description: "Sanitized Docker image tag."
+    value: ${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
+
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      with:
+        tag: ${{ inputs.image_tag }}
+
+    - id: sanitize-branch-name
+      name: Sanitize branch tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      with:
+        tag: ${{ inputs.branch_name }}
+        fallback: branch
+
     - id: set-docker-build-vars
       name: Set Docker Build Variables
       run: |-
@@ -80,7 +98,9 @@ runs:
             echo "USER_BUILDER=${GITHUB_ACTOR}" >> $GITHUB_ENV
         fi
 
-        echo "APP_REVISION=${{ inputs.image_tag }}" >> $GITHUB_ENV
+        echo "SANITIZED_BRANCH_TAG=${SANITIZED_BRANCH_TAG}" >> $GITHUB_ENV
+        echo "SANITIZED_IMAGE_TAG=${SANITIZED_TAG}" >> $GITHUB_ENV
+        echo "APP_REVISION=${SANITIZED_TAG}" >> $GITHUB_ENV
         echo "BRANCH=${{ inputs.branch_name }}" >> $GITHUB_ENV
         echo "COMMIT_SHA=${{ inputs.commit }}" >> $GITHUB_ENV
         echo "COMMIT_AT=${{ inputs.commit_at }}" >> $GITHUB_ENV
@@ -92,6 +112,9 @@ runs:
         echo "EOF" >> $GITHUB_ENV
 
       shell: bash
+      env:
+        SANITIZED_TAG: ${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
+        SANITIZED_BRANCH_TAG: ${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
 
     - id: setup-docker-buildx
       name: Set up Docker Buildx
@@ -101,7 +124,7 @@ runs:
       name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'inline' &&
-          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+        (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -109,13 +132,13 @@ runs:
         build-args: |
           ${{ env.build_args_env }}
         cache-from: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}
+          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
           type=registry,ref=${{ env.REPO_URL }}:latest
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -123,7 +146,7 @@ runs:
       name: "(INLINE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'inline' &&
-          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+        (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -135,8 +158,8 @@ runs:
         cache-to: type=inline
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
           ${{ env.REPO_URL }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -145,7 +168,7 @@ runs:
       name: "(STAGE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
-          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+        (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -154,13 +177,13 @@ runs:
           ${{ env.build_args_env }}
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}-cache
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
         cache-to: |
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}-cache,mode=max
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache,mode=max
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
-          ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -168,7 +191,7 @@ runs:
       name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
-          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+        (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -182,7 +205,7 @@ runs:
         context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: |
-          ${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}
+          ${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}
           ${{ env.REPO_URL_STAGE }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -191,8 +214,8 @@ runs:
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: inputs.cache_type == 'registry' ||
-          (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-staging.outcome == 'success') &&
-          (inputs.branch_name != 'master' && inputs.branch_name != 'main')
+        (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-staging.outcome == 'success') &&
+        (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -202,14 +225,14 @@ runs:
         cache-from: |
           type=registry,ref=${{ env.REPO_URL_STAGE }}:latest-cache
           type=registry,ref=${{ env.REPO_URL }}:latest-cache
-          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ inputs.branch_name }}-cache
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache
+          type=registry,ref=${{ env.REPO_URL_STAGE }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
+          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}-cache
         cache-to: |
-          type=registry,ref=${{ env.REPO_URL }}:${{ inputs.branch_name }}-cache,mode=max
+          type=registry,ref=${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}-cache,mode=max
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -217,8 +240,8 @@ runs:
       name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
       uses: docker/build-push-action@v5
       if: (inputs.cache_type == 'registry' ||
-          (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
-          (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+        (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
+        (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
         push: ${{ inputs.push }}
         pull: ${{ inputs.pull }}
@@ -232,8 +255,8 @@ runs:
           type=registry,ref=${{ env.REPO_URL }}:latest-cache,mode=max
         context: ${{ inputs.context }}
         tags: |
-          ${{ env.REPO_URL }}:${{ inputs.branch_name }}
-          ${{ env.REPO_URL }}:${{ inputs.image_tag }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_BRANCH_TAG }}
+          ${{ env.REPO_URL }}:${{ env.SANITIZED_IMAGE_TAG }}
           ${{ env.REPO_URL }}:latest
         secrets: |
           ${{ inputs.secrets }}
@@ -242,5 +265,5 @@ runs:
       name: Display New Image Built
       run: |
         echo "## 🚀 New Image Built 🚀" >> $GITHUB_STEP_SUMMARY
-        echo "\`${{ inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "\`${{ env.SANITIZED_IMAGE_TAG }}\`" >> $GITHUB_STEP_SUMMARY
       shell: bash

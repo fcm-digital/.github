@@ -1,62 +1,62 @@
 ---
-name: 'Kube-Linter'
-description: 'Kube Linter Execution for Helm Chart Templates.'
+name: "Kube-Linter"
+description: "Kube Linter Execution for Helm Chart Templates."
 
 inputs:
   app_name:
-    description: 'The application name that will be deployed.'
+    description: "The application name that will be deployed."
     required: true
   branch_name:
-    description: 'Current branch name.'
+    description: "Current branch name."
     required: true
   env_to_deploy:
-    description: 'Environment where the image will be deployed.'
+    description: "Environment where the image will be deployed."
     required: true
   exclude_rules:
-    description: 'The kube-linter rules to be excluded.'
+    description: "The kube-linter rules to be excluded."
     required: false
   image_tag:
-    description: 'The image tag that will be deployed.'
+    description: "The image tag that will be deployed."
     required: true
   go_version:
-    description: 'Go Version'
+    description: "Go Version"
     required: false
-    default: '1.20'
+    default: "1.20"
   helm_version:
-    description: 'Helm Version'
+    description: "Helm Version"
     required: false
-    default: 'v3.15.4'
+    default: "v3.15.4"
   kube_linter_version:
-    description: 'Kube Linter Version'
+    description: "Kube Linter Version"
     required: false
-    default: 'v0.6.7'
+    default: "v0.6.7"
 
 runs:
   using: "composite"
   steps:
     - id: install-go
-      name: 'GO Installation'
+      name: "GO Installation"
       uses: actions/setup-go@v5
       with:
         go-version: ${{ inputs.go_version }}
         cache: false
 
     - id: install-helm
-      name: 'Helm Installation'
+      name: "Helm Installation"
       uses: azure/setup-helm@v3
       with:
         version: ${{ inputs.helm_version }} # Current Helm version installed into ArgoCD Pods.
         # token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
 
     - id: install-kube-linter
-      name: 'Kube-Linter Installation'
+      name: "Kube-Linter Installation"
       shell: bash
       run: |
         go version
         go install golang.stackrox.io/kube-linter/cmd/kube-linter@${{ inputs.kube_linter_version }}
 
     - id: exec-kube-linter
-      name: 'Execute Kube Linter'
+      name: "Execute Kube Linter"
       run: ${{ github.action_path }}/entrypoint.sh
       env:
         APP_NAME: ${{ inputs.app_name }}

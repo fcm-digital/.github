@@ -1,38 +1,38 @@
 ---
-name: 'Build Docker image'
-description: 'Build a Docker image using default tags'
+name: "Build Docker image"
+description: "Build a Docker image using default tags"
 inputs:
   file:
     required: false
     type: string
-    default: 'Dockerfile'
-    description: 'Path to Dockerfile'
+    default: "Dockerfile"
+    description: "Path to Dockerfile"
   context:
     required: false
     type: string
-    default: './'
-    description: 'Context to build image (default: ./)'
+    default: "./"
+    description: "Context to build image (default: ./)"
   app:
     required: true
     type: string
-    description: 'Name of the app, to use for the registry: ${url}/${repo}/${app}'
+    description: "Name of the app, to use for the registry: ${url}/${repo}/${app}"
   region:
     required: false
-    default: 'europe'
+    default: "europe"
     type: string
-    description: 'Region or zone for Google Artifact Registry'
+    description: "Region or zone for Google Artifact Registry"
   repo:
     required: false
     type: string
-    description: 'Name of the repo to upload image: ${url}/${repo}/${app}'
+    description: "Name of the repo to upload image: ${url}/${repo}/${app}"
   push:
     required: false
     default: true
     type: bool
-    description: 'Whether to push image to registry, or build locally.'
+    description: "Whether to push image to registry, or build locally."
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - run: |-
         export COMMIT_TIME=$(git show -s --format=%ct)
@@ -45,6 +45,13 @@ runs:
         fi
       shell: bash
 
+    - name: Sanitize tag
+      id: sanitize
+      uses: ./.github/.github/actions/sanitize-docker-tag
+      with:
+        tag: ${{ github.ref_name }}
+        force-lowercase: "true"
+
     - name: "Build & push Docker image [branch tag]"
       uses: docker/build-push-action@v6
       with:
@@ -52,8 +59,8 @@ runs:
         file: ${{ inputs.file }}
         context: ${{ inputs.context }}
         tags: |-
-          ${{ env.REPO_URL }}:${{ github.ref_name }}
-          ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize.outputs.sanitized_tag }}
+          ${{ env.REPO_URL }}:${{ steps.sanitize.outputs.sanitized_tag }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
     - name: "Build Docker image [latest tag]"
       uses: docker/build-push-action@v6

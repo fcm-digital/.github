@@ -1,32 +1,39 @@
 ---
-name: 'ArgoCD Get Env to Deploy On (Staging)'
-description: 'Get environment to deploy on based on the image tag and the branch name.'
+name: "ArgoCD Get Env to Deploy On (Staging)"
+description: "Get environment to deploy on based on the image tag and the branch name."
 
 inputs:
   allow_multiple_environments:
-    description: 'Allow multiple environments to be deployed.'
+    description: "Allow multiple environments to be deployed."
     required: false
-    default: 'false'
+    default: "false"
   app_name:
-    description: 'The application name.'
+    description: "The application name."
     required: true
   branch_name:
-    description: 'The branch name.'
+    description: "The branch name."
     required: true
 
 outputs:
   env_to_deploy_on:
-    description: 'The environment to deploy on.'
+    description: "The environment to deploy on."
     value: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
 
 runs:
   using: "composite"
   steps:
+    # We add sanitization because we look for deployed environments using the current docker tag deployed
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      with:
+        tag: ${{ inputs.branch_name }}
+
     - id: get-env-to-deploy-on
       name: Get Environment to Deploy On
       run: |
         ENVIRONMENTS=$(find ./helm-chart-${{ inputs.app_name }}-values-staging/staging -name '*tag.*' -print0 | while IFS= read -r -d '' file; do
-          if grep -q "${{ inputs.branch_name }}" "$file"; then
+          if grep -q "${{ steps.sanitize-image-tag.outputs.sanitized_tag }}" "$file"; then
             echo "$file"
           fi
         done | awk -F'/' '{printf "%s\"%s\"", sep, $(NF-1); sep=", "} END {print ""}')

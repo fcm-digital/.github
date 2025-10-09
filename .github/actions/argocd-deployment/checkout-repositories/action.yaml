@@ -1,50 +1,50 @@
 ---
-name: 'Checkout Repositories'
-description: 'Checkout repositories and init context variables for ArgoCD deployment.'
+name: "Checkout Repositories"
+description: "Checkout repositories and init context variables for ArgoCD deployment."
 
 inputs:
   app_name:
-    description: 'App Name to Deploy.'
+    description: "App Name to Deploy."
     required: true
 
   branch_name:
-    description: 'Branch Name to Checkout (Required for manual deploy).'
+    description: "Branch Name to Checkout (Required for manual deploy)."
     required: false
   env_to_deploy:
-    description: 'Target Environment to Deploy. (Required for manual deploy).'
+    description: "Target Environment to Deploy. (Required for manual deploy)."
     required: false
-  image_tag: 
-    description: 'Image Tag to Deploy. If not provided, the image will be built from the workflow branch.'
+  image_tag:
+    description: "Image Tag to Deploy. If not provided, the image will be built from the workflow branch."
     required: false
 
   github_token_checkout:
-    description: 'The GitHub token to checkout helm_chart_template repository.'
+    description: "The GitHub token to checkout helm_chart_template repository."
     required: true
   helm_chart_template_ref:
-    description: 'If provided, the helm-chart-template repository will be checked out to this branch.'
+    description: "If provided, the helm-chart-template repository will be checked out to this branch."
     required: false
 
 outputs:
   branch_name:
-    description: 'The name of the branch being deployed.'
+    description: "The name of the branch being deployed."
     value: ${{ steps.set-outputs.outputs.branch_name }}
   env_to_deploy:
-    description: 'The target environment for deployment.'
+    description: "The target environment for deployment."
     value: ${{ steps.set-outputs.outputs.env_to_deploy }}
   commit_at:
-    description: 'The timestamp of the commit.'
+    description: "The timestamp of the commit."
     value: ${{ steps.set-outputs.outputs.current_time }}
   commit:
-    description: 'The unique identifier for the commit.'
+    description: "The unique identifier for the commit."
     value: ${{ steps.set-outputs.outputs.short_sha }}
   image_tag:
-    description: 'The tag of the new image to be deployed.'
+    description: "The tag of the new image to be deployed."
     value: ${{ steps.set-outputs.outputs.image_tag }}
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - id: init-context-vars
       name: Init Context Variables
@@ -56,7 +56,8 @@ runs:
             echo "Branch name not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
-            echo "BRANCH_NAME=${{ inputs.branch_name }}" >> $GITHUB_ENV
+            BRANCH_NAME="${{ inputs.branch_name }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           fi
 
           if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
@@ -70,14 +71,16 @@ runs:
 
         else
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+            BRANCH_NAME="${{ github.head_ref }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
             echo "The \`env_to_deploy\` extraction from the \`branch_name\` in a PR event is no longer available."
             echo "You must use the \`argocd-get-env-to-deploy-on\` action to obtain the \`env_to_deploy\` value."
             echo "ENV_TO_DEPLOY=NOT_DEFINED" >> $GITHUB_ENV
 
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+            BRANCH_NAME="${{ github.ref_name }}"
+            echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
             if [[ "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/heads/main" ]]; then
               echo "ENV_TO_DEPLOY=prod" >> $GITHUB_ENV
@@ -92,7 +95,15 @@ runs:
             exit 1
           fi
         fi
+        # Create an output with the branch variable to use in the sanitization process'
+        echo branch_name=${BRANCH_NAME} >> $GITHUB_OUTPUT
       shell: bash
+
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@sc-27606-sanitize-docker-tag
+      with:
+        tag: ${{ steps.init-context-vars.outputs.branch_name }}
 
     - id: set-outputs
       name: Set Outputs
@@ -108,33 +119,33 @@ runs:
           export SHORT_SHA=$( git rev-parse --short=7 "$GITHUB_SHA" )
           echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "image_tag=$BRANCH_NAME-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ steps.sanitize-image-tag.outputs.sanitized_tag }}-$CURRENT_TIME-$SHORT_SHA" >> $GITHUB_OUTPUT
         else
-          echo "image_tag=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ steps.sanitize-image-tag.outputs.sanitized_tag }}" >> $GITHUB_OUTPUT
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
-    - uses: actions/checkout@v4
-      if: github.event_name == 'push' && 
-          (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-          steps.set-outputs.outputs.env_to_deploy == 'prod' &&
-          (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
+    - uses: actions/checkout@v5
+      if: github.event_name == 'push' &&
+        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
+        steps.set-outputs.outputs.env_to_deploy == 'prod' &&
+        (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       if: inputs.helm_chart_template_ref != ''
       with:
         repository: fcm-digital/helm-chart-template

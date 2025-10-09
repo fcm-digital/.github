@@ -1,29 +1,29 @@
 ---
-name: 'Ask for Manual Approval'
-description: 'Ask for Manual Approval'
+name: "Ask for Manual Approval"
+description: "Ask for Manual Approval"
 
 inputs:
   app_name:
-    description: 'Name of the app to deploy.'
+    description: "Name of the app to deploy."
     required: true
   app_region:
-    description: 'Region of the app to deploy.'
+    description: "Region of the app to deploy."
     required: true
   approvers:
-    description: 'The GitHub token to checkout helm_chart_template repository.'
+    description: "The GitHub token to checkout helm_chart_template repository."
     required: true
   env_to_deploy:
-    description: 'Environment where the image will be deployed.'
+    description: "Environment where the image will be deployed."
     required: true
   app_id:
-    description: 'Manual Approvals GitHub App AppId.'
+    description: "Manual Approvals GitHub App AppId."
     required: true
   private_key:
-    description: 'Manual Approvals GitHub App Private Key.'
+    description: "Manual Approvals GitHub App Private Key."
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - id: argocd-url
       name: ArgoCD URL
