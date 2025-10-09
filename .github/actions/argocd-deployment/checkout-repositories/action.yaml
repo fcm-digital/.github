@@ -96,7 +96,6 @@ runs:
           fi
         fi
         # Create an output with the branch variable to use in the sanitization process'
-        echo branch_name=${BRANCH_NAME}
         echo branch_name=${BRANCH_NAME} >> $GITHUB_OUTPUT
       shell: bash
 
