@@ -262,6 +262,9 @@ runs:
     - id: display-new-image
       name: Display New Image Built
       run: |
-        echo "## 🚀 New Image Built 🚀" >> $GITHUB_STEP_SUMMARY
-        echo "\`${{ steps.sanitize-image-tag.outputs.sanitized_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 New image built for \`${{ inputs.app_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "* **Repository**: \`${{ env.REPO_URL }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "* **Image Tags**: \`${{ steps.sanitize-image-tag.outputs.sanitized_tag }}\`, \`${{ steps.sanitize-branch-name.outputs.sanitized_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "* **Branch**: \`${{ inputs.branch_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "* **Commit**: \`${{ inputs.commit }}\` (${{ inputs.commit_at }})" >> $GITHUB_STEP_SUMMARY
       shell: bash

@@ -48,3 +48,12 @@ runs:
           echo "OK: No environment found for branch ${{ inputs.branch_name }}"
         fi
       shell: bash
+
+    - id: summarize
+      if: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on != '' }}
+      name: Summarize
+      run: |
+        echo "## Deployed environments" >> $GITHUB_STEP_SUMMARY
+        echo "* **Image Tag**: \`${{ steps.sanitize-image-tag.outputs.sanitized_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "* **Environments**: \`${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}\`" >> $GITHUB_STEP_SUMMARY
+      shell: bash
