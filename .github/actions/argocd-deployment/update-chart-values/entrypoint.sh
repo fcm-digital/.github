@@ -17,7 +17,7 @@ add_synced_staging_envs() {
 
 
 # Ensure the branch name is 'master' or 'main' when deploying to 'prod'
-if [[ "$ENV_TO_DEPLOY" == "prod" ]] && 
+if [[ "$ENV_TO_DEPLOY" == "prod" ]] &&
    [[ "$BRANCH_NAME" != "master" && "$BRANCH_NAME" != "main" ]]; then
 
     # Check if RELEASE_VERSION is set
@@ -94,7 +94,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
         fi
     done
     # Always sync common values-stg.yaml when a Pull Request is closed
-    find "./../kube/values/$APP_NAME/staging/*" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
+    find "./../kube/values/$APP_NAME/staging/" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
     if [ ! -z ${synced_staging_envs+x} ]; then
         echo "synced_staging_envs=$( echo $synced_staging_envs )" >> $GITHUB_OUTPUT
     fi
@@ -102,7 +102,7 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]] && [[ "$BRANCH_NAME" == "master" || "$BRA
 # Sync common staging values if deploying to 'ONLY_GLOBAL_STG_VALUES' on 'master' or 'main' branch
 elif [[ "$ENV_TO_DEPLOY" == "ONLY_COMMON_STG_VALUES" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
     cd helm-chart-$APP_NAME-values-staging/
-    find "./../kube/values/$APP_NAME/staging/*" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
+    find "./../kube/values/$APP_NAME/staging/" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
 
 # Sync prod values if deploying to 'prod' on 'master' or 'main' branch
 elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
