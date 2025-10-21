@@ -1,0 +1,40 @@
+---
+name: 'Argo Workflows CLI Wait for workflow'
+description: 'Argo Workflows commands for its CLI wait for workflow.'
+
+inputs:
+  argo_namespace:
+    description: 'Argo Workflows namespace.'
+    required: false
+    default: 'argo-workflows'
+  argo_server:
+    description: 'Argo Workflows server URL.'
+    required: false
+    default: 'argo-workflows.stg.fcm.digital:443'
+  argo_token:
+    description: 'Argo Workflows auth token.'
+    required: true
+  environment:
+    description: 'Environment.'
+    required: true
+  labels:
+    description: 'Labels to be used for filtering.'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - id: workflow-wait
+      name: 'Argo Workflow Wait'
+      shell: bash
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        ARGO_NAMESPACE: ${{ inputs.argo_namespace }}
+        ARGO_SERVER: ${{ inputs.argo_server }}
+        ARGO_TOKEN: ${{ inputs.argo_token }}
+        ARGO_HTTP1: true
+        ARGO_SECURE: true
+        KUBECONFIG: /dev/null
+        ENVIRONMENTS: ${{ inputs.environments }}
+        LABELS: ${{ inputs.labels }}

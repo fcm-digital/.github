@@ -1,0 +1,38 @@
+---
+name: 'Configure k6'
+description: 'Configure k6 for performance testing.'
+
+inputs:
+  k6-version:
+    description: 'The version of k6 to use.'
+    required: false
+    default: 'latest'
+
+  dd-api-key:
+    description: 'The DataDog API key to use. (Leave empty to disable DataDog integration.)'
+    required: true
+  dd-languages:
+    description: 'The languages to use for DataDog integration.'
+    required: true
+  dd-site:
+    description: 'The DataDog site to use.'
+    required: false
+    default: 'app.datadoghq.eu'
+
+runs:
+  using: "composite"
+  steps:
+    - id: setup-k6
+      name: Setup k6
+      uses: grafana/setup-k6-action@v1
+      with:
+        k6-version: ${{ inputs.k6-version }}
+
+    - id: setup-dd-agent
+      if: inputs.dd-api-key != ''
+      name: Configure Datadog Test Optimization
+      uses: datadog/test-visibility-github-action@v2
+      with:
+        languages: ${{ inputs.dd-languages }}
+        api_key: ${{ inputs.dd-api-key }}
+        site: ${{ inputs.dd-site }}
