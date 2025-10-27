@@ -3,39 +3,38 @@ name: "Login to GKE"
 description: "Login to Google Kubernetes Engine cluster."
 
 inputs:
-  gcp_json:
-    description: "The Service Account that contains the permissions to GKE. (Required for JSON auth)"
-    required: false
+  auth_gcp:
+    description: "Enable GCP authentication."
+    required: true
+    default: "true"
   gcp_wif_project_id:
-    description: "The GCP project ID to use for WIF authentication."
+    description: "The GCP project ID to use for WIF authentication. (Required if auth_gcp is true)"
     required: false
   gcp_wif_pool:
-    description: "The GCP WIF Pool to use for authentication."
+    description: "The GCP WIF Pool to use for authentication. (Required if auth_gcp is true)"
     required: false
   gcp_wif_provider:
-    description: "The GCP WIF Provider to use for authentication."
+    description: "The GCP WIF Provider to use for authentication. (Required if auth_gcp is true)"
     required: false
   gcp_wif_service_account:
-    description: "The GCP SA to use for authentication."
+    description: "The GCP SA to use for authentication. (Required if auth_gcp is true)"
     required: false
 
-  cluster_name:
+  gke_cluster_name:
     description: "The name of the GKE cluster."
-    required: true
-    default: "fcm-platform-stg-euw1"
-  location:
+    required: false
+  gke_location:
     description: "The location of the GKE cluster."
-    required: true
-    default: "europe-west1"
+    required: false
 
 runs:
   using: "composite"
   steps:
     - id: auth-gcp
+      if: inputs.auth_gcp == "true"
       name: Authenticate to GCP
       uses: ./.github/actions/google-cloud-platform/auth
       with:
-        gcp_json: ${{ inputs.gcp_json }}
         gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
         gcp_wif_pool: ${{ inputs.gcp_wif_pool }}
         gcp_wif_provider: ${{ inputs.gcp_wif_provider }}
@@ -47,11 +46,12 @@ runs:
         install_components: "gke-gcloud-auth-plugin"
 
     - id: get-gke-credentials
+      if: inputs.gke_cluster_name != '' && inputs.gke_location != ''
       name: Get GKE Credentials
       uses: "google-github-actions/get-gke-credentials@v2"
       with:
-        cluster_name: ${{ inputs.cluster_name }}
-        location: ${{ inputs.location }}
+        cluster_name: ${{ inputs.gke_cluster_name }}
+        location: ${{ inputs.gke_location }}
 
     - id: print-kubectl-version
       name: Print kubectl version
