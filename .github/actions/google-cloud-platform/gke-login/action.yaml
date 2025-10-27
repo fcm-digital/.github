@@ -1,0 +1,28 @@
+---
+name: "Login to GKE"
+description: "Login to Google Kubernetes Engine cluster."
+
+inputs:
+  cluster_name:
+    description: "The name of the GKE cluster."
+    required: true
+    default: "fcm-platform-stg-euw1"
+  location:
+    description: "The location of the GKE cluster."
+    required: true
+    default: "europe-west1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set up Cloud SDK"
+      uses: "google-github-actions/setup-gcloud@v3"
+      with:
+        install_components: "gke-gcloud-auth-plugin"
+
+    - id: get-credentials
+      name: "Get GKE Credentials"
+      uses: "google-github-actions/get-gke-credentials@v2"
+      with:
+        cluster_name: ${{ inputs.cluster_name }}
+        location: ${{ inputs.location }}

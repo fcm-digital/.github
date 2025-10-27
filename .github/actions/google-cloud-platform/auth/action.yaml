@@ -1,0 +1,53 @@
+---
+name: "Authenticate to GCP"
+description: "Authenticatio to Google Cloud Platform via WIF or JSON"
+
+inputs:
+  gcp_json:
+    description: "The Service Account that contains the permissions to GKE. (Required for JSON auth)"
+    required: true
+  gcp_wif_project_id:
+    description: "The GCP project ID to use for WIF authentication."
+    required: false
+  gcp_wif_pool:
+    description: "The GCP WIF Pool to use for authentication."
+    required: false
+  gcp_wif_provider:
+    description: "The GCP WIF Provider to use for authentication."
+    required: false
+  gcp_wif_service_account:
+    description: "The GCP SA to use for authentication."
+    required: false
+
+outputs:
+  access_token:
+    description: "The access token for GCP. (Only available if WIF auth is used)"
+    value: ${{ steps.auth-gcp-wif.outputs.access_token || '' }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: validate-inputs
+      name: Validate inputs
+      run: |
+        if [ -z "${{ inputs.gcp_json }}" ] && [ -z "${{ inputs.gcp_wif_project_id }}" ] && [ -z "${{ inputs.gcp_wif_pool }}" ] && [ -z "${{ inputs.gcp_wif_provider }}" ] && [ -z "${{ inputs.gcp_wif_service_account }}" ]; then
+          echo "Error: At least one of gcp_json or gcp_wif_project_id, gcp_wif_pool, gcp_wif_provider, gcp_wif_service_account must be provided."
+          exit 1
+        fi
+      shell: bash
+
+    - id: setup-gcp-credentials
+      if: inputs.gcp_json != ''
+      name: "Set Up Google Credentials"
+      uses: google-github-actions/auth@v3
+      with:
+        credentials_json: ${{ inputs.gcp_json }}
+
+    - id: auth-gcp-wif
+      if: inputs.gcp_wif_project_id != '' && inputs.gcp_wif_pool != '' && inputs.gcp_wif_provider != '' && inputs.gcp_wif_service_account != ''
+      name: Authenticate to GCP via WIF
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: "access_token"
+        workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
+        service_account: ${{ inputs.gcp_wif_service_account }}

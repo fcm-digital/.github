@@ -25,10 +25,9 @@ runs:
   steps:
     - id: get-last-master-image
       name: "Get Last Master Image"
-      run: |
-        MASTER_IMAGE=$(gcloud artifacts docker images list ${{ inputs.artifact_region }}-docker.pkg.dev/${{ inputs.artifact_project_name }}/${{ inputs.artifact_repository_name }}/${{ inputs.artifact_repository_name }} \
-          --include-tags \
-          --filter="tags:(master) AND tags:(master-*)" \
-          --sort-by=~createTime --limit=1 | tail -n +2 | grep latest | awk '{print $3}' | awk -F, '{print $3}')
-        echo "last_master_image=$(echo $MASTER_IMAGE)" >> $GITHUB_OUTPUT
+      MASTER_IMAGE=$(gcloud artifacts docker images list ${{ inputs.artifact_region }}-docker.pkg.dev/${{ inputs.artifact_project_name }}/${{ inputs.artifact_repository_name }}/${{ inputs.artifact_repository_name }} \
+        --include-tags \
+        --filter="TAGS='master' AND TAGS='latest' AND TAGS:master- AND NOT master-cache" \
+        --limit=1 | tail -n +2 | grep latest | awk '{print $3}' | awk -F, '{print $NF}')
+      echo "last_master_image=$(echo $MASTER_IMAGE)" >> $GITHUB_OUTPUT
       shell: bash
