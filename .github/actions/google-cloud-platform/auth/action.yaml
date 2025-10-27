@@ -5,7 +5,7 @@ description: "Authenticatio to Google Cloud Platform via WIF or JSON"
 inputs:
   gcp_json:
     description: "The Service Account that contains the permissions to GKE. (Required for JSON auth)"
-    required: true
+    required: false
   gcp_wif_project_id:
     description: "The GCP project ID to use for WIF authentication."
     required: false
@@ -51,3 +51,15 @@ runs:
         token_format: "access_token"
         workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
         service_account: ${{ inputs.gcp_wif_service_account }}
+
+    - id: validate-gcp-auth
+      name: Validate GCP authentication
+      run: |
+        gcloud auth list
+      shell: bash
+
+    - id: print-gcloud-versions
+      name: Print GCloud command versions
+      run: |
+        gcloud version
+      shell: bash
