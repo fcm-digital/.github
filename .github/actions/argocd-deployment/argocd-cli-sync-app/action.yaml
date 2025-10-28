@@ -26,6 +26,12 @@ inputs:
   env_to_deploy:
     description: "Environment or Environments where the image will be deployed."
     required: true
+  resources:
+    description: |
+      'Sync a specific resource - Resource should be formatted as GROUP:KIND:NAME. If no GROUP is specified then :KIND:NAME'
+      'Multiple resources can be specified as a comma-separated list: "GROUP:KIND:NAME, :KIND:NAME, :KIND:*"'
+    required: false
+    default: ""
   sync_for_all_envs:
     description: "If true, the action will sync the app for all environments (ALL_ENV)."
     required: false
@@ -62,6 +68,7 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        RESOURCES: ${{ inputs.resources }}
       shell: bash
 
     - id: argocd-cli-sync-all-staging-envs

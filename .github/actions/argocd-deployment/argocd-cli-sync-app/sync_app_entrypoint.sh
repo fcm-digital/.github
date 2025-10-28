@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 argocd_app_sync () {
-    argocd app sync $ARGOCD_FULL_APP_NAME \
+    argocd app sync $ARGOCD_FULL_APP_NAME $resource_args \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --prune \
@@ -11,7 +11,7 @@ argocd_app_sync () {
 }
 
 argocd_app_wait () {
-    argocd app wait $ARGOCD_FULL_APP_NAME \
+    argocd app wait $ARGOCD_FULL_APP_NAME $resource_args \
         --server $ARGOCD_URL \
         --auth-token $ARGOCD_AUTH_TOKEN \
         --health
@@ -25,6 +25,14 @@ fi
 
 
 ITER=1
+
+resource_args=""
+if [[ -n "$RESOURCES" ]]; then
+    IFS=',' read -ra RESOURCE_ARRAY <<< "$RESOURCES"
+    for resource in "${RESOURCE_ARRAY[@]}"; do
+        resource_args+="--resource $resource "
+    done
+fi
 
 until argocd_app_sync </dev/null
 do
