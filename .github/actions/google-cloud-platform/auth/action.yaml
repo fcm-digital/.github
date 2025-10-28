@@ -3,6 +3,19 @@ name: "Authenticate to GCP"
 description: "Authenticatio to Google Cloud Platform via WIF or JSON"
 
 inputs:
+  setup_gcloud_sdk:
+    description: "Enable GCloud SDK setup."
+    required: false
+    default: "true"
+  gcloud_sdk_version:
+    description: "The version of the GCloud SDK to use."
+    required: false
+    default: ">= 544.0.0"
+  gcloud_sdk_install_components:
+    description: "The components to install with the GCloud SDK."
+    required: false
+    default: ""
+
   gcp_wif_project_id:
     description: "The GCP project ID to use for WIF authentication."
     required: true
@@ -34,6 +47,13 @@ runs:
         token_format: "access_token"
         workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
         service_account: ${{ inputs.gcp_wif_service_account }}
+
+    - name: Set up Cloud SDK
+      if: inputs.setup_gcloud_sdk == "true"
+      uses: google-github-actions/setup-gcloud@v3
+      with:
+        install_components: ${{ inputs.gcloud_sdk_install_components }}
+        version: ${{ inputs.gcloud_sdk_version }}
 
     - id: validate-gcp-auth
       name: Validate GCP authentication
