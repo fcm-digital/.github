@@ -49,7 +49,7 @@ runs:
         service_account: ${{ inputs.gcp_wif_service_account }}
 
     - name: Set up Cloud SDK
-      if: inputs.setup_gcloud_sdk == "true"
+      if: inputs.setup_gcloud_sdk == 'true'
       uses: google-github-actions/setup-gcloud@v3
       with:
         install_components: ${{ inputs.gcloud_sdk_install_components }}

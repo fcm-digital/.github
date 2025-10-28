@@ -5,7 +5,7 @@ description: "Login to Google Artifact Registry."
 inputs:
   auth_gcp:
     description: "Enable GCP authentication."
-    required: true
+    required: false
     default: "true"
   gcp_wif_project_id:
     description: "The GCP project ID to use for WIF authentication. (Required if auth_gcp is true)"
@@ -33,7 +33,7 @@ runs:
   using: "composite"
   steps:
     - id: auth-gcp
-      if: inputs.auth_gcp == "true"
+      if: inputs.auth_gcp == 'true'
       name: Authenticate to GCP
       uses: ./.github/actions/google-cloud-platform/auth
       with:
