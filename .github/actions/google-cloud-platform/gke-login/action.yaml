@@ -16,7 +16,7 @@ runs:
     - id: get-gke-credentials
       if: inputs.gke_cluster_name != '' && inputs.gke_location != ''
       name: Get GKE Credentials
-      uses: "google-github-actions/get-gke-credentials@v2"
+      uses: google-github-actions/get-gke-credentials@v3
       with:
         cluster_name: ${{ inputs.gke_cluster_name }}
         location: ${{ inputs.gke_location }}
