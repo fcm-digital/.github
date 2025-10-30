@@ -9,7 +9,7 @@ inputs:
   gke_location:
     description: "The location of the GKE cluster."
     required: false
-  
+
   install_kubectl:
     description: "Install kubectl (if not already installed.)"
     required: false
@@ -33,7 +33,7 @@ runs:
     - id: verify-kubectl-installation
       name: Verify kubectl installation
       run: |
-        command -v kubectl &> /dev/null
+        command -v kubectl
         if [ $? -ne 0 ]; then
           echo "kubectl is not installed in the current GitHub runner"
           echo "install_kubectl=true" >> $GITHUB_ENV
