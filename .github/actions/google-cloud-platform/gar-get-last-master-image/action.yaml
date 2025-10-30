@@ -3,23 +3,6 @@ name: "GCP Get Last Master Image"
 description: "Get the last master image from Google Artifact Registry."
 
 inputs:
-  auth_gcp:
-    description: "Enable GCP authentication."
-    required: false
-    default: "true"
-  gcp_wif_project_id:
-    description: "The GCP project ID to use for WIF authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_pool:
-    description: "The GCP WIF Pool to use for authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_provider:
-    description: "The GCP WIF Provider to use for authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_service_account:
-    description: "The GCP SA to use for authentication. (Required if auth_gcp is true)"
-    required: false
-
   artifact_region:
     description: "Region or zone for Google Artifact Registry."
     required: false
@@ -40,16 +23,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - id: auth-gcp
-      if: inputs.auth_gcp == 'true'
-      name: Authenticate to GCP
-      uses: ./.github/actions/google-cloud-platform/auth
-      with:
-        gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
-        gcp_wif_pool: ${{ inputs.gcp_wif_pool }}
-        gcp_wif_provider: ${{ inputs.gcp_wif_provider }}
-        gcp_wif_service_account: ${{ inputs.gcp_wif_service_account }}
-
     - id: get-last-master-image
       name: Get Last Master Image
       run: |

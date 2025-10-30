@@ -3,27 +3,9 @@ name: "Login to GAR"
 description: "Login to Google Artifact Registry."
 
 inputs:
-  auth_gcp:
-    description: "Enable GCP authentication."
-    required: false
-    default: "true"
-  gcp_wif_project_id:
-    description: "The GCP project ID to use for WIF authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_pool:
-    description: "The GCP WIF Pool to use for authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_provider:
-    description: "The GCP WIF Provider to use for authentication. (Required if auth_gcp is true)"
-    required: false
-  gcp_wif_service_account:
-    description: "The GCP SA to use for authentication. (Required if auth_gcp is true)"
-    required: false
-
   gcp_wif_access_token:
-    description: "The access token for GAR. (WIF auth) (Required if auth_gcp is false)"
-    required: false
-
+    description: "The access token for GAR. (WIF auth)"
+    required: true
   artifact_region:
     description: "Region or zone for Google Artifact Registry."
     required: false
@@ -32,17 +14,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: auth-gcp
-      if: inputs.auth_gcp == 'true'
-      name: Authenticate to GCP
-      uses: ./.github/actions/google-cloud-platform/auth
-      with:
-        setup_gcloud_sdk: False
-        gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
-        gcp_wif_pool: ${{ inputs.gcp_wif_pool }}
-        gcp_wif_provider: ${{ inputs.gcp_wif_provider }}
-        gcp_wif_service_account: ${{ inputs.gcp_wif_service_account }}
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -52,4 +23,4 @@ runs:
       with:
         registry: ${{ inputs.artifact_region }}-docker.pkg.dev
         username: oauth2accesstoken
-        password: ${{ inputs.gcp_wif_access_token || steps.auth-gcp.outputs.access_token }}
+        password: ${{ inputs.gcp_wif_access_token }}
