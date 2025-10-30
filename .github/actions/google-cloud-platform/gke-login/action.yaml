@@ -9,6 +9,15 @@ inputs:
   gke_location:
     description: "The location of the GKE cluster."
     required: false
+  
+  install_kubectl:
+    description: "Install kubectl (if not already installed.)"
+    required: false
+    default: "true"
+  kubectl_version:
+    description: "The version of kubectl to install (if install_kubectl is true)."
+    required: false
+    default: "v1.33.5"
 
 runs:
   using: "composite"
@@ -20,6 +29,26 @@ runs:
       with:
         cluster_name: ${{ inputs.gke_cluster_name }}
         location: ${{ inputs.gke_location }}
+
+    - id: verify-kubectl-installation
+      name: Verify kubectl installation
+      run: |
+        command -v kubectl &> /dev/null
+        if [ $? -ne 0 ]; then
+          echo "kubectl is not installed in the current GitHub runner"
+          echo "install_kubectl=true" >> $GITHUB_ENV
+        else
+          echo "kubectl is already installed in the current GitHub runner"
+          echo "install_kubectl=false" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - id: install-kubectl
+      name: Install kubectl
+      if: env.install_kubectl == 'true'
+      uses: azure/setup-kubectl@v4
+      with:
+         version: ${{ inputs.kubectl_version }}
 
     - id: print-kubectl-version
       name: Print kubectl version
