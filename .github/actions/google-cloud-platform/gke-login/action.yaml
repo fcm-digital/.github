@@ -33,13 +33,12 @@ runs:
     - id: verify-kubectl-installation
       name: Verify kubectl installation
       run: |
-        command -v kubectl
-        if [ $? -ne 0 ]; then
-          echo "kubectl is not installed in the current GitHub runner"
-          echo "install_kubectl=true" >> $GITHUB_ENV
-        else
+        if command -v kubectl &> /dev/null; then
           echo "kubectl is already installed in the current GitHub runner"
           echo "install_kubectl=false" >> $GITHUB_ENV
+        else
+          echo "kubectl is not installed in the current GitHub runner"
+          echo "install_kubectl=true" >> $GITHUB_ENV
         fi
       shell: bash
 
