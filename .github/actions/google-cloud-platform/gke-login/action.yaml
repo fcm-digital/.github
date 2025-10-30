@@ -33,7 +33,7 @@ runs:
     - id: auth-gcp
       if: inputs.auth_gcp == 'true'
       name: Authenticate to GCP
-      uses: ./.github/actions/google-cloud-platform/auth
+      uses: ./auth
       with:
         setup_gcloud_sdk: True
         gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
