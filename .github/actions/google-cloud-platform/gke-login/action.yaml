@@ -1,0 +1,56 @@
+---
+name: "Login to GKE"
+description: "Login to Google Kubernetes Engine cluster."
+
+inputs:
+  gke_cluster_name:
+    description: "The name of the GKE cluster."
+    required: false
+  gke_location:
+    description: "The location of the GKE cluster."
+    required: false
+
+  install_kubectl:
+    description: "Install kubectl (if not already installed.)"
+    required: false
+    default: "true"
+  kubectl_version:
+    description: "The version of kubectl to install (if install_kubectl is true)."
+    required: false
+    default: "v1.33.5"
+
+runs:
+  using: "composite"
+  steps:
+    - id: get-gke-credentials
+      if: inputs.gke_cluster_name != '' && inputs.gke_location != ''
+      name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v3
+      with:
+        cluster_name: ${{ inputs.gke_cluster_name }}
+        location: ${{ inputs.gke_location }}
+
+    - id: verify-kubectl-installation
+      name: Verify kubectl installation
+      run: |
+        if command -v kubectl &> /dev/null; then
+          echo "kubectl is already installed in the current GitHub runner"
+          echo "install_kubectl=false" >> $GITHUB_ENV
+        else
+          echo "kubectl is not installed in the current GitHub runner"
+          echo "install_kubectl=true" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - id: install-kubectl
+      name: Install kubectl
+      if: env.install_kubectl == 'true'
+      uses: azure/setup-kubectl@v4
+      with:
+         version: ${{ inputs.kubectl_version }}
+
+    - id: print-kubectl-version
+      name: Print kubectl version
+      run: |
+        kubectl version
+      shell: bash
