@@ -1,0 +1,81 @@
+---
+name: "GCS download file"
+description: "Download a file from Google Cloud Storage."
+
+inputs:
+  gcs_bucket:
+    description: "The GCS bucket that contains the file. (e.g. `bucket-name`)"
+    required: true
+  gcs_bucket_path:
+    description: "The GCS bucket path that contains the file. (e.g `path/to/file`)"
+    required: false
+    default: ""
+  gcs_file_name:
+    description: "The name of the file to download. (if not provided, the latest file will be downloaded)"
+    required: false
+    default: ""
+  local_path:
+    description: "The local path to download the file to. (e.g. `./tmp/path/to/file`)"
+    required: false
+    default: "."
+
+outputs:
+  downloaded_file_location:
+    description: "The location of the downloaded file."
+    value: "${{ steps.gcs-download-file.outputs.downloaded_file_location }}"
+
+runs:
+  using: "composite"
+  steps:
+    - id: gcs-get-latest-file
+      if: inputs.gcs_file_name == ''
+      name: Get latest file from GCS
+      run: |
+        set -eo pipefail
+
+        if ! LATEST_FILE=$(gcloud storage ls gs://${{ inputs.gcs_bucket }}/${{ inputs.gcs_bucket_path }} | sort -k2 -r | head -n1); then
+          echo "ERROR: Failed to list GCS bucket contents"
+          exit 1
+        fi
+
+        if [ -z "$LATEST_FILE" ]; then
+          echo "ERROR: No files found in gs://${{ inputs.gcs_bucket }}/${{ inputs.gcs_bucket_path }}"
+          exit 1
+        fi
+
+        echo "✓ Latest GCS file: $LATEST_FILE"
+        echo "latest_file_name=$(basename "$LATEST_FILE")" >> $GITHUB_ENV
+      shell: bash
+
+    - id: gcs-download-file
+      if: inputs.gcs_file_name != ''
+      name: Download file from GCS
+      run: |
+        set -eo pipefail
+
+        if [[ ! -z "${{ inputs.gcs_file_name }}" ]]; then
+          echo "INFO: `gcs_file_name` provided: ${{ inputs.gcs_file_name }}"
+          FILE_NAME=${{ inputs.gcs_file_name }}
+        elif [[ ! -z "${{ env.latest_file_name }}" ]]; then
+          echo "INFO: No `gcs_file_name` provided, using latest file: ${{ env.latest_file_name }}"
+          FILE_NAME=${{ env.latest_file_name }}
+        else
+          echo "ERROR: No `gcs_file_name` provided and no latest file found."
+          exit 1
+        fi
+
+        mkdir -p "${{ inputs.local_path }}"
+        echo "Downloading file ${FILE_NAME} from GCS ${{ inputs.gcs_bucket }} to ${{ inputs.local_path }}..."
+        if ! gcloud storage cp "gs://${{ inputs.gcs_bucket }}/${{ inputs.gcs_bucket_path }}/${FILE_NAME}" "${{ inputs.local_path }}/${FILE_NAME}"; then
+          echo "ERROR: Failed to download file from GCS"
+          exit 1
+        fi
+
+        if [ ! -f "${{ inputs.local_path }}/${FILE_NAME}" ]; then
+          echo "ERROR: Downloaded file not found at ${{ inputs.local_path }}/${FILE_NAME}"
+          exit 1
+        fi
+
+        echo "✓ Dump downloaded successfully"
+        echo "downloaded_file_location=${{ inputs.local_path }}/${FILE_NAME}" >> $GITHUB_OUTPUT
+      shell: bash
