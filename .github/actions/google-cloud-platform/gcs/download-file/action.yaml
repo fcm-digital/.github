@@ -23,6 +23,9 @@ outputs:
   downloaded_file_location:
     description: "The location of the downloaded file."
     value: "${{ steps.gcs-download-file.outputs.downloaded_file_location }}"
+  downloaded_file_name:
+    description: "The name of the downloaded file."
+    value: "${{ steps.gcs-download-file.outputs.downloaded_file_name }}"
 
 runs:
   using: "composite"
@@ -77,5 +80,6 @@ runs:
         fi
 
         echo "✓ Dump downloaded successfully"
-        echo "downloaded_file_location=${{ inputs.local_path }}/${FILE_NAME}" >> $GITHUB_OUTPUT
+        echo "downloaded_file_location=${{ inputs.local_path }}" >> $GITHUB_OUTPUT
+        echo "downloaded_file_name=${FILE_NAME}" >> $GITHUB_OUTPUT
       shell: bash
