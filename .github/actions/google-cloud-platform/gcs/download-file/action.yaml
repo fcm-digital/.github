@@ -51,7 +51,6 @@ runs:
       shell: bash
 
     - id: gcs-download-file
-      if: inputs.gcs_file_name != ''
       name: Download file from GCS
       run: |
         set -eo pipefail
