@@ -1,0 +1,50 @@
+name: Execute CronJob 
+description: "Create a Job from a CronJob and wait for it to complete"
+
+inputs:
+  cronjob-name:
+    description: "The name of the CronJob"
+    required: true
+  namespace:
+    description: "The namespace where the CronJob is located"
+    required: true
+  timeout:
+    description: "The timeout to wait for the job execution to complete (default: `600s` for 10 minutes)"
+    required: false
+    default: "600s"
+
+runs:
+  using: composite
+  steps:
+    - id: execute-cronjob
+      name: Execute CronJob
+      env:
+        CRONJOB_NAME: ${{ inputs.cronjob-name }}
+        NAMESPACE: ${{ inputs.namespace }}
+        TIMEOUT: ${{ inputs.timeout }}
+      run: |
+          set -eo pipefail
+
+          DATE=$(date +%Y%m%d%H%M%S)
+          JOB_NAME="${{ env.CRONJOB_NAME }}-manual-${DATE}"
+
+          echo "Creating job $JOB_NAME from cronjob/${{ env.CRONJOB_NAME }}..."
+          if ! kubectl create job --from=cronjob/${{ env.CRONJOB_NAME }} $JOB_NAME -n ${{ env.NAMESPACE }}; then
+            echo "ERROR: Failed to create job from CronJob"
+            exit 1
+          fi
+
+          echo "Waiting for job $JOB_NAME to complete (timeout: ${{ env.TIMEOUT }})..."
+          if ! kubectl wait --for=condition=complete job/$JOB_NAME -n ${{ env.NAMESPACE }} --timeout=${{ env.TIMEOUT }}; then
+            echo "ERROR: Job did not complete within timeout"
+            exit 1
+          fi
+
+          SUCCEEDED=$(kubectl get job $JOB_NAME -n ${{ env.NAMESPACE }} -o jsonpath='{.status.succeeded}')
+          if [ "$SUCCEEDED" = "1" ]; then
+            echo "✓ Job $JOB_NAME completed successfully"
+          else
+            echo "ERROR: Job $JOB_NAME execution failed"
+            exit 1
+          fi
+      shell: bash
