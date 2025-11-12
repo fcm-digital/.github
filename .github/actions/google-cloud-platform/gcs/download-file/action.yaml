@@ -56,13 +56,13 @@ runs:
         set -eo pipefail
 
         if [[ ! -z "${{ inputs.gcs_file_name }}" ]]; then
-          echo "INFO: `gcs_file_name` provided: ${{ inputs.gcs_file_name }}"
+          echo "INFO: gcs_file_name provided: ${{ inputs.gcs_file_name }}"
           FILE_NAME=${{ inputs.gcs_file_name }}
         elif [[ ! -z "${{ env.latest_file_name }}" ]]; then
-          echo "INFO: No `gcs_file_name` provided, using latest file: ${{ env.latest_file_name }}"
+          echo "INFO: No gcs_file_name provided, using latest file: ${{ env.latest_file_name }}"
           FILE_NAME=${{ env.latest_file_name }}
         else
-          echo "ERROR: No `gcs_file_name` provided and no latest file found."
+          echo "ERROR: No gcs_file_name provided and no latest file found."
           exit 1
         fi
 
