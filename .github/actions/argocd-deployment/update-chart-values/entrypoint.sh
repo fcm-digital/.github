@@ -104,8 +104,8 @@ elif [[ "$ENV_TO_DEPLOY" == "ONLY_COMMON_STG_VALUES" ]] && [[ "$BRANCH_NAME" == 
     cd helm-chart-$APP_NAME-values-staging/
     find "./../kube/values/$APP_NAME/staging/" -maxdepth 1 -type f | xargs -I {} cp {} "./staging/"
 
-# Sync prod values if deploying to 'prod' on 'master' or 'main' branch
-elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]]; then
+# Sync prod values if deploying to 'prod' on 'master' or 'main' branch and no release version is specified
+elif [[ "$ENV_TO_DEPLOY" == "prod" ]] && [[ "$BRANCH_NAME" == "master" || "$BRANCH_NAME" == "main" ]] && [[ -z "$RELEASE_VERSION" ]]; then
     cd helm-chart-$APP_NAME-values-prod/
     # Store the currentTag for potential rollback
     echo "old_image_tag=$(cat "./prod/values-prod-tag.yaml" | grep currentTag: | cut -d ':' -f 2 | sed 's/ //g')" >> $GITHUB_OUTPUT
