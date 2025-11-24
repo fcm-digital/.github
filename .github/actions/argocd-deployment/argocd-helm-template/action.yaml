@@ -12,6 +12,10 @@ inputs:
   github_token_checkout:
     description: "The GitHub token to checkout the repositories."
     required: true
+  github_organization_name:
+    description: "Organization Name."
+    required: false
+    default: fcm-digital
   image_tag:
     description: "The image tag that will be used."
     required: true
@@ -42,7 +46,7 @@ runs:
       name: Checkout helm-chart-values repository
       uses: actions/checkout@v4
       with:
-        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
         token: ${{ inputs.github_token_checkout }}
         ref: ${{ env.BRANCH_NAME }}
         path: helm-chart-values
@@ -51,7 +55,7 @@ runs:
       name: Checkout helm-chart-template repository
       uses: actions/checkout@v4
       with:
-        repository: fcm-digital/helm-chart-template
+        repository: ${{ inputs.github_organization_name }}/helm-chart-template
         token: ${{ inputs.github_token_checkout }}
         ref: ${{ inputs.helm_chart_template_version }}
         path: helm-chart-template
