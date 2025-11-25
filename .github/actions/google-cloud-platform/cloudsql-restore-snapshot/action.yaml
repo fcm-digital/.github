@@ -1,0 +1,63 @@
+---
+name: 'CloudSQL Restore Snapshot'
+description: 'Restore a CloudSQL snapshot using a given snapshot.'
+
+inputs:
+  gcloud-sdk-configure:
+    description: 'Whether to configure GCloud SDK.'
+    required: false
+    default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
+
+  restore-instance:
+    description: 'The CloudSQL instance to restore the snapshot to.'
+    required: true
+  snapshot-instance:
+    description: 'The CloudSQL instance from which the snapshot was taken.'
+    required: true
+  snapshot-id:
+    description: >
+      'The ID of the snapshot to restore.
+      (If not provided, the process will restore the last snapshot from the snapshot-instance)'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - id: gcloud-sdk-configure
+      if: inputs.gcloud-sdk-configure == 'true'
+      name: 'Configure GCloud SDK'
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
+
+    - id: get-last-snapshot
+      name: 'Get Last Snapshot'
+      shell: bash
+      run: |
+        if [[ -z '${{ inputs.snapshot-id }}' ]]; then
+          echo "No Snapshot ID provided, getting last snapshot from ${{ inputs.snapshot-instance }}..."
+          LAST_INSTANCE_BACKUP=$(gcloud sql backups list --instance=${{ inputs.snapshot-instance }} --filter="STATUS:(SUCCESSFUL)" --project=${{ inputs.gcp-project-id }} --limit=1 | tail -n 1 | awk '{print $1}')
+          if [ $? -ne 0 ] && [ -z "$LAST_INSTANCE_BACKUP" ]; then
+            echo "Failed to get last backup for CloudSQL instance: $SNAPSHOT_FROM"
+            exit 1
+          fi
+        else
+          LAST_INSTANCE_BACKUP=${{ inputs.snapshot-id }}
+        fi
+        echo "Last backup for CloudSQL instance ${{ inputs.snapshot-instance }}: $LAST_INSTANCE_BACKUP"
+        echo "last_instance_backup=$LAST_INSTANCE_BACKUP" >> $GITHUB_ENV
+
+    - id: restore-snapshot
+      name: 'Restore Snapshot'
+      shell: bash
+      run: |
+          echo "Restoring CloudSQL instance ${{ inputs.restore-instance }} using backup: ${{ env.last_instance_backup }} from ${{ inputs.snapshot-instance }}..."
+          gcloud sql backups restore ${{ env.last_instance_backup }} --restore-instance=${{ inputs.restore-instance }} --backup-instance=${{ inputs.snapshot-instance }} --project=${{ inputs.gcp-project-id }}
+          if [ $? -ne 0 ]; then
+            echo "Failed to restore CloudSQL instance: ${{ inputs.restore-instance }}"
+            exit 1
+          fi
+          echo "CloudSQL instance ${{ inputs.restore-instance }} restored successfully."

@@ -1,0 +1,47 @@
+---
+name: 'Get Workflow ID'
+description: 'Get the ID of a GitHub workflow based on the workflow file name and repository.'
+
+inputs:
+  github_token:
+    description: 'The GitHub Token.'
+    required: true
+  github_organization_name:
+    description: 'The GitHub organization name.'
+    required: true
+  github_repository_name:
+    description: 'The repository name.'
+    required: true
+  workflow_file_name:
+    description: 'The workflow file name.'
+    required: true
+
+outputs:
+  workflow_id:
+    description: 'The workflow ID.'
+    value: ${{ steps.get-workflow-id.outputs.workflow_id }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: get-workflow-id
+      name: Get Workflow ID
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GH_OUTPUT_FILE_NAME: gh-output.json
+      run: |
+        gh workflow list --repo ${{ inputs.github_organization_name }}/${{ inputs.github_repository_name }} --json id,path > $GH_OUTPUT_FILE_NAME
+
+        if [[ $? -ne 0 ]] || [ ! -f "$GH_OUTPUT_FILE_NAME" ] && [ ! -s "$GH_OUTPUT_FILE_NAME" ]; then
+          echo "Failed to list workflows"
+          exit 1
+        fi
+
+        WORKFLOW_ID=$(cat $GH_OUTPUT_FILE_NAME | jq --arg workflowFileName "${{ inputs.workflow_file_name }}" '.[] | select(.path | contains($workflowFileName))' | jq '.id')
+
+        if [[ $? -ne 0 ]] || [[ -z $WORKFLOW_ID ]]; then
+          echo "Failed to get workflow ID"
+          exit 1
+        fi
+        echo "workflow_id=$WORKFLOW_ID" >> $GITHUB_OUTPUT
+      shell: bash
