@@ -1,0 +1,46 @@
+---
+name: 'Generate GitHub App Token'
+description: 'Generate a GH token based on the GitHub App ID and its Private Key.'
+
+inputs:
+  github_app_id:
+    description: 'The GitHub App ID.'
+    required: true
+  github_app_private_key:
+    description: 'The GitHub App private key.'
+    required: true
+  github_organization_name:
+    description: 'The GitHub organization name.'
+    default: fcm-digital
+    required: false
+  github_repositories:
+    description: 'The GitHub repositories names to grant access to.'
+    required: true
+
+outputs:
+  gh_token:
+    description: 'The GitHub App token.'
+    value: ${{ steps.generate-gh-token.outputs.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate a GH Token
+      id: generate-gh-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_private_key }}
+        owner: ${{ inputs.github_organization_name }}
+        repositories: ${{ inputs.github_repositories }}
+
+    - name: Test Token
+      run: |
+        gh auth status
+        if [[ $? -ne 0 ]]; then
+          echo "Failed to get GitHub App Token using GH App ID: ${{ inputs.github_app_id }} credentials."
+          exit 1
+        else
+          echo "GitHub App Token generated successfully. Token saved to output `gh_token`."
+        fi
+      shell: bash      
