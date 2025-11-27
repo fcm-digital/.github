@@ -57,7 +57,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
+    - id: checkout
+      name: Checkout Local Repository
+      uses: actions/checkout@v5
 
     - id: init-context-vars
       name: Init Context Variables
