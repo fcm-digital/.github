@@ -16,19 +16,22 @@ inputs:
   image_tag:
     description: "Image Tag to Deploy. If not provided, the image will be built from the workflow branch."
     required: false
-  organization_name:
-    description: "Organization Name."
-    required: false
-    default: fcm-digital
   release_name:
     description: "Release Name to be Deployed on. (Only valid if `env_to_deploy` is `prod`)"
     required: false
 
-  github_token_checkout:
-    description: "The GitHub token to checkout helm_chart_template repository."
+  github_app_id:
+    description: "GitHub App ID."
     required: true
-  helm_chart_template_ref:
-    description: "If provided, the helm-chart-template repository will be checked out to this branch."
+  github_app_private_key:
+    description: "GitHub App Private Key."
+    required: true
+  github_organization_name:
+    description: "Organization Name."
+    required: true
+    default: fcm-digital
+  github_repositories:
+    description: "GitHub Repositories."
     required: false
 
 outputs:
@@ -47,6 +50,9 @@ outputs:
   image_tag:
     description: "The tag of the new image to be deployed."
     value: ${{ steps.set-outputs.outputs.image_tag }}
+  gh_token:
+    description: "The GitHub App token."
+    value: ${{ steps.generate-gh-app-token.outputs.token }}
 
 runs:
   using: "composite"
@@ -134,37 +140,39 @@ runs:
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
-    #! Only used by UI-KIT Repository - v2 Release (Prod)
-    - uses: actions/checkout@v5
-      if: steps.set-outputs.outputs.env_to_deploy == 'prod' && inputs.release_name != '' && github.event_name == 'workflow_dispatch'
+    - id: generate-gh-app-token
+      name: Generate a GH Token
+      uses: fcm-digital/.github/.github/actions/github/generate-github-app-token@sc-30230-custom-gh-org
       with:
-        repository: ${{ inputs.organization_name }}/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        github_app_id: ${{ inputs.github_app_id }}
+        github_app_private_key: ${{ inputs.github_app_private_key }}
+        github_organization_name: ${{ inputs.github_organization_name }}
+        github_repositories: ${{ inputs.github_repositories != '' && inputs.github_repositories || format('helm-chart-{0}-values', inputs.app_name) }}
+
+    #! Only used by UI-KIT Repository - v2 Release (Prod)
+    - uses: actions/checkout@v6
+      if: github.event_name == 'workflow_dispatch' &&
+          steps.set-outputs.outputs.env_to_deploy == 'prod' && inputs.release_name != '' 
+      with:
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ steps.generate-gh-app-token.outputs.token }}
         ref: master
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
         (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-        steps.set-outputs.outputs.env_to_deploy == 'prod' &&
+        steps.set-outputs.outputs.env_to_deploy == 'prod' && inputs.release_name == '' &&
         (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
-        repository: ${{ inputs.organization_name }}/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ steps.generate-gh-app-token.outputs.token }}
         ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
-        repository: ${{ inputs.organization_name }}/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ steps.generate-gh-app-token.outputs.token }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
-
-    - uses: actions/checkout@v5
-      if: inputs.helm_chart_template_ref != ''
-      with:
-        repository: ${{ inputs.organization_name }}/helm-chart-template
-        token: ${{ inputs.github_token_checkout }}
-        ref: ${{ inputs.helm_chart_template_ref }}
-        path: helm-chart-template
