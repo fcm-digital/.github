@@ -16,8 +16,7 @@ inputs:
     default: "true"
   kubectl_version:
     description: "The version of kubectl to install (if install_kubectl is true)."
-    required: false
-    default: "v1.33.5"
+    required: true
 
 runs:
   using: "composite"
