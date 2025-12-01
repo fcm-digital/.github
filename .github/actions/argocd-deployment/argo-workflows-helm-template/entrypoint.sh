@@ -5,9 +5,9 @@ set -euo pipefail
 for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
 
     if [ $env == "prod" ]; then
-        VALUES_DIR="./helm-chart-values/prod"
+        VALUES_DIR="./$HELM_CHART_VALUES_PATH/prod"
     else
-        VALUES_DIR="./helm-chart-values/staging"
+        VALUES_DIR="./$HELM_CHART_VALUES_PATH/staging"
     fi
 
     VALUES_GLOBAL_FILE=$(find $VALUES_DIR/ -maxdepth 1 -iname "*.yaml*")
@@ -24,7 +24,7 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
         done
     fi
 
-    cd ./helm-chart-template
+    cd ./$HELM_CHART_TEMPLATE_PATH
     helm template . -s templates/job.yaml --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "jobs-$env.yaml"
 
     delimiter="---"
