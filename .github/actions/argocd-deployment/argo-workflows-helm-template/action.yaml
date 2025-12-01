@@ -47,7 +47,7 @@ runs:
         app-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_app_private_key }}
         owner: ${{ inputs.github_organization_name }}
-        github_repositories: helm-chart-template
+        repositories: helm-chart-template
 
     - id: checkout-helm-chart-template
       name: Checkout helm-chart-template repository
