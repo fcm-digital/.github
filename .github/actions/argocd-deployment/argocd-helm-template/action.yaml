@@ -12,8 +12,8 @@ inputs:
   image_tag:
     description: "The image tag that will be used."
     required: true
-  template_file:
-    description: "Template file name to be used."
+  template_files:
+    description: "List of template files to be used. (comma separated)"
     required: false
 
   github_app_id:
@@ -71,7 +71,7 @@ runs:
         APP_NAME: ${{ inputs.app_name }}
         ENVIRONMENTS: ${{ inputs.environments }}
         IMAGE_TAG: ${{ inputs.image_tag }}
-        TEMPLATE_FILE: ${{ inputs.template_file }}
+        TEMPLATE_FILES: ${{ inputs.template_files }}
         HELM_CHART_VALUES_PATH: ${{ inputs.helm_chart_values_path }}
         HELM_CHART_TEMPLATE_PATH: helm-chart-template
       shell: bash

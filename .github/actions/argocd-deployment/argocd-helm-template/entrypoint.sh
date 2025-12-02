@@ -27,10 +27,14 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
 
     cd ./$HELM_CHART_TEMPLATE_PATH
 
-    if [ ! -z "$TEMPLATE_FILE" ]; then
-        OUTPUT_FILE_NAME="$(echo $TEMPLATE_FILE | awk -F'.' '{print $(NF-1)}' )-$env.yaml"
-        helm template . -s templates/$TEMPLATE_FILE --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "../$OUTPUT_FILE_NAME"
+    OUTPUT_FILE_NAME="$APP_NAME-$env.yaml"
+    if [ ! -z "$TEMPLATE_FILES" ]; then
+        TEMPLATE_ARGS=""
+        for template in $(echo $TEMPLATE_FILES | tr ',' '\n'); do
+            TEMPLATE_ARGS+=" -s templates/$template"
+        done
+        helm template . $TEMPLATE_ARGS --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "../$OUTPUT_FILE_NAME"
     else
-        helm template . --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "../$env.yaml"
+        helm template . --name-template=$APP_NAME --namespace=$env $VALUES --set currentTag=$IMAGE_TAG > "../$OUTPUT_FILE_NAME"
     fi
 done
