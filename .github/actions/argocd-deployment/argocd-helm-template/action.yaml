@@ -30,6 +30,9 @@ inputs:
   helm_chart_template_version:
     description: "Helm Chart Template Version"
     required: true
+  helm_chart_values_path:
+    description: "Helm Chart Values Path."
+    required: true
   helm_version:
     description: "Helm Version."
     required: true
