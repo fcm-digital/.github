@@ -37,6 +37,11 @@ inputs:
     description: "Helm Version."
     required: true
 
+outputs:
+  file_name:
+    description: "File name of the generated template."
+    value: ${{ env.APP_NAME }}-${{ env.NAMESPACE }}.yaml
+
 runs:
   using: "composite"
   steps:
