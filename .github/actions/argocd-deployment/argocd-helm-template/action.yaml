@@ -51,7 +51,7 @@ runs:
       uses: actions/checkout@v6
       with:
         repository: fcm-digital/helm-chart-template
-        token: ${{ inputs.github_token_checkout }}
+        token: ${{ steps.app-token.outputs.token }}
         ref: ${{ inputs.helm_chart_template_version }}
         path: helm-chart-template
 
