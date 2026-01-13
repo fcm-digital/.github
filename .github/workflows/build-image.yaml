@@ -52,6 +52,10 @@ on:
         type: string
         description: "Service account for WIF (GCP Authentication)"
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-push:
     runs-on: ubuntu-22.04
