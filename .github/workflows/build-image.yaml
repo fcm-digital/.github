@@ -55,6 +55,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@master
