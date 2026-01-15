@@ -22,10 +22,12 @@ runs:
     - shell: bash
       name: "Get environment from branch name"
       id: get-env
+      env:
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       run: |
-        if [[ "${{ github.ref_name }}" != "${{ inputs.main_branch }}" ]]
+        if [[ "${{ env.BRANCH_NAME }}" != "${{ inputs.main_branch }}" ]]
         then
-          filter=$( cut -d '-' -f 1 <<< ${{ github.ref_name }} )
+          filter=$( cut -d '-' -f 1 <<< ${{ env.BRANCH_NAME }} )
           read -ra valid_envs <<< "${{ inputs.valid_envs }}"
           for tmp in "${valid_envs[@]}"
           do
@@ -38,6 +40,6 @@ runs:
           echo "Invalid environment: ${filter}"
           exit 1
         else
-          echo "ERROR: Wrong branch name: ${{ github.ref_name }}"
+          echo "ERROR: Wrong branch name: ${{ env.BRANCH_NAME }}"
           exit 1
         fi
