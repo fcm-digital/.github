@@ -52,7 +52,7 @@ outputs:
     value: ${{ steps.remote-values-sync.outputs.old_image_tag }}
   synced_staging_envs:
     description: "The list of staging environments that were synchronized."
-    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}¡
+    value: ${{ steps.remote-values-sync.outputs.synced_staging_envs }}
 
 runs:
   using: "composite"
