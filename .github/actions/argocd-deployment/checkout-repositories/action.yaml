@@ -58,7 +58,7 @@ runs:
     - id: init-context-vars
       name: Init Context Variables
       run: |
-        if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "workflow_run" ]]; then
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || [[ "${{ github.event_name }}" == "workflow_run" ]]; then
           if [[ -z "${{ inputs.branch_name }}" ]]; then
             echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
             echo "## Reason" >> $GITHUB_STEP_SUMMARY
