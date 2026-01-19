@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-if [ $DEBUG ]; then
-    set -x
-fi
-
 argocd_app_sync_async() {
     argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
@@ -28,5 +24,3 @@ for env in $(echo $ENV_TO_DEPLOY | tr ',' '\n'); do
         ITER=$(($ITER + 1))
     done
 done
-
-exit 0

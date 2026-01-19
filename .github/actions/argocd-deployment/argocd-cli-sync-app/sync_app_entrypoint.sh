@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-if [ $DEBUG ]; then
-    set -x
-fi
-
 argocd_app_sync () {
     argocd app sync $ARGOCD_FULL_APP_NAME \
         --server $ARGOCD_URL \
@@ -51,5 +47,3 @@ do
     sleep $((10 * $ITER))s
     ITER=$(($ITER + 1))
 done
-
-exit 0
