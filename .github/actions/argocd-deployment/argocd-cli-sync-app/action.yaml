@@ -66,7 +66,7 @@ runs:
         ARGOCD_URL: ${{ inputs.argocd_url }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
-        DEBUG: true
+        DEBUG: ${{ inputs.debug }}
       shell: bash
 
     - id: argocd-cli-sync-all-staging-envs
