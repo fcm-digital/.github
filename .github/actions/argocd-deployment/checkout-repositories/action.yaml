@@ -69,10 +69,10 @@ runs:
             echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           fi
 
-          if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
+          if [[ -z "${{ inputs.env_to_deploy }}" ]] && [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
             echo "## Reason" >> $GITHUB_STEP_SUMMARY
-            echo "Environment not provided in a ${{ github.event_name }} event." >> $GITHUB_STEP_SUMMARY
+            echo "Environment not provided in a `workflow_dispatch` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}" >> $GITHUB_ENV
