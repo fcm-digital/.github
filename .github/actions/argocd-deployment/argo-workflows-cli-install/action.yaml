@@ -4,9 +4,8 @@ description: "Argo Workflows commands for its CLI installation."
 
 inputs:
   argo_workflows_cli_version:
-    required: false
-    default: "v3.6.2"
-    description: "Argo Workflows CLI version (default: v3.6.2)."
+    required: true
+    description: "Argo Workflows CLI version."
 
 runs:
   using: "composite"

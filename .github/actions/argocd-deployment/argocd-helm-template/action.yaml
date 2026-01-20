@@ -7,52 +7,54 @@ inputs:
     description: "The application name."
     required: true
   environments:
-    description: "Environments list."
-    required: true
-  github_token_checkout:
-    description: "The GitHub token to checkout the repositories."
+    description: "Environments list (comma separated)."
     required: true
   image_tag:
     description: "The image tag that will be used."
     required: true
+  template_files:
+    description: "List of template files to be used. (comma separated)"
+    required: false
+
+  github_app_id:
+    description: "The GitHub App ID."
+    required: true
+  github_app_private_key:
+    description: "The GitHub App Private Key."
+    required: true
+  github_organization_name:
+    description: "The GitHub Organization Name."
+    required: false
+    default: "fcm-digital"
+
   helm_chart_template_version:
     description: "Helm Chart Template Version"
+    required: true
+  helm_chart_values_path:
+    description: "Helm Chart Values Path."
     required: true
   helm_version:
     description: "Helm Version."
     required: true
-  template_file:
-    description: "Template file name to be used."
-    required: false
 
 runs:
   using: "composite"
   steps:
-    - id: get-branch-name-from-env
-      name: Get Branch Name from env
-      run: |
-        if [ "{{ inputs.environment }}" == "prod" ]; then
-          echo "BRANCH_NAME=master" >> $GITHUB_ENV
-        else
-          echo "BRANCH_NAME=staging" >> $GITHUB_ENV
-        fi
-      shell: bash
-
-    - id: checkout-helm-chart-values
-      name: Checkout helm-chart-values repository
-      uses: actions/checkout@v4
+    - id: app-token
+      name: Create GitHub App Token
+      uses: actions/create-github-app-token@v2
       with:
-        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
-        ref: ${{ env.BRANCH_NAME }}
-        path: helm-chart-values
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_private_key }}
+        owner: ${{ inputs.github_organization_name }}
+        repositories: helm-chart-template
 
     - id: checkout-helm-chart-template
       name: Checkout helm-chart-template repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: fcm-digital/helm-chart-template
-        token: ${{ inputs.github_token_checkout }}
+        token: ${{ steps.app-token.outputs.token }}
         ref: ${{ inputs.helm_chart_template_version }}
         path: helm-chart-template
 
@@ -69,5 +71,7 @@ runs:
         APP_NAME: ${{ inputs.app_name }}
         ENVIRONMENTS: ${{ inputs.environments }}
         IMAGE_TAG: ${{ inputs.image_tag }}
-        TEMPLATE_FILE: ${{ inputs.template_file }}
+        TEMPLATE_FILES: ${{ inputs.template_files }}
+        HELM_CHART_VALUES_PATH: ${{ inputs.helm_chart_values_path }}
+        HELM_CHART_TEMPLATE_PATH: helm-chart-template
       shell: bash

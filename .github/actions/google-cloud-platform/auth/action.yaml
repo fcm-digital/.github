@@ -8,9 +8,8 @@ inputs:
     required: false
     default: "true"
   gcloud_sdk_version:
-    description: "The version of the GCloud SDK to use."
+    description: "The version of the GCloud SDK to use. (Required if `setup_gcloud_sdk` is true)"
     required: false
-    default: ">= 544.0.0"
   gcloud_sdk_install_components:
     description: "The components to install with the GCloud SDK."
     required: false
@@ -49,11 +48,11 @@ runs:
         service_account: ${{ inputs.gcp_wif_service_account }}
 
     - name: Set up Cloud SDK
-      if: inputs.setup_gcloud_sdk == 'true'
+      if: inputs.setup_gcloud_sdk == 'true' && inputs.gcloud_sdk_version != ''
       uses: google-github-actions/setup-gcloud@v3
       with:
         install_components: ${{ inputs.gcloud_sdk_install_components }}
-        version: ${{ inputs.gcloud_sdk_version }}
+        version: ${{ format('>= {0}', inputs.gcloud_sdk_version) }}
 
     - id: validate-gcp-auth
       name: Validate GCP authentication

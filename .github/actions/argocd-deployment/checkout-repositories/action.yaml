@@ -20,12 +20,16 @@ inputs:
     description: "Release Name to be Deployed on. (Only valid if `env_to_deploy` is `prod`)"
     required: false
 
-  github_token_checkout:
-    description: "The GitHub token to checkout helm_chart_template repository."
+  github_app_id:
+    description: "The GitHub App ID."
     required: true
-  helm_chart_template_ref:
-    description: "If provided, the helm-chart-template repository will be checked out to this branch."
+  github_app_private_key:
+    description: "The GitHub App Private Key."
+    required: true
+  github_organization_name:
+    description: "The GitHub Organization Name."
     required: false
+    default: "fcm-digital"
 
 outputs:
   branch_name:
@@ -47,7 +51,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
+    - id: checkout
+      name: Checkout Repository
+      uses: actions/checkout@v6
 
     - id: init-context-vars
       name: Init Context Variables
@@ -130,37 +136,44 @@ runs:
         echo "env_to_deploy=$ENV_TO_DEPLOY" >> $GITHUB_OUTPUT
       shell: bash
 
+    - id: app-token
+      name: Create GitHub App Token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_private_key }}
+        owner: ${{ inputs.github_organization_name }}
+        repositories: helm-chart-${{ inputs.app_name }}-values
+
     #! Only used by UI-KIT Repository - v2 Release (Prod)
-    - uses: actions/checkout@v5
+    - id: checkout-helm-chart-values-prod-release-version
+      name: Checkout helm-chart-values [Prod] - Release version
+      uses: actions/checkout@v6
       if: steps.set-outputs.outputs.env_to_deploy == 'prod' && inputs.release_name != '' && github.event_name == 'workflow_dispatch'
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        token: ${{ steps.app-token.outputs.token }}
         ref: master
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v5
+    - id: checkout-helm-chart-values-prod
+      name: Checkout helm-chart-values [Prod]
+      uses: actions/checkout@v6
       if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
         (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
         steps.set-outputs.outputs.env_to_deploy == 'prod' &&
         (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        token: ${{ steps.app-token.outputs.token }}
         ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
 
-    - uses: actions/checkout@v5
+    - id: checkout-helm-chart-values-staging
+      name: Checkout helm-chart-values [Staging]
+      uses: actions/checkout@v6
       with:
         repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
-        token: ${{ inputs.github_token_checkout }}
+        token: ${{ steps.app-token.outputs.token }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
-
-    - uses: actions/checkout@v5
-      if: inputs.helm_chart_template_ref != ''
-      with:
-        repository: fcm-digital/helm-chart-template
-        token: ${{ inputs.github_token_checkout }}
-        ref: ${{ inputs.helm_chart_template_ref }}
-        path: helm-chart-template
