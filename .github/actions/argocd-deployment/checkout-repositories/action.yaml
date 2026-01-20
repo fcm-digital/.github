@@ -58,21 +58,21 @@ runs:
     - id: init-context-vars
       name: Init Context Variables
       run: |
-        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || [[ "${{ github.event_name }}" == "workflow_run" ]]; then
           if [[ -z "${{ inputs.branch_name }}" ]]; then
             echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
             echo "## Reason" >> $GITHUB_STEP_SUMMARY
-            echo "Branch name not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
+            echo "Branch name not provided in a ${{ github.event_name }} event ." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             BRANCH_NAME="${{ inputs.branch_name }}"
             echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           fi
 
-          if [[ -z "${{ inputs.env_to_deploy }}" ]]; then
+          if [[ -z "${{ inputs.env_to_deploy }}" ]] && [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
             echo "## Reason" >> $GITHUB_STEP_SUMMARY
-            echo "Environment not provided in a \`workflow_dispatch\` event." >> $GITHUB_STEP_SUMMARY
+            echo "Environment not provided in a `workflow_dispatch` event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}" >> $GITHUB_ENV
@@ -151,7 +151,7 @@ runs:
       uses: actions/checkout@v6
       if: steps.set-outputs.outputs.env_to_deploy == 'prod' && inputs.release_name != '' && github.event_name == 'workflow_dispatch'
       with:
-        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
         token: ${{ steps.app-token.outputs.token }}
         ref: master
         path: helm-chart-${{ inputs.app_name }}-values-prod
@@ -164,7 +164,7 @@ runs:
         steps.set-outputs.outputs.env_to_deploy == 'prod' &&
         (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
       with:
-        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
         token: ${{ steps.app-token.outputs.token }}
         ref: ${{ steps.init-context-vars.outputs.branch_name }}
         path: helm-chart-${{ inputs.app_name }}-values-prod
@@ -173,7 +173,7 @@ runs:
       name: Checkout helm-chart-values [Staging]
       uses: actions/checkout@v6
       with:
-        repository: fcm-digital/helm-chart-${{ inputs.app_name }}-values
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
         token: ${{ steps.app-token.outputs.token }}
         ref: staging
         path: helm-chart-${{ inputs.app_name }}-values-staging
