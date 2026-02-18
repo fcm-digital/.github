@@ -72,7 +72,7 @@ runs:
           if [[ -z "${{ inputs.env_to_deploy }}" ]] && [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "# 🚨 Checkout failed" > $GITHUB_STEP_SUMMARY
             echo "## Reason" >> $GITHUB_STEP_SUMMARY
-            echo "Environment not provided in a `workflow_dispatch` event." >> $GITHUB_STEP_SUMMARY
+            echo "Environment not provided in a 'workflow_dispatch' event." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "ENV_TO_DEPLOY=${{ inputs.env_to_deploy }}" >> $GITHUB_ENV
@@ -159,7 +159,8 @@ runs:
     - id: checkout-helm-chart-values-prod
       name: Checkout helm-chart-values [Prod]
       uses: actions/checkout@v6
-      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      if:
+        (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
         (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
         steps.set-outputs.outputs.env_to_deploy == 'prod' &&
         (steps.set-outputs.outputs.branch_name == 'master' || steps.set-outputs.outputs.branch_name == 'main')
