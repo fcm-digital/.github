@@ -72,11 +72,10 @@ update_argocd_app() {
 
     # Update the image tag SECOND using valuesObject (source position 1 = first source)
     # This triggers the actual deployment change
-    if ! argocd app set "$argocd_app_name" \
+    if ! argocd app patch "$argocd_app_name" \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
-        --source-position 1 \
-        --helm-set-string "currentTag=$image_tag"; then
+        --patch "[{\"op\":\"replace\",\"path\":\"/spec/sources/0/helm/valuesObject/currentTag\",\"value\":\"$image_tag\"}]"; then
         echo "  ✗ Failed to update image tag (branch revision was already updated)"
         echo "  ⚠ App may be in inconsistent state - manual intervention may be required"
         return 1
