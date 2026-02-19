@@ -1,0 +1,62 @@
+---
+name: "ArgoCD Get Env to Deploy On (Staging Apps)"
+description: "Get staging environment(s) to deploy on by matching ArgoCD app currentTag with the branch image tag."
+
+inputs:
+  allow_multiple_environments:
+    description: "Allow multiple environments to be deployed."
+    required: false
+    default: "false"
+  app_name:
+    description: "The application name."
+    required: true
+  app_region:
+    description: "The app region used in ArgoCD app naming convention."
+    required: false
+    default: "euw1"
+  argocd_auth_token:
+    description: "ArgoCD auth token with get permissions over apps."
+    required: true
+  argocd_url:
+    description: "ArgoCD URL (default: argocd.fcm.digital)."
+    required: false
+    default: "argocd.fcm.digital"
+  branch_name:
+    description: "The branch name."
+    required: true
+
+outputs:
+  env_to_deploy_on:
+    description: "The staging environment(s) to deploy on."
+    value: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
+      with:
+        tag: ${{ inputs.branch_name }}
+
+    - id: get-env-to-deploy-on
+      name: Get Environment to Deploy On from ArgoCD Apps
+      run: bash "${{ github.action_path }}/entrypoint.sh"
+      env:
+        ALLOW_MULTIPLE_ENVIRONMENTS: ${{ inputs.allow_multiple_environments }}
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        SANITIZED_TAG: ${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
+      shell: bash
+
+    - id: summarize
+      if: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on != '' }}
+      name: Summarize
+      run: |
+        echo "## Deployed environments" >> "$GITHUB_STEP_SUMMARY"
+        echo "* **Image Tag**: \`${{ steps.sanitize-image-tag.outputs.sanitized_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "* **Environments**: \`${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}\`" >> "$GITHUB_STEP_SUMMARY"
+      shell: bash
