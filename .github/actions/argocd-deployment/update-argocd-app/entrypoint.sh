@@ -75,6 +75,7 @@ update_argocd_app() {
     if ! argocd app set "$argocd_app_name" \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
+        --source-position 1 \
         --helm-set-string "currentTag=$image_tag"; then
         echo "  ✗ Failed to update image tag (branch revision was already updated)"
         echo "  ⚠ App may be in inconsistent state - manual intervention may be required"
