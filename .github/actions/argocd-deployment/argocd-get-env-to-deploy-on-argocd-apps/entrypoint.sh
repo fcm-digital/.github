@@ -43,7 +43,7 @@ app_pattern="${escaped_app_name}-.*-stg-${escaped_app_region}$"
 staging_apps=$(argocd app list \
     --server "$ARGOCD_URL" \
     --auth-token "$ARGOCD_AUTH_TOKEN" \
-    -o name 2>/dev/null | grep -E "$app_pattern" || true)
+    -o name | grep -E "$app_pattern" || true)
 
 if [[ -z "$staging_apps" ]]; then
     echo "OK: No staging ArgoCD apps found for ${APP_NAME} in region ${APP_REGION}"
