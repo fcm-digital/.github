@@ -38,7 +38,7 @@ is_tag_match() {
 
 escaped_app_name=$(escape_regex "$APP_NAME")
 escaped_app_region=$(escape_regex "$APP_REGION")
-app_pattern="^${escaped_app_name}-.*-stg-${escaped_app_region}$"
+app_pattern="${escaped_app_name}-.*-stg-${escaped_app_region}$"
 
 staging_apps=$(argocd app list \
     --server "$ARGOCD_URL" \
