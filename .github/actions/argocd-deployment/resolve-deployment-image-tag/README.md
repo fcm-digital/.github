@@ -5,7 +5,6 @@ Builds `image_tag`, `commit_at`, and `commit` values for ArgoCD deployment steps
 ## Inputs
 
 - `branch_name` (required)
-- `env_to_deploy` (required)
 - `image_tag` (optional)
 
 ## Outputs

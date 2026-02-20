@@ -6,9 +6,6 @@ inputs:
   branch_name:
     description: "Resolved branch name."
     required: true
-  env_to_deploy:
-    description: "Resolved target environment."
-    required: true
   image_tag:
     description: "Optional image tag input."
     required: false
@@ -38,7 +35,6 @@ runs:
       run: |
         set -euo pipefail
 
-        ENV_TO_DEPLOY="${{ inputs.env_to_deploy }}"
         INPUT_IMAGE_TAG="${{ inputs.image_tag }}"
         SANITIZED_BRANCH_TAG="${{ steps.sanitize-image-tag.outputs.sanitized_tag }}"
 
