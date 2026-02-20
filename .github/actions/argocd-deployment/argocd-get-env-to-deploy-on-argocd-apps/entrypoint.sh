@@ -60,7 +60,8 @@ while IFS= read -r argocd_app_name; do
     current_tag=$(get_current_tag "$argocd_app_name")
 
     if is_tag_match "$current_tag" "$SANITIZED_TAG"; then
-        env_name="${argocd_app_name#${APP_NAME}-}"
+        env_name="${argocd_app_name#argocd/}"
+        env_name="${env_name#${APP_NAME}-}"
         env_name="${env_name%-stg-${APP_REGION}}"
         matched_envs+=("$env_name")
     fi
