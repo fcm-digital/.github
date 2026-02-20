@@ -1,0 +1,63 @@
+---
+name: "Resolve Deployment Image Tag"
+description: "Build deployment image tag and commit metadata for ArgoCD flows."
+
+inputs:
+  branch_name:
+    description: "Resolved branch name."
+    required: true
+  env_to_deploy:
+    description: "Resolved target environment."
+    required: true
+  image_tag:
+    description: "Optional image tag input."
+    required: false
+
+outputs:
+  image_tag:
+    description: "The final image tag to deploy."
+    value: ${{ steps.resolve.outputs.image_tag }}
+  commit_at:
+    description: "The commit timestamp used in the image tag."
+    value: ${{ steps.resolve.outputs.current_time }}
+  commit:
+    description: "The short commit SHA used in the image tag."
+    value: ${{ steps.resolve.outputs.short_sha }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: sanitize-image-tag
+      name: Sanitize image tag
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v4.1.1
+      with:
+        tag: ${{ inputs.branch_name }}
+
+    - id: resolve
+      name: Resolve image tag metadata
+      run: |
+        set -euo pipefail
+
+        ENV_TO_DEPLOY="${{ inputs.env_to_deploy }}"
+        INPUT_IMAGE_TAG="${{ inputs.image_tag }}"
+        SANITIZED_BRANCH_TAG="${{ steps.sanitize-image-tag.outputs.sanitized_tag }}"
+
+        if [[ "$INPUT_IMAGE_TAG" == "master" || "$INPUT_IMAGE_TAG" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
+          echo "# 🚨 Deployment failed" > "$GITHUB_STEP_SUMMARY"
+          echo "## Reason" >> "$GITHUB_STEP_SUMMARY"
+          echo "You can't deploy master or latest image on PROD" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        fi
+
+        if [[ -z "$INPUT_IMAGE_TAG" ]]; then
+          COMMIT_TIME="$(git show -s --format=%ct)"
+          CURRENT_TIME="$(date -d@"$COMMIT_TIME" -u +"%Y-%m-%dt%H%M")"
+          SHORT_SHA="$(git rev-parse --short=7 "$GITHUB_SHA")"
+
+          echo "current_time=${CURRENT_TIME}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${SANITIZED_BRANCH_TAG}-${CURRENT_TIME}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        else
+          echo "image_tag=${SANITIZED_BRANCH_TAG}" >> "$GITHUB_OUTPUT"
+        fi
+      shell: bash
