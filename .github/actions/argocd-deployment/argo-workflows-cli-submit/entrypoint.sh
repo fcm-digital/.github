@@ -19,16 +19,28 @@ for env in $(echo $ENVIRONMENTS | tr ',' '\n'); do
         echo "Workflow submitted: $WORKFLOW_NAME_SUBMITTED"
         echo "Waiting for workflow to complete..."
 
-        # Wait for workflow to complete
-        if argo wait $WORKFLOW_NAME_SUBMITTED -n $env; then
+        # argo wait can exit prematurely with non-zero even when the workflow is still
+        # running, so we retry until the workflow reaches a terminal phase
+        while true; do
+            argo wait $WORKFLOW_NAME_SUBMITTED -n $env || true
+            WORKFLOW_PHASE=$(argo get $WORKFLOW_NAME_SUBMITTED -n $env -o json | jq -r '.status.phase')
+            echo "Workflow phase: $WORKFLOW_PHASE"
+            if [[ "$WORKFLOW_PHASE" == "Succeeded" || "$WORKFLOW_PHASE" == "Failed" || "$WORKFLOW_PHASE" == "Error" ]]; then
+                break
+            fi
+            echo "Workflow not yet in terminal state, retrying wait..."
+            sleep 5
+        done
+
+        argo get $WORKFLOW_NAME_SUBMITTED -n $env
+        echo "Retrieving logs..."
+        argo logs $WORKFLOW_NAME_SUBMITTED -n $env || echo "Warning: Could not retrieve logs"
+
+        if [[ "$WORKFLOW_PHASE" == "Succeeded" ]]; then
             echo "Argo Workflow $ARGO_WORKFLOW_FILE completed successfully"
-            argo get $WORKFLOW_NAME_SUBMITTED -n $env
-            echo "Retrieving logs..."
-            argo logs $WORKFLOW_NAME_SUBMITTED -n $env || echo "Warning: Could not retrieve logs"
             exit 0
         else
-            echo "ERROR: Argo Workflow failed for $ARGO_WORKFLOW_FILE"
-            argo get $WORKFLOW_NAME_SUBMITTED -n $env
+            echo "ERROR: Argo Workflow failed for $ARGO_WORKFLOW_FILE (phase: $WORKFLOW_PHASE)"
             exit 1
         fi
     else
