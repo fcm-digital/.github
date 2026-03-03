@@ -158,5 +158,21 @@ else
     else
         git commit -m "DEPLOYMENT in ${APP_NAME^^} - $IMAGE_TAG -> [${ENV_TO_DEPLOY^^}]"
     fi
-    git push
+    # Retry push with rebase to handle concurrent deployments to the same branch.
+    # When multiple staging environments deploy in parallel (e.g. ath, bos, sfo),
+    # they each modify different files under staging/<env>/ but push to the same
+    # branch, causing push rejections for all but the first to finish.
+    max_retries=5
+    for attempt in $(seq 1 $max_retries); do
+        if git push; then
+            break
+        fi
+        if [ "$attempt" -eq "$max_retries" ]; then
+            echo "::error::Failed to push after $max_retries attempts due to concurrent updates"
+            exit 1
+        fi
+        echo "::warning::Push failed (attempt $attempt/$max_retries), rebasing and retrying..."
+        sleep $((attempt * 2))
+        git pull --rebase
+    done
 fi
