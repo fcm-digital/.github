@@ -38,13 +38,6 @@ runs:
         INPUT_IMAGE_TAG="${{ inputs.image_tag }}"
         SANITIZED_BRANCH_TAG="${{ steps.sanitize-image-tag.outputs.sanitized_tag }}"
 
-        if [[ "$INPUT_IMAGE_TAG" == "master" || "$INPUT_IMAGE_TAG" == "latest" ]] && [[ "$ENV_TO_DEPLOY" == "prod" ]]; then
-          echo "# 🚨 Deployment failed" > "$GITHUB_STEP_SUMMARY"
-          echo "## Reason" >> "$GITHUB_STEP_SUMMARY"
-          echo "You can't deploy master or latest image on PROD" >> "$GITHUB_STEP_SUMMARY"
-          exit 1
-        fi
-
         if [[ -z "$INPUT_IMAGE_TAG" ]]; then
           COMMIT_TIME="$(git show -s --format=%ct)"
           CURRENT_TIME="$(date -d@"$COMMIT_TIME" -u +"%Y-%m-%dt%H%M")"

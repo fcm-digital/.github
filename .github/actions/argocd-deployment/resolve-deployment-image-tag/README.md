@@ -16,4 +16,3 @@ Builds `image_tag`, `commit_at`, and `commit` values for ArgoCD deployment steps
 ## Notes
 
 - Uses `sanitize-docker-tag` with `branch_name`.
-- Keeps the existing production guardrail: `master/latest` cannot be deployed to `prod`.
