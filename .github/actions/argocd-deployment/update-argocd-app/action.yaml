@@ -1,0 +1,61 @@
+---
+name: "Update ArgoCD App"
+description: "Update ArgoCD Application with new image tag and source branch revision."
+
+inputs:
+  app_name:
+    description: "The name of the application to be deployed."
+    required: true
+  app_region:
+    description: "The region of the app to deploy (e.g., euw1)."
+    required: true
+    default: "euw1"
+  argocd_auth_token:
+    description: "ArgoCD auth token with get/sync permissions over apps."
+    required: true
+  argocd_url:
+    description: "ArgoCD URL (default: argocd.fcm.digital)."
+    required: false
+    default: "argocd.fcm.digital"
+  branch_name:
+    description: "The branch name to set as targetRevision for the values source."
+    required: true
+  env_to_deploy:
+    description: >
+      Specifies the target environment for deployment.
+      - '<env>': Updates the <env> staging environment.
+      - 'prod': Updates the production environment.
+      - 'ALL_ENV': Updates all staging environments.
+    required: true
+  image_tag:
+    description: "The specific image tag to be deployed."
+    required: true
+  synced_envs_as_outputs:
+    description: 'If set to true, the action will output the environments that were synchronized. Defaults to "false".'
+    required: false
+    default: "false"
+
+outputs:
+  old_image_tag:
+    description: "The image tag used in the previous deployment. Required for a potential Rollback."
+    value: ${{ steps.update-argocd-app.outputs.old_image_tag }}
+  synced_staging_envs:
+    description: "The list of staging environments that were synchronized."
+    value: ${{ steps.update-argocd-app.outputs.synced_staging_envs }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: update-argocd-app
+      name: Update ArgoCD Application
+      run: ${{ github.action_path }}/entrypoint.sh
+      env:
+        APP_NAME: ${{ inputs.app_name }}
+        APP_REGION: ${{ inputs.app_region }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_auth_token }}
+        ARGOCD_URL: ${{ inputs.argocd_url }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        SYNCED_ENVS_AS_OUTPUTS: ${{ inputs.synced_envs_as_outputs }}
+      shell: bash

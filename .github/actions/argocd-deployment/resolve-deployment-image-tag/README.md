@@ -1,0 +1,18 @@
+# Resolve Deployment Image Tag Action
+
+Builds `image_tag`, `commit_at`, and `commit` values for ArgoCD deployment steps.
+
+## Inputs
+
+- `branch_name` (required)
+- `image_tag` (optional)
+
+## Outputs
+
+- `image_tag`
+- `commit_at`
+- `commit`
+
+## Notes
+
+- Uses `sanitize-docker-tag` with `branch_name`.
