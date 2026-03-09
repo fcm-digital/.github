@@ -135,7 +135,8 @@ Updates **all** staging ArgoCD Applications matching: `my-service-*-stg-euw1`
 This action assumes ArgoCD Applications use **multiple sources**:
 
 1. **Source 1 (Helm Chart)**: The Helm chart repository
-   - Updated via `--helm-set-string currentTag=<image_tag>`
+   - Updated via `argocd app patch` with a JSON patch on `valuesObject.currentTag`
+   - Uses `argocd app patch` because the ArgoCD CLI does not provide a flag to set a `valuesObject` directly
 
 2. **Source 2 (Values)**: The values repository containing environment-specific configuration
    - Updated via `--revision <branch_name>`
@@ -149,6 +150,7 @@ The action performs updates in a specific order to minimize risk:
    - Won't trigger deployment until image tag changes
 
 2. **Update image tag second** (Source 1)
+   - Uses `argocd app patch` with a JSON patch to set `valuesObject.currentTag` (the ArgoCD CLI lacks a flag to set `valuesObject` directly)
    - Triggers the actual deployment
    - If this fails, app still has old image tag (safer state)
 
