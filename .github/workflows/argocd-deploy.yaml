@@ -33,6 +33,11 @@ on:
         required: true
         type: string
         description: "Image tag to deploy."
+      update_deployed_at:
+        required: false
+        type: boolean
+        default: false
+        description: "Wether to update the DEPLOYED_AT environment variable."
     secrets:
       argocd_auth_token:
         required: true
@@ -67,6 +72,7 @@ jobs:
           branch_name: ${{ inputs.branch_name }}
           env_to_deploy: ${{ inputs.env_to_deploy }}
           image_tag: ${{ inputs.image_tag }}
+          update_deployed_at: ${{ inputs.update_deployed_at }}
 
       - id: argocd-sync-app
         if: inputs.argocd_sync == true && steps.argocd-install.outcome == 'success'
