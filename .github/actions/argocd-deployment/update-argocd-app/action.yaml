@@ -34,6 +34,10 @@ inputs:
     description: 'If set to true, the action will output the environments that were synchronized. Defaults to "false".'
     required: false
     default: "false"
+  update_deployed_at:
+    required: false
+    default: false
+    description: "Update the DEPLOYED_AT variable"
 
 outputs:
   old_image_tag:
@@ -58,4 +62,5 @@ runs:
         ENV_TO_DEPLOY: ${{ inputs.env_to_deploy }}
         IMAGE_TAG: ${{ inputs.image_tag }}
         SYNCED_ENVS_AS_OUTPUTS: ${{ inputs.synced_envs_as_outputs }}
+        UPDATE_DEPLOYED_AT: ${{ github.event.inputs.update_deployed_at }}
       shell: bash

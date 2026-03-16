@@ -81,6 +81,16 @@ update_argocd_app() {
         return 1
     fi
 
+    # Update the DEPLOYED_AT variable if necessary, for job uniqueness
+    if [[ "$UPDATE_DEPLOYED_AT" == "true" ]]; then
+        if ! argocd app patch "$argocd_app_name" \
+            --server "$ARGOCD_URL" \
+            --auth-token "$ARGOCD_AUTH_TOKEN" \
+            --patch "[{\"op\":\"replace\",\"path\":\"/spec/sources/0/helm/valuesObject/global/environmentVars/DEPLOYED_AT\",\"value\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}]"; then
+            echo "  ✗ Failed to update DEPLOYED_AT variable"
+            return 1
+        fi
+    fi
     echo "  ✓ Updated successfully"
 }
 
