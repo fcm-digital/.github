@@ -57,6 +57,7 @@ update_argocd_app() {
     echo "Updating ArgoCD app: $argocd_app_name"
     echo "  - Image tag: $image_tag"
     echo "  - Branch (targetRevision): $branch_name"
+    echo "  - Update \$DEPLOYED_AT: $UPDATE_DEPLOYED_AT"
 
     # Update the targetRevision of the values source FIRST (source position 2 = second source)
     # This points to the branch in the app's code repository that contains values.yaml
