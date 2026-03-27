@@ -116,11 +116,11 @@ runs:
 
     - id: setup-docker-buildx
       name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - id: inline-cache-staging
       name: "(INLINE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: inputs.cache_type == 'inline' &&
         (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
@@ -142,7 +142,7 @@ runs:
 
     - id: inline-cache-prod
       name: "(INLINE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: inputs.cache_type == 'inline' &&
         (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
@@ -164,7 +164,7 @@ runs:
 
     - id: stage-cache-staging
       name: "(STAGE CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
         (inputs.branch_name != 'master' && inputs.branch_name != 'main')
       with:
@@ -187,7 +187,7 @@ runs:
 
     - id: stage-cache-prod
       name: "(STAGE CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: inputs.cache_type == 'stage-and-registry' && inputs.target != '' &&
         (inputs.branch_name == 'master' || inputs.branch_name == 'main')
       with:
@@ -210,7 +210,7 @@ runs:
 
     - id: registry-cache-staging
       name: "(REGISTRY CACHE) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: inputs.cache_type == 'registry' ||
         (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-staging.outcome == 'success') &&
         (inputs.branch_name != 'master' && inputs.branch_name != 'main')
@@ -236,7 +236,7 @@ runs:
 
     - id: registry-cache-prod
       name: "(REGISTRY CACHE - PROD) Pull, Build & Push Docker image [branch tag] + [image tag]"
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       if: (inputs.cache_type == 'registry' ||
         (inputs.cache_type == 'stage-and-registry' && inputs.target != '' && steps.stage-cache-prod.outcome == 'success')) &&
         (inputs.branch_name == 'master' || inputs.branch_name == 'main')

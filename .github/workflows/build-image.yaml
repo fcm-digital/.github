@@ -91,7 +91,7 @@ jobs:
           gcp_wif_access_token: ${{ steps.auth-gcp-wif.outputs.access_token }}
 
       - name: "Build & push to GAR [${{ inputs.region }}]"
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ inputs.gar }}
         with:
           file: ${{ inputs.file }}
@@ -102,7 +102,7 @@ jobs:
             ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
       - name: "Build & push to GAR [${{ inputs.region }}] latest tag"
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') ) && inputs.gar }}
         with:
           file: ${{ inputs.file }}

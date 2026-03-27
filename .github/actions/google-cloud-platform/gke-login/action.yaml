@@ -48,9 +48,9 @@ runs:
     - id: install-kubectl
       name: Install kubectl
       if: env.install_kubectl == 'true'
-      uses: azure/setup-kubectl@v4
+      uses: azure/setup-kubectl@v5
       with:
-         version: ${{ inputs.kubectl_version }}
+        version: ${{ inputs.kubectl_version }}
 
     - id: print-kubectl-version
       name: Print kubectl version
