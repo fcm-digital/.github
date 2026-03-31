@@ -98,7 +98,7 @@ jobs:
           app_name: ${{ inputs.app_name }}
           artifact_repository_name: ${{ inputs.app_name }}
           artifact_region: ${{ inputs.artifact_region }}
-          branch_name: ${{ inputs.branch_name }}
+          branch_name: ${{ steps.init-deployment-context.outputs.branch_name }}
           image_tag: ${{ steps.resolve-image-tag.outputs.image_tag }}
           commit: ${{ steps.resolve-image-tag.outputs.commit }}
           commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
