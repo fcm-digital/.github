@@ -37,7 +37,7 @@ on:
         required: false
         type: boolean
         default: false
-        description: "Wether to update the DEPLOYED_AT environment variable."
+        description: "Whether to update the DEPLOYED_AT environment variable."
     secrets:
       argocd_auth_token:
         required: true

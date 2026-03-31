@@ -8,7 +8,7 @@ inputs:
     required: true
   app_region:
     description: "The region of the app to deploy (e.g., euw1)."
-    required: true
+    required: false
     default: "euw1"
   argocd_auth_token:
     description: "ArgoCD auth token with get/sync permissions over apps."
