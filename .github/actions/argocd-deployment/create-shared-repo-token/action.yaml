@@ -1,0 +1,35 @@
+---
+name: "Create Shared Repo Token"
+description: "Create a GitHub App token for one or more repositories used by ArgoCD deployment actions."
+
+inputs:
+  github_app_id:
+    description: "The GitHub App ID."
+    required: true
+  github_app_private_key:
+    description: "The GitHub App private key."
+    required: true
+  github_organization_name:
+    description: "The GitHub organization owner."
+    required: false
+    default: "fcm-digital"
+  repositories:
+    description: "Comma or newline-separated list of repository names the token must access."
+    required: true
+
+outputs:
+  token:
+    description: "Generated GitHub App installation token."
+    value: ${{ steps.app-token.outputs.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: app-token
+      name: Create GitHub App token
+      uses: actions/create-github-app-token@v3
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_app_private_key }}
+        owner: ${{ inputs.github_organization_name }}
+        repositories: ${{ inputs.repositories }}
