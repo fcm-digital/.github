@@ -14,7 +14,16 @@ on:
         required: false
         type: string
         default: "europe"
-        description: "Region for artifact storage."
+        description: "Region for artifact registry."
+      artifact_package:
+        required: false
+        type: string
+        default: ""
+        description: "Package name for artifact registry. Defaults to app_name if not provided."
+      dockerfile_path:
+        required: false
+        type: string
+        description: "Path to the Dockerfile."
     secrets:
       gcp_wif_project_id:
         required: true
@@ -44,7 +53,7 @@ on:
 
 jobs:
   build-and-push:
-    timeout-minutes: 30  # Adjust based on your typical build time
+    timeout-minutes: 30 # Adjust based on your typical build time
     name: ArgoCD Build & Push ${{ inputs.app_name }} for ${{ github.ref }} branch.
     runs-on: ubuntu-24.04
     permissions:
@@ -95,11 +104,12 @@ jobs:
         name: Build & Push Main Docker image
         uses: fcm-digital/.github/.github/actions/argocd-deployment/build-push-image@sc-32166-argocd-improvements
         with:
-          app_name: ${{ inputs.app_name }}
+          app_name: ${{ inputs.artifact_package != '' && inputs.artifact_package || inputs.app_name }}
           artifact_repository_name: ${{ inputs.app_name }}
           artifact_region: ${{ inputs.artifact_region }}
           branch_name: ${{ steps.init-deployment-context.outputs.branch_name }}
           image_tag: ${{ steps.resolve-image-tag.outputs.image_tag }}
           commit: ${{ steps.resolve-image-tag.outputs.commit }}
           commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
+          file: ${{ inputs.dockerfile_path }}
           cache_type: inline
