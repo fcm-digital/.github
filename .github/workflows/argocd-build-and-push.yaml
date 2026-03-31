@@ -1,0 +1,104 @@
+---
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+        description: "Application name (e.g. sam-ui-rendered)."
+      branch_name:
+        required: true
+        type: string
+        description: "Branch name to set as targetRevision for the helm chart values source."
+      artifact_region:
+        required: false
+        type: string
+        default: "europe"
+        description: "Region for artifact storage."
+    secrets:
+      gcp_wif_project_id:
+        required: true
+        description: "GCP project ID for Workload Identity Federation."
+      gcp_wif_pool:
+        required: true
+        description: "GCP Workload Identity Pool name."
+      gcp_wif_provider:
+        required: true
+        description: "GCP Workload Identity Provider name."
+      gcp_wif_service_account:
+        required: true
+        description: "GCP service account email for Workload Identity Federation."
+    outputs:
+      branch_name:
+        description: "Resolved branch name"
+        value: ${{ jobs.deploy.outputs.branch_name }}
+      image_tag:
+        description: "Docker image tag"
+        value: ${{ jobs.deploy.outputs.image_tag }}
+      commit:
+        description: "Git commit SHA"
+        value: ${{ jobs.deploy.outputs.commit }}
+      commit_at:
+        description: "Commit timestamp"
+        value: ${{ jobs.deploy.outputs.commit_at }}
+
+jobs:
+  deploy:
+    name: ArgoCD Build & Push ${{ inputs.app_name }} for ${{ github.ref_name }} branch.
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      branch_name: ${{ steps.init-deployment-context.outputs.branch_name }}
+      image_tag: ${{ steps.resolve-image-tag.outputs.image_tag }}
+      commit: ${{ steps.resolve-image-tag.outputs.commit }}
+      commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
+    concurrency:
+      group: argocd-checkout-${{ inputs.app_name }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - id: init-deployment-context
+        name: Init deployment context
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/init-deployment-context@v5.0.0
+        with:
+          branch_name: ${{ inputs.branch_name }}
+
+      - id: resolve-image-tag
+        name: Resolve image tag
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/resolve-deployment-image-tag@v5.0.0
+        with:
+          branch_name: ${{ steps.init-deployment-context.outputs.branch_name }}
+
+      - id: auth-gcp-wif
+        name: Authenticate to GCP via WIF
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/auth@5.0.0
+        with:
+          gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
+          gcp_wif_pool: ${{ inputs.gcp_wif_pool }}
+          gcp_wif_provider: ${{ inputs.gcp_wif_provider }}
+          gcp_wif_service_account: ${{ inputs.gcp_wif_service_account }}
+          setup_gcloud_sdk: false
+
+      - id: login-gar
+        if: steps.auth-gcp-wif.outcome == 'success'
+        name: Login to GAR
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/gar-login@v5.0.0
+        with:
+          gcp_wif_access_token: ${{ steps.auth-gcp-wif.outputs.access_token }}
+
+      - id: docker-build
+        name: Build & Push Main Docker image
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/build-push-image@v5.0.0
+        with:
+          app_name: ${{ inputs.app_name }}
+          artifact_repository_name: ${{ inputs.app_name }}
+          artifact_region: ${{ inputs.artifact_region }}
+          branch_name: ${{ inputs.branch_name }}
+          image_tag: ${{ steps.resolve-image-tag.outputs.image_tag }}
+          commit: ${{ steps.resolve-image-tag.outputs.commit }}
+          commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
+          cache_type: inline
