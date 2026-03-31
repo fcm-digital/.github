@@ -1,0 +1,93 @@
+---
+name: "Checkout Helm Chart Values"
+description: "Checkout staging/prod helm-chart-values repositories and expose checkout-path outputs."
+
+inputs:
+  app_name:
+    description: "App name used to resolve helm-chart-<app_name>-values repository."
+    required: true
+  branch_name:
+    description: "Resolved branch name used for production checkout."
+    required: true
+  env_to_deploy:
+    description: "Resolved target environment."
+    required: true
+  release_name:
+    description: "Release name used by manual prod release flow."
+    required: false
+  github_organization_name:
+    description: "The GitHub organization owner."
+    required: false
+    default: "fcm-digital"
+  token:
+    description: "GitHub token with read access to helm-chart-values repository."
+    required: true
+
+outputs:
+  staging_values_path:
+    description: "Path where staging values repository is checked out."
+    value: ${{ steps.set-checkout-outputs.outputs.staging_values_path }}
+  prod_values_path:
+    description: "Path where prod values repository is checked out (empty when skipped)."
+    value: ${{ steps.set-checkout-outputs.outputs.prod_values_path }}
+  checked_out_prod:
+    description: "Whether prod values repository has been checked out."
+    value: ${{ steps.set-checkout-outputs.outputs.checked_out_prod }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: checkout-helm-chart-values-prod-release-version
+      name: Checkout helm-chart-values [Prod] - Release version
+      if: inputs.env_to_deploy == 'prod' && inputs.release_name != '' && github.event_name == 'workflow_dispatch'
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.token }}
+        ref: master
+        path: helm-chart-${{ inputs.app_name }}-values-prod
+
+    - id: checkout-helm-chart-values-prod
+      name: Checkout helm-chart-values [Prod]
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
+        inputs.env_to_deploy == 'prod' &&
+        (inputs.branch_name == 'master' || inputs.branch_name == 'main')
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.token }}
+        ref: ${{ inputs.branch_name }}
+        path: helm-chart-${{ inputs.app_name }}-values-prod
+
+    - id: checkout-helm-chart-values-staging
+      name: Checkout helm-chart-values [Staging]
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.github_organization_name }}/helm-chart-${{ inputs.app_name }}-values
+        token: ${{ inputs.token }}
+        ref: staging
+        path: helm-chart-${{ inputs.app_name }}-values-staging
+
+    - id: set-checkout-outputs
+      name: Set checkout outputs
+      run: |
+        set -euo pipefail
+
+        STAGING_PATH="helm-chart-${{ inputs.app_name }}-values-staging"
+        PROD_PATH="helm-chart-${{ inputs.app_name }}-values-prod"
+
+        if [[ -d "$STAGING_PATH" ]]; then
+          echo "staging_values_path=${STAGING_PATH}" >> "$GITHUB_OUTPUT"
+        else
+          echo "staging_values_path=" >> "$GITHUB_OUTPUT"
+        fi
+
+        if [[ -d "$PROD_PATH" ]]; then
+          echo "prod_values_path=${PROD_PATH}" >> "$GITHUB_OUTPUT"
+          echo "checked_out_prod=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "prod_values_path=" >> "$GITHUB_OUTPUT"
+          echo "checked_out_prod=false" >> "$GITHUB_OUTPUT"
+        fi
+      shell: bash
