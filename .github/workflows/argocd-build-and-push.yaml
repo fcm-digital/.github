@@ -6,20 +6,20 @@ on:
         required: true
         type: string
         description: "Application name (e.g. sam-ui-rendered)."
-      branch_name:
-        required: true
-        type: string
-        description: "Branch name to set as targetRevision for the helm chart values source."
-      artifact_region:
-        required: false
-        type: string
-        default: "europe"
-        description: "Region for artifact registry."
       artifact_package:
         required: false
         type: string
         default: ""
         description: "Package name for artifact registry. Defaults to app_name if not provided."
+      artifact_region:
+        required: false
+        type: string
+        default: "europe"
+        description: "Region for artifact registry."
+      branch_name:
+        required: true
+        type: string
+        description: "Branch name to set as targetRevision for the helm chart values source."
       dockerfile_path:
         required: false
         type: string
