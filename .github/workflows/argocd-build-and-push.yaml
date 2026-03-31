@@ -31,19 +31,20 @@ on:
     outputs:
       branch_name:
         description: "Resolved branch name"
-        value: ${{ jobs.deploy.outputs.branch_name }}
+        value: ${{ jobs.build-and-push.outputs.branch_name }}
       image_tag:
         description: "Docker image tag"
-        value: ${{ jobs.deploy.outputs.image_tag }}
+        value: ${{ jobs.build-and-push.outputs.image_tag }}
       commit:
         description: "Git commit SHA"
-        value: ${{ jobs.deploy.outputs.commit }}
+        value: ${{ jobs.build-and-push.outputs.commit }}
       commit_at:
         description: "Commit timestamp"
-        value: ${{ jobs.deploy.outputs.commit_at }}
+        value: ${{ jobs.build-and-push.outputs.commit_at }}
 
 jobs:
-  deploy:
+  build-and-push:
+    timeout-minutes: 30  # Adjust based on your typical build time
     name: ArgoCD Build & Push ${{ inputs.app_name }} for ${{ github.ref_name }} branch.
     runs-on: ubuntu-24.04
     permissions:
@@ -63,36 +64,36 @@ jobs:
 
       - id: init-deployment-context
         name: Init deployment context
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/init-deployment-context@v5.0.0
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/init-deployment-context@sc-32166-argocd-improvements
         with:
           branch_name: ${{ inputs.branch_name }}
 
       - id: resolve-image-tag
         name: Resolve image tag
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/resolve-deployment-image-tag@v5.0.0
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/resolve-deployment-image-tag@sc-32166-argocd-improvements
         with:
           branch_name: ${{ steps.init-deployment-context.outputs.branch_name }}
 
       - id: auth-gcp-wif
         name: Authenticate to GCP via WIF
-        uses: fcm-digital/.github/.github/actions/google-cloud-platform/auth@5.0.0
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/auth@sc-32166-argocd-improvements
         with:
-          gcp_wif_project_id: ${{ inputs.gcp_wif_project_id }}
-          gcp_wif_pool: ${{ inputs.gcp_wif_pool }}
-          gcp_wif_provider: ${{ inputs.gcp_wif_provider }}
-          gcp_wif_service_account: ${{ inputs.gcp_wif_service_account }}
+          gcp_wif_project_id: ${{ secrets.gcp_wif_project_id }}
+          gcp_wif_pool: ${{ secrets.gcp_wif_pool }}
+          gcp_wif_provider: ${{ secrets.gcp_wif_provider }}
+          gcp_wif_service_account: ${{ secrets.gcp_wif_service_account }}
           setup_gcloud_sdk: false
 
       - id: login-gar
         if: steps.auth-gcp-wif.outcome == 'success'
         name: Login to GAR
-        uses: fcm-digital/.github/.github/actions/google-cloud-platform/gar-login@v5.0.0
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/gar-login@sc-32166-argocd-improvements
         with:
           gcp_wif_access_token: ${{ steps.auth-gcp-wif.outputs.access_token }}
 
       - id: docker-build
         name: Build & Push Main Docker image
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/build-push-image@v5.0.0
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/build-push-image@sc-32166-argocd-improvements
         with:
           app_name: ${{ inputs.app_name }}
           artifact_repository_name: ${{ inputs.app_name }}
