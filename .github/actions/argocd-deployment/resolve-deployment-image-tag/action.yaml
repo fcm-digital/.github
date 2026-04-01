@@ -47,6 +47,6 @@ runs:
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "image_tag=${SANITIZED_BRANCH_TAG}-${CURRENT_TIME}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
         else
-          echo "image_tag=${SANITIZED_BRANCH_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${INPUT_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
         fi
       shell: bash
