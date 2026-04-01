@@ -231,6 +231,7 @@ runs:
         tags: |
           ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
+        target: ${{ inputs.target }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -256,6 +257,7 @@ runs:
           ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:latest
+        target: ${{ inputs.target }}
         secrets: |
           ${{ inputs.secrets }}
 
