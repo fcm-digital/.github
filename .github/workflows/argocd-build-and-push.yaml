@@ -24,6 +24,10 @@ on:
         required: false
         type: string
         description: "Path to the Dockerfile."
+      target:
+        required: false
+        type: string
+        description: "Target stage for the Docker build."
     secrets:
       gcp_wif_project_id:
         required: true
@@ -112,4 +116,5 @@ jobs:
           commit: ${{ steps.resolve-image-tag.outputs.commit }}
           commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
           file: ${{ inputs.dockerfile_path }}
+          target: ${{ inputs.target }}
           cache_type: inline
