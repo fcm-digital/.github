@@ -2,6 +2,7 @@
 on:
   workflow_call:
     inputs:
+      # Application Configuration
       app_name:
         required: true
         type: string
@@ -11,6 +12,32 @@ on:
         type: string
         default: "euw1"
         description: "Application region (e.g. euw1)."
+      # Deployment Configuration
+      allow_multiple_environments:
+        required: false
+        type: boolean
+        default: false
+        description: "Allow multiple environments to be deployed."
+      branch_name:
+        required: true
+        type: string
+        description: "Branch name to set as targetRevision for the helm chart values source."
+      env_to_deploy:
+        required: false
+        type: string
+        description: >
+          "Single target environment to deploy to (e.g. ath, sandbox, prod). 
+          If not set, environment(s) will be discovered from the ArgoCD application."
+      update_deployed_at:
+        required: false
+        type: boolean
+        default: false
+        description: "Wether to update the DEPLOYED_AT environment variable."
+      image_tag:
+        required: true
+        type: string
+        description: "Image tag to deploy."
+      # ArgoCD Configuration
       argocd_cli_version:
         required: false
         type: string
@@ -20,37 +47,51 @@ on:
         required: false
         type: boolean
         default: false
-        description: "If true, trigger an ArgoCD CLI sync after updating the app."
-      branch_name:
-        required: true
-        type: string
-        description: "Branch name to set as targetRevision for the helm chart values source."
-      env_to_deploy:
-        required: true
-        type: string
-        description: "Single target environment to deploy to (e.g. ath, prod)."
-      image_tag:
-        required: true
-        type: string
-        description: "Image tag to deploy."
-      update_deployed_at:
-        required: false
-        type: boolean
-        default: false
         description: "Whether to update the DEPLOYED_AT environment variable."
     secrets:
       argocd_auth_token:
         required: true
         description: "ArgoCD auth token with get/sync permissions over apps."
+
     outputs:
       old_image_tag:
         description: "The image tag used in the previous deployment."
         value: ${{ jobs.deploy.outputs.old_image_tag }}
 
 jobs:
+  get-env-to-deploy-on:
+    name: Get environment to deploy on
+    if: inputs.env_to_deploy == ''
+    runs-on: ubuntu-24.04
+    outputs:
+      env_to_deploy: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
+
+    steps:
+      - id: argocd-install
+        name: ArgoCD CLI Install
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@sc-32166-argocd-improvements
+        with:
+          argocd_cli_version: ${{ inputs.argocd_cli_version }}
+
+      - id: get-env-to-deploy-on
+        name: Get environment to deploy on
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-get-env-to-deploy-on-argocd-apps@sc-32166-argocd-improvements
+        with:
+          allow_multiple_environments: ${{ inputs.allow_multiple_environments }}
+          app_name: ${{ inputs.app_name }}
+          app_region: ${{ inputs.app_region }}
+          argocd_auth_token: ${{ secrets.argocd_auth_token }}
+          branch_name: ${{ inputs.branch_name }}
+
   deploy:
     name: Deploy with Argo CD
+    needs: [get-env-to-deploy-on]
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        env_to_deploy: ${{ inputs.env_to_deploy != '' && inputs.env_to_deploy || fromJSON(needs.get-env-to-deploy-on.outputs.env_to_deploy) }}
+
     outputs:
       old_image_tag: ${{ steps.update-argocd-app.outputs.old_image_tag }}
 
@@ -70,7 +111,7 @@ jobs:
           app_region: ${{ inputs.app_region }}
           argocd_auth_token: ${{ secrets.argocd_auth_token }}
           branch_name: ${{ inputs.branch_name }}
-          env_to_deploy: ${{ inputs.env_to_deploy }}
+          env_to_deploy: ${{ matrix.env_to_deploy }}
           image_tag: ${{ inputs.image_tag }}
           update_deployed_at: ${{ inputs.update_deployed_at }}
 
