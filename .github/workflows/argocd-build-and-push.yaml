@@ -20,6 +20,11 @@ on:
         required: true
         type: string
         description: "Branch name to set as targetRevision for the helm chart values source."
+      cache_type:
+        required: false
+        type: string
+        default: "inline"
+        description: "Cache type for the Docker build. Defaults to 'inline'."
       dockerfile_path:
         required: false
         type: string
@@ -117,4 +122,4 @@ jobs:
           commit_at: ${{ steps.resolve-image-tag.outputs.commit_at }}
           file: ${{ inputs.dockerfile_path }}
           target: ${{ inputs.target }}
-          cache_type: inline
+          cache_type: ${{ inputs.cache_type }}
