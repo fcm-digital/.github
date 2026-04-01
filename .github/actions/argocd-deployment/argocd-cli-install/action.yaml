@@ -25,10 +25,19 @@ runs:
         curl -sSL -o "${BINARY}" "${DOWNLOAD_URL}"
         
         echo "Downloading checksum..."
-        curl -sSL -o "${BINARY}.sha256" "${CHECKSUM_URL}"
+        EXPECTED_CHECKSUM=$(curl -sSL "${CHECKSUM_URL}")
         
         echo "Verifying checksum..."
-        sha256sum -c "${BINARY}.sha256"
+        ACTUAL_CHECKSUM=$(sha256sum "${BINARY}" | awk '{print $1}')
+        
+        if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
+          echo "Checksum verification failed!"
+          echo "Expected: ${EXPECTED_CHECKSUM}"
+          echo "Actual:   ${ACTUAL_CHECKSUM}"
+          exit 1
+        fi
+        
+        echo "Checksum verified successfully"
         
         echo "Installing ArgoCD CLI..."
         sudo install -m 555 "${BINARY}" /usr/local/bin/argocd
