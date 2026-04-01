@@ -19,31 +19,22 @@ runs:
         VERSION="${{ inputs.argocd_cli_version }}"
         BINARY="argocd-linux-amd64"
         DOWNLOAD_URL="https://github.com/argoproj/argo-cd/releases/download/${VERSION}/${BINARY}"
-        CHECKSUM_URL="${DOWNLOAD_URL}.sha256"
+        CHECKSUMS_URL="https://github.com/argoproj/argo-cd/releases/download/${VERSION}/cli_checksums.txt"
         
         echo "Downloading ArgoCD CLI ${VERSION}..."
         curl -sSL -o "${BINARY}" "${DOWNLOAD_URL}"
         
-        echo "Downloading checksum..."
-        EXPECTED_CHECKSUM=$(curl -sSL "${CHECKSUM_URL}")
+        echo "Downloading checksums file..."
+        curl -sSL -o "cli_checksums.txt" "${CHECKSUMS_URL}"
         
         echo "Verifying checksum..."
-        ACTUAL_CHECKSUM=$(sha256sum "${BINARY}" | awk '{print $1}')
-        
-        if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
-          echo "Checksum verification failed!"
-          echo "Expected: ${EXPECTED_CHECKSUM}"
-          echo "Actual:   ${ACTUAL_CHECKSUM}"
-          exit 1
-        fi
-        
-        echo "Checksum verified successfully"
+        sha256sum -c --ignore-missing "cli_checksums.txt"
         
         echo "Installing ArgoCD CLI..."
         sudo install -m 555 "${BINARY}" /usr/local/bin/argocd
         
         echo "Cleaning up..."
-        rm -f "${BINARY}" "${BINARY}.sha256"
+        rm -f "${BINARY}" "cli_checksums.txt"
         
         echo "ArgoCD CLI installed successfully"
 
