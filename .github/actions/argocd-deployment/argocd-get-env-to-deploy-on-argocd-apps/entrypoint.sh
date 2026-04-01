@@ -23,13 +23,13 @@ get_current_tag() {
 
 is_tag_match() {
     local current_tag=$1
-    local image_tag=$2
+    local sanitized_tag=$2
 
-    if [[ "$current_tag" == "$image_tag" ]]; then
+    if [[ "$current_tag" == "$sanitized_tag" ]]; then
         return 0
     fi
 
-    if [[ "$current_tag" == "$image_tag"-* ]]; then
+    if [[ "$current_tag" == "$sanitized_tag"-* ]]; then
         return 0
     fi
 
@@ -59,7 +59,7 @@ while IFS= read -r argocd_app_name; do
 
     current_tag=$(get_current_tag "$argocd_app_name")
 
-    if is_tag_match "$current_tag" "$IMAGE_TAG"; then
+    if is_tag_match "$current_tag" "$SANITIZED_TAG"; then
         env_name="${argocd_app_name#argocd/}"
         env_name="${env_name#${APP_NAME}-}"
         env_name="${env_name%-stg-${APP_REGION}}"
