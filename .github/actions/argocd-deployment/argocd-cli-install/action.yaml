@@ -42,4 +42,4 @@ runs:
       name: "ArgoCD CLI Version"
       shell: bash
       run: |
-        argocd version --short
+        argocd version --client --short
