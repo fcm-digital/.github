@@ -126,13 +126,14 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
     # Escape APP_NAME and APP_REGION to prevent regex injection
     escaped_app_name=$(escape_regex "$APP_NAME")
     escaped_app_region=$(escape_regex "$APP_REGION")
+    app_pattern="${escaped_app_name}-.*-stg-${escaped_app_region}$"
 
     staging_apps=$(argocd app list \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
         -o name 2>/dev/null \
         | sed 's/^argocd\///' \
-        | grep -E "^${escaped_app_name}-.*-stg-${escaped_app_region}$" || true)
+        | grep -E "$app_pattern" || true)
 
     if [[ -z "$staging_apps" ]]; then
         echo "Warning: No staging apps found matching pattern: ${APP_NAME}-*-stg-${APP_REGION}"
