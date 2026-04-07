@@ -1,3 +1,6 @@
+# TODO: inputs.branch_name is referenced on line 31 but not declared in inputs.
+#       The if-branch is therefore never taken, and prod deployments get the wrong ArgoCD URL.
+#       Either add branch_name as an input or replace it with env_to_deploy == 'prod'.
 ---
 name: "Ask for Manual Approval"
 description: "Ask for Manual Approval"
@@ -37,10 +40,10 @@ runs:
 
     - id: generate-app-token
       name: Generate App Token
-      uses: tibdex/github-app-token@v1
+      uses: actions/create-github-app-token@v3
       with:
-        app_id: ${{ inputs.app_id }}
-        private_key: ${{ inputs.private_key }}
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.private_key }}
 
     - id: manual-approval
       name: Ask for Manual Approval
