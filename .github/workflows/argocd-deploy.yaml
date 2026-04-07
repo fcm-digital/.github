@@ -1,0 +1,86 @@
+---
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+        description: "Application name (e.g. sam-ui-rendered)."
+      app_region:
+        required: false
+        type: string
+        default: "euw1"
+        description: "Application region (e.g. euw1)."
+      argocd_cli_version:
+        required: false
+        type: string
+        default: ""
+        description: "ArgoCD CLI version to install. Skip install if empty."
+      argocd_sync:
+        required: false
+        type: boolean
+        default: false
+        description: "If true, trigger an ArgoCD CLI sync after updating the app."
+      branch_name:
+        required: true
+        type: string
+        description: "Branch name to set as targetRevision for the helm chart values source."
+      env_to_deploy:
+        required: true
+        type: string
+        description: "Single target environment to deploy to (e.g. ath, prod)."
+      image_tag:
+        required: true
+        type: string
+        description: "Image tag to deploy."
+      update_deployed_at:
+        required: false
+        type: boolean
+        default: false
+        description: "Whether to update the DEPLOYED_AT environment variable."
+    secrets:
+      argocd_auth_token:
+        required: true
+        description: "ArgoCD auth token with get/sync permissions over apps."
+    outputs:
+      old_image_tag:
+        description: "The image tag used in the previous deployment."
+        value: ${{ jobs.deploy.outputs.old_image_tag }}
+
+jobs:
+  deploy:
+    name: Deploy with Argo CD
+    runs-on: ubuntu-24.04
+    outputs:
+      old_image_tag: ${{ steps.update-argocd-app.outputs.old_image_tag }}
+
+    steps:
+      - id: argocd-install
+        if: inputs.argocd_sync == true && inputs.argocd_cli_version != ''
+        name: ArgoCD CLI Install
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@v4.1.1
+        with:
+          argocd_cli_version: ${{ inputs.argocd_cli_version }}
+
+      - id: update-argocd-app
+        name: Update ArgoCD app
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/update-argocd-app@sc-32166-update-argocd-app
+        with:
+          app_name: ${{ inputs.app_name }}
+          app_region: ${{ inputs.app_region }}
+          argocd_auth_token: ${{ secrets.argocd_auth_token }}
+          branch_name: ${{ inputs.branch_name }}
+          env_to_deploy: ${{ inputs.env_to_deploy }}
+          image_tag: ${{ inputs.image_tag }}
+          update_deployed_at: ${{ inputs.update_deployed_at }}
+
+      - id: argocd-sync-app
+        if: inputs.argocd_sync == true && steps.argocd-install.outcome == 'success'
+        name: ArgoCD Sync App
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-sync-app@v4.1.1
+        with:
+          app_name: ${{ inputs.app_name }}
+          app_region: ${{ inputs.app_region }}
+          argocd_auth_token: ${{ secrets.argocd_auth_token }}
+          branch_name: ${{ inputs.branch_name }}
+          env_to_deploy: ${{ inputs.env_to_deploy }}
