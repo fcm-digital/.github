@@ -60,7 +60,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v6
 
       - name: Set some ENV
         run: |
