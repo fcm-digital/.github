@@ -2,6 +2,11 @@
 on:
   workflow_call:
     inputs:
+      allow_multiple_environments:
+        required: false
+        type: boolean
+        default: false
+        description: "Allow multiple environments to be deployed."
       app_name:
         required: true
         type: string
@@ -48,6 +53,7 @@ jobs:
         name: Get environment to deploy on
         uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-get-env-to-deploy-on-argocd-apps@sc-32166-argocd-improvements
         with:
+          allow_multiple_environments: ${{ inputs.allow_multiple_environments }}
           app_name: ${{ inputs.app_name }}
           app_region: ${{ inputs.app_region }}
           argocd_auth_token: ${{ secrets.argocd_auth_token }}
