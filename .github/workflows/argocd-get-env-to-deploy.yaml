@@ -16,43 +16,25 @@ on:
         type: string
         default: ""
         description: "ArgoCD CLI version to install. Skip install if empty."
-      argocd_sync:
-        required: false
-        type: boolean
-        default: false
-        description: "If true, trigger an ArgoCD CLI sync after updating the app."
       branch_name:
         required: true
         type: string
         description: "Branch name to set as targetRevision for the helm chart values source."
-      env_to_deploy:
-        required: true
-        type: string
-        description: "Single target environment to deploy to (e.g. ath, prod)."
-      image_tag:
-        required: true
-        type: string
-        description: "Image tag to deploy."
-      update_deployed_at:
-        required: false
-        type: boolean
-        default: false
-        description: "Whether to update the DEPLOYED_AT environment variable."
     secrets:
       argocd_auth_token:
         required: true
         description: "ArgoCD auth token with get/sync permissions over apps."
     outputs:
-      old_image_tag:
-        description: "The image tag used in the previous deployment."
-        value: ${{ jobs.deploy.outputs.old_image_tag }}
+      envs_to_deploy_on:
+        description: "The environments where the app is deployed."
+        value: ${{ jobs.get-env-to-deploy-on.outputs.envs_to_deploy_on }}
 
 jobs:
-  deploy:
-    name: Deploy with Argo CD
+  get-env-to-deploy-on:
+    name: Get environment to deploy on
     runs-on: ubuntu-24.04
     outputs:
-      old_image_tag: ${{ steps.update-argocd-app.outputs.old_image_tag }}
+      envs_to_deploy_on: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
 
     steps:
       - id: argocd-install
