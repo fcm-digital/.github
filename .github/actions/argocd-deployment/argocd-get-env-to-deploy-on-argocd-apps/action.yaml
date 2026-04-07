@@ -35,7 +35,7 @@ runs:
   steps:
     - id: sanitize-image-tag
       name: Sanitize image tag
-      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v3.2.0
+      uses: fcm-digital/.github/.github/actions/sanitize-docker-tag@v4.1.3
       with:
         tag: ${{ inputs.branch_name }}
 

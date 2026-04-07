@@ -78,6 +78,8 @@ environments_human="${environments_human%, }"
 
 if [[ ${#matched_envs[@]} -gt 1 ]] && [[ "$ALLOW_MULTIPLE_ENVIRONMENTS" == "false" ]]; then
     echo "Error: More than one environment found for branch ${BRANCH_NAME} -> ${environments_human}"
+
+    exit 1
 else
     echo "OK: Environment(s) found for branch ${BRANCH_NAME} -> ${environments_human}"
     echo "env_to_deploy_on=${environments_json}" >> "$GITHUB_OUTPUT"

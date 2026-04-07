@@ -65,7 +65,7 @@ update_argocd_app() {
     if ! argocd app set "$argocd_app_name" \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
-        --source-position 2 \
+        --source-position 2 \patch
         --revision "$branch_name"; then
         echo "  ✗ Failed to update branch revision"
         return 1
@@ -73,10 +73,13 @@ update_argocd_app() {
 
     # Update the image tag SECOND using valuesObject (source position 1 = first source)
     # This triggers the actual deployment change
+    local patch
+    patch=$(jq -n --arg tag "$image_tag" '[{"op":"replace","path":"/spec/sources/0/helm/valuesObject/currentTag","value":$tag}]')
+
     if ! argocd app patch "$argocd_app_name" \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
-        --patch "[{\"op\":\"replace\",\"path\":\"/spec/sources/0/helm/valuesObject/currentTag\",\"value\":\"$image_tag\"}]"; then
+        --patch "$patch"; then
         echo "  ✗ Failed to update image tag (branch revision was already updated)"
         echo "  ⚠ App may be in inconsistent state - manual intervention may be required"
         return 1
@@ -123,11 +126,14 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
     # Escape APP_NAME and APP_REGION to prevent regex injection
     escaped_app_name=$(escape_regex "$APP_NAME")
     escaped_app_region=$(escape_regex "$APP_REGION")
+    app_pattern="${escaped_app_name}-.*-stg-${escaped_app_region}$"
 
     staging_apps=$(argocd app list \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
-        -o name 2>/dev/null | grep -E "^${escaped_app_name}-.*-stg-${escaped_app_region}$" || true)
+        -o name 2>/dev/null \
+        | sed 's/^argocd\///' \
+        | grep -E "$app_pattern" || true)
 
     if [[ -z "$staging_apps" ]]; then
         echo "Warning: No staging apps found matching pattern: ${APP_NAME}-*-stg-${APP_REGION}"
@@ -141,7 +147,8 @@ if [[ "$ENV_TO_DEPLOY" == "ALL_ENV" ]]; then
 
     for argocd_app_name in $staging_apps; do
         # Extract environment from app name: ${APP_NAME}-${ENV}-stg-${APP_REGION}
-        env_name=$(echo "$argocd_app_name" | sed "s/^${APP_NAME}-//" | sed "s/-stg-${APP_REGION}$//")
+        env_name=${argocd_app_name#"$APP_NAME"-}
+        env_name=${env_name%-stg-"$APP_REGION"}
 
         # Get current image tag to check if we should update this environment
         current_tag=$(get_current_image_tag "$argocd_app_name")
