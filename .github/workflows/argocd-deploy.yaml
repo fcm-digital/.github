@@ -58,21 +58,13 @@ jobs:
       - id: argocd-install
         if: inputs.argocd_sync == true && inputs.argocd_cli_version != ''
         name: ArgoCD CLI Install
-<<<<<<< HEAD
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@sc-32166-argocd-improvements
-=======
         uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@v5
->>>>>>> 37f41b5c8632a272ce0c0c37f8f49d28feb14335
         with:
           argocd_cli_version: ${{ inputs.argocd_cli_version }}
 
       - id: update-argocd-app
         name: Update ArgoCD app
-<<<<<<< HEAD
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/update-argocd-app@sc-32166-argocd-improvements
-=======
         uses: fcm-digital/.github/.github/actions/argocd-deployment/update-argocd-app@v5
->>>>>>> 37f41b5c8632a272ce0c0c37f8f49d28feb14335
         with:
           app_name: ${{ inputs.app_name }}
           app_region: ${{ inputs.app_region }}
@@ -85,11 +77,7 @@ jobs:
       - id: argocd-sync-app
         if: inputs.argocd_sync == true && steps.argocd-install.outcome == 'success'
         name: ArgoCD Sync App
-<<<<<<< HEAD
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-sync-app@sc-32166-argocd-improvements
-=======
         uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-sync-app@v5
->>>>>>> 37f41b5c8632a272ce0c0c37f8f49d28feb14335
         with:
           app_name: ${{ inputs.app_name }}
           app_region: ${{ inputs.app_region }}
