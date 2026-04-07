@@ -41,6 +41,7 @@ runs:
         echo "new_commit_id=$( echo "${{ inputs.image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
         echo "live_commit_id=$( echo "${{ inputs.live_image_tag }}" | awk -F '-' '{print $NF}' )" >> $GITHUB_OUTPUT
 
+    # TODO: following actions need to be updated to slackapi/slack-github-action@v3, but they contains breaking changes
     - name: Send Changelog to Slack (With Tech Info)
       id: slack-tech-info
       if: inputs.image_tag != '' && inputs.live_image_tag != ''

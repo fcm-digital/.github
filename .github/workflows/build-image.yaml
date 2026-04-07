@@ -60,7 +60,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v6
 
       - name: Set some ENV
         run: |
@@ -75,7 +75,7 @@ jobs:
 
       - id: auth-gcp-wif
         name: Authenticate to GCP via WIF
-        uses: fcm-digital/.github/.github/actions/google-cloud-platform/auth@v4.1.0
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/auth@v5
         with:
           gcp_wif_project_id: ${{ inputs.wif_project_id }}
           gcp_wif_pool: ${{ inputs.wif_pool }}
@@ -86,12 +86,12 @@ jobs:
       - id: login-gar
         if: steps.auth-gcp-wif.outcome == 'success'
         name: Login to GAR
-        uses: fcm-digital/.github/.github/actions/google-cloud-platform/gar-login@v4.1.0
+        uses: fcm-digital/.github/.github/actions/google-cloud-platform/gar-login@v5
         with:
           gcp_wif_access_token: ${{ steps.auth-gcp-wif.outputs.access_token }}
 
       - name: "Build & push to GAR [${{ inputs.region }}]"
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ inputs.gar }}
         with:
           file: ${{ inputs.file }}
@@ -102,7 +102,7 @@ jobs:
             ${{ env.REPO_URL }}:${{ github.ref_name }}-${{ env.TIME }}-${{ env.SHORT_SHA }}
 
       - name: "Build & push to GAR [${{ inputs.region }}] latest tag"
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ ( endsWith(github.ref, '/master') || endsWith(github.ref, '/main') ) && inputs.gar }}
         with:
           file: ${{ inputs.file }}
@@ -113,7 +113,7 @@ jobs:
 
       - if: ${{ inputs.export }}
         name: "Export Docker image as Github Artifact"
-        uses: fcm-digital/.github/.github/actions/export-image@main
+        uses: fcm-digital/.github/.github/actions/export-image@v5
         with:
           app: ${{ inputs.app }}
           file: ${{ inputs.file }}
