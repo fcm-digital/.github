@@ -81,12 +81,12 @@ runs:
         if [[ -z "${{ inputs.artifact_repository_name }}" ]]; then
             echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
             if [[ "${{ inputs.cache_type }}" == "stage-and-registry" && "${{ inputs.target }}" != "" ]]; then
-                echo "REPO_URL_STAGE=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}-${{ inputs.target }}/${{ inputs.app_name }}-${{ inputs.target }}" >> $GITHUB_ENV
+                echo "REPO_URL_STAGE=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.app_name }}/${{ inputs.app_name }}-${{ inputs.target }}" >> $GITHUB_ENV
             fi
         else
             echo "REPO_URL=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}" >> $GITHUB_ENV
             if [[ "${{ inputs.cache_type }}" == "stage-and-registry" && "${{ inputs.target }}" != "" ]]; then
-                echo "REPO_URL_STAGE=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}-${{ inputs.target }}/${{ inputs.app_name }}-${{ inputs.target }}" >> $GITHUB_ENV
+                echo "REPO_URL_STAGE=${{ inputs.artifact_region }}-docker.pkg.dev/fcm-platform-artifacts-ceba/${{ inputs.artifact_repository_name }}/${{ inputs.app_name }}-${{ inputs.target }}" >> $GITHUB_ENV
             fi
         fi
 
@@ -231,6 +231,7 @@ runs:
         tags: |
           ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
+        target: ${{ inputs.target }}
         secrets: |
           ${{ inputs.secrets }}
 
@@ -256,6 +257,7 @@ runs:
           ${{ env.REPO_URL }}:${{ steps.sanitize-branch-name.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:${{ steps.sanitize-image-tag.outputs.sanitized_tag }}
           ${{ env.REPO_URL }}:latest
+        target: ${{ inputs.target }}
         secrets: |
           ${{ inputs.secrets }}
 

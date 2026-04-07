@@ -1,0 +1,60 @@
+---
+on:
+  workflow_call:
+    inputs:
+      allow_multiple_environments:
+        required: false
+        type: boolean
+        default: false
+        description: "Allow multiple environments to be deployed."
+      app_name:
+        required: true
+        type: string
+        description: "Application name (e.g. sam-ui-rendered)."
+      app_region:
+        required: false
+        type: string
+        default: "euw1"
+        description: "Application region (e.g. euw1)."
+      argocd_cli_version:
+        required: false
+        type: string
+        default: ""
+        description: "ArgoCD CLI version to install. Skip install if empty."
+      branch_name:
+        required: true
+        type: string
+        description: "Branch name to set as targetRevision for the helm chart values source."
+    secrets:
+      argocd_auth_token:
+        required: true
+        description: "ArgoCD auth token with get/sync permissions over apps."
+    outputs:
+      envs_to_deploy_on:
+        description: "The environments where the app is deployed."
+        value: ${{ jobs.get-env-to-deploy-on.outputs.envs_to_deploy_on }}
+
+jobs:
+  get-env-to-deploy-on:
+    name: Get environment to deploy on
+    runs-on: ubuntu-24.04
+    outputs:
+      envs_to_deploy_on: ${{ steps.get-env-to-deploy-on.outputs.env_to_deploy_on }}
+
+    steps:
+      - id: argocd-install
+        if: inputs.argocd_cli_version != ''
+        name: ArgoCD CLI Install
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@sc-32166-argocd-improvements
+        with:
+          argocd_cli_version: ${{ inputs.argocd_cli_version }}
+
+      - id: get-env-to-deploy-on
+        name: Get environment to deploy on
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-get-env-to-deploy-on-argocd-apps@sc-32166-argocd-improvements
+        with:
+          allow_multiple_environments: ${{ inputs.allow_multiple_environments }}
+          app_name: ${{ inputs.app_name }}
+          app_region: ${{ inputs.app_region }}
+          argocd_auth_token: ${{ secrets.argocd_auth_token }}
+          branch_name: ${{ inputs.branch_name }}

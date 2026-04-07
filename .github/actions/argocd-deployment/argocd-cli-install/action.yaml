@@ -14,6 +14,32 @@ runs:
       name: "ArgoCD CLI Install"
       shell: bash
       run: |
-        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/${{ inputs.argocd_cli_version }}/argocd-linux-amd64
-        install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-        rm argocd-linux-amd64
+        set -euo pipefail
+        
+        VERSION="${{ inputs.argocd_cli_version }}"
+        BINARY="argocd-linux-amd64"
+        DOWNLOAD_URL="https://github.com/argoproj/argo-cd/releases/download/${VERSION}/${BINARY}"
+        CHECKSUMS_URL="https://github.com/argoproj/argo-cd/releases/download/${VERSION}/cli_checksums.txt"
+        
+        echo "Downloading ArgoCD CLI ${VERSION}..."
+        curl -sSL -o "${BINARY}" "${DOWNLOAD_URL}"
+        
+        echo "Downloading checksums file..."
+        curl -sSL -o "cli_checksums.txt" "${CHECKSUMS_URL}"
+        
+        echo "Verifying checksum..."
+        sha256sum -c --ignore-missing "cli_checksums.txt"
+        
+        echo "Installing ArgoCD CLI..."
+        sudo install -m 555 "${BINARY}" /usr/local/bin/argocd
+        
+        echo "Cleaning up..."
+        rm -f "${BINARY}" "cli_checksums.txt"
+        
+        echo "ArgoCD CLI installed successfully"
+
+    - id: argocd-cli-version
+      name: "ArgoCD CLI Version"
+      shell: bash
+      run: |
+        argocd version --client --short
