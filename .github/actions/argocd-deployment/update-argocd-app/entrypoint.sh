@@ -65,7 +65,7 @@ update_argocd_app() {
     if ! argocd app set "$argocd_app_name" \
         --server "$ARGOCD_URL" \
         --auth-token "$ARGOCD_AUTH_TOKEN" \
-        --source-position 2 \patch
+        --source-position 2 \
         --revision "$branch_name"; then
         echo "  ✗ Failed to update branch revision"
         return 1
