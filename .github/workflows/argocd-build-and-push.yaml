@@ -63,7 +63,7 @@ on:
 jobs:
   build-and-push:
     timeout-minutes: 30 # Adjust based on your typical build time
-    name: ArgoCD Build & Push ${{ inputs.app_name }} for ${{ github.ref }} branch.
+    name: ArgoCD Build & Push ${{ inputs.app_name }} for ${{ inputs.branch_name }} branch.
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
