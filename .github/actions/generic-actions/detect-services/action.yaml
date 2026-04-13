@@ -1,0 +1,81 @@
+name: "Detect Services"
+description: "Detects services with Dockerfile in the repository and outputs them as JSON"
+
+inputs:
+  dockerfile_name:
+    description: "Name of the Dockerfile to look for"
+    required: false
+    default: "Dockerfile"
+  exclude_dirs:
+    description: "Comma-separated list of directories to exclude from search"
+    required: false
+    default: "node_modules,.git,dist,build,coverage,tmp,.next,vendor"
+
+outputs:
+  services:
+    description: "JSON array of detected services with their paths"
+    value: ${{ steps.detect.outputs.services }}
+  has_services:
+    description: "Whether any services were detected"
+    value: ${{ steps.detect.outputs.has_services }}
+  count:
+    description: "Number of services detected"
+    value: ${{ steps.detect.outputs.count }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect services with Dockerfile
+      id: detect
+      shell: bash
+      run: |
+        DOCKERFILE_NAME="${{ inputs.dockerfile_name }}"
+        EXCLUDE_DIRS="${{ inputs.exclude_dirs }}"
+
+        # Build find exclude arguments
+        EXCLUDE_ARGS=""
+        IFS=',' read -ra EXCLUDES <<< "$EXCLUDE_DIRS"
+        for dir in "${EXCLUDES[@]}"; do
+          dir=$(echo "$dir" | xargs)  # trim whitespace
+          EXCLUDE_ARGS="$EXCLUDE_ARGS -path '*/$dir' -prune -o -path '*/$dir/*' -prune -o"
+        done
+
+        # Find all Dockerfiles in the entire repository
+        SERVICES_JSON="[]"
+        COUNT=0
+
+        while IFS= read -r dockerfile_path; do
+          if [ -n "$dockerfile_path" ]; then
+            SERVICE_DIR=$(dirname "$dockerfile_path")
+
+            # Determine service name
+            if [ "$SERVICE_DIR" = "." ]; then
+              # Root Dockerfile - use repo name
+              SERVICE_NAME=$(basename "$GITHUB_REPOSITORY")
+            else
+              # Use the directory name as service name
+              SERVICE_NAME=$(basename "$SERVICE_DIR")
+            fi
+
+            # Build JSON object for this service (compact, single line)
+            SERVICE_JSON=$(jq -c -n \
+              --arg name "$SERVICE_NAME" \
+              --arg path "$SERVICE_DIR" \
+              --arg dockerfile "$dockerfile_path" \
+              '{name: $name, path: $path, dockerfile: $dockerfile}')
+
+            SERVICES_JSON=$(echo "$SERVICES_JSON" | jq -c --argjson svc "$SERVICE_JSON" '. + [$svc]')
+            COUNT=$((COUNT + 1))
+          fi
+        done < <(eval "find . $EXCLUDE_ARGS -name '$DOCKERFILE_NAME' -type f -print 2>/dev/null" | sed 's|^\./||')
+
+        HAS_SERVICES="false"
+        if [ "$COUNT" -gt 0 ]; then
+          HAS_SERVICES="true"
+        fi
+
+        echo "services=$SERVICES_JSON" >> $GITHUB_OUTPUT
+        echo "has_services=$HAS_SERVICES" >> $GITHUB_OUTPUT
+        echo "count=$COUNT" >> $GITHUB_OUTPUT
+
+        echo "::notice::Detected $COUNT service(s): $(echo $SERVICES_JSON | jq -r '.[].name' | tr '\n' ' ')"
