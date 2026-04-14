@@ -17,8 +17,8 @@ on:
         description: "ArgoCD CLI version to install."
       argocd_sync:
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: "false"
         description: "If true, trigger an ArgoCD CLI sync after updating the app."
       branch_name:
         required: true
