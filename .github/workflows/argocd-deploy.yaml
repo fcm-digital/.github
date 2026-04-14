@@ -12,10 +12,9 @@ on:
         default: "euw1"
         description: "Application region (e.g. euw1)."
       argocd_cli_version:
-        required: false
+        required: true
         type: string
-        default: ""
-        description: "ArgoCD CLI version to install. Skip install if empty."
+        description: "ArgoCD CLI version to install."
       argocd_sync:
         required: false
         type: boolean
@@ -56,13 +55,13 @@ jobs:
 
     steps:
       - id: argocd-install
-        if: inputs.argocd_sync == true && inputs.argocd_cli_version != ''
         name: ArgoCD CLI Install
         uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@v5
         with:
           argocd_cli_version: ${{ inputs.argocd_cli_version }}
 
       - id: update-argocd-app
+        if: steps.argocd-install.outcome == 'success'
         name: Update ArgoCD app
         uses: fcm-digital/.github/.github/actions/argocd-deployment/update-argocd-app@v5
         with:
@@ -75,7 +74,7 @@ jobs:
           update_deployed_at: ${{ inputs.update_deployed_at }}
 
       - id: argocd-sync-app
-        if: inputs.argocd_sync == true && steps.argocd-install.outcome == 'success'
+        if: inputs.argocd_sync == true && steps.update-argocd-app.outcome == 'success'
         name: ArgoCD Sync App
         uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-sync-app@v5
         with:
