@@ -67,11 +67,7 @@ runs:
 
         echo "Deploying raw manifests recursively from ${MANIFESTS_PATH}..."
 
-        # Find and apply all yaml/yml files in kube/ and subdirectories
-        find "$MANIFESTS_PATH" \( -name "*.yaml" -o -name "*.yml" \) -type f | sort | while read -r file; do
-          echo "Applying: $file"
-          kubectl apply -f "$file" $NS_FLAG
-        done
+        kubectl apply -R -f "$MANIFESTS_PATH" $NS_FLAG
 
     - name: Set deploy status
       id: deploy
