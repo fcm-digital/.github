@@ -1,0 +1,74 @@
+name: "Substitute Image Tags in Manifests"
+description: "Substitutes Docker image tags in Kubernetes manifests for services built by the pipeline."
+
+inputs:
+  image_tag:
+    description: "The image tag to use for substitution."
+    required: true
+  registry:
+    description: "The full registry URL (e.g., europe-docker.pkg.dev/project/repo)."
+    required: true
+  services:
+    description: "JSON array of services to substitute (from detect-services action)."
+    required: true
+  manifests_path:
+    description: "Path to the Kubernetes manifests directory."
+    required: false
+    default: "kube"
+
+outputs:
+  substituted_services:
+    description: "List of services that had their images substituted."
+    value: ${{ steps.substitute.outputs.substituted_services }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: substitute
+      name: Substitute image tags
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        IMAGE_TAG="${{ inputs.image_tag }}"
+        REGISTRY="${{ inputs.registry }}"
+        SERVICES='${{ inputs.services }}'
+        MANIFESTS_PATH="${{ inputs.manifests_path }}"
+
+        echo "Image tag: ${IMAGE_TAG}"
+        echo "Registry: ${REGISTRY}"
+        echo "Manifests path: ${MANIFESTS_PATH}"
+
+        SUBSTITUTED=""
+
+        for service in $(echo "$SERVICES" | jq -r '.[].name'); do
+          NEW_IMAGE="${REGISTRY}/${service}:${IMAGE_TAG}"
+          echo "Substituting image for ${service}: ${NEW_IMAGE}"
+
+          # Find manifests that contain this service name as container name
+          find "${MANIFESTS_PATH}" -type f \( -name "*.yaml" -o -name "*.yml" \) | while read -r file; do
+            # Check if file contains a container with this service name
+            if grep -q "name: ${service}" "$file"; then
+              # Replace image field after container name, handling:
+              # 1. Existing image with any value
+              # 2. Empty image field (image: "")
+              # 3. Image placeholder
+              sed -i -E "/- name: ${service}/,/- name:|^[^ ]/ {
+                s|image:.*|image: ${NEW_IMAGE}|
+              }" "$file"
+              echo "  Updated: $file"
+            fi
+          done
+
+          if [[ -n "$SUBSTITUTED" ]]; then
+            SUBSTITUTED="${SUBSTITUTED},${service}"
+          else
+            SUBSTITUTED="${service}"
+          fi
+        done
+
+        echo ""
+        echo "Updated manifests:"
+        grep -rn "image:" "${MANIFESTS_PATH}/" --include="*.yaml" --include="*.yml" || true
+
+        echo "substituted_services=${SUBSTITUTED}" >> "$GITHUB_OUTPUT"

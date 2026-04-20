@@ -1,0 +1,76 @@
+name: "Deploy to GKE"
+description: "Deploys application to GKE cluster using Kustomize or raw manifests. Assumes kubectl is already configured."
+
+inputs:
+  manifests_path:
+    description: "Path to Kubernetes manifests (supports Kustomize)"
+    required: false
+    default: "kube"
+  namespace:
+    description: "Kubernetes namespace to deploy to (optional)"
+    required: false
+    default: ""
+
+outputs:
+  status:
+    description: "Deployment status"
+    value: ${{ steps.deploy.outputs.status }}
+  uses_kustomize:
+    description: "Whether Kustomize was used for deployment"
+    value: ${{ steps.detect.outputs.uses_kustomize }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect deployment method
+      id: detect
+      shell: bash
+      run: |
+        MANIFESTS_PATH="${{ inputs.manifests_path }}"
+
+        if [ -f "${MANIFESTS_PATH}/kustomization.yaml" ] || [ -f "${MANIFESTS_PATH}/kustomization.yml" ]; then
+          echo "uses_kustomize=true" >> $GITHUB_OUTPUT
+          echo "::notice::Detected kustomization.yaml - will use Kustomize"
+        else
+          echo "uses_kustomize=false" >> $GITHUB_OUTPUT
+          echo "::notice::No kustomization.yaml found - will apply raw manifests recursively"
+        fi
+
+    - name: Deploy with Kustomize
+      id: deploy-kustomize
+      if: steps.detect.outputs.uses_kustomize == 'true'
+      shell: bash
+      run: |
+        MANIFESTS_PATH="${{ inputs.manifests_path }}"
+        NAMESPACE="${{ inputs.namespace }}"
+
+        NS_FLAG=""
+        if [ -n "$NAMESPACE" ]; then
+          NS_FLAG="-n $NAMESPACE"
+        fi
+
+        echo "Deploying with Kustomize..."
+        kubectl apply -k "$MANIFESTS_PATH" $NS_FLAG
+
+    - name: Deploy raw manifests
+      id: deploy-raw
+      if: steps.detect.outputs.uses_kustomize == 'false'
+      shell: bash
+      run: |
+        MANIFESTS_PATH="${{ inputs.manifests_path }}"
+        NAMESPACE="${{ inputs.namespace }}"
+
+        NS_FLAG=""
+        if [ -n "$NAMESPACE" ]; then
+          NS_FLAG="-n $NAMESPACE"
+        fi
+
+        echo "Deploying raw manifests recursively from ${MANIFESTS_PATH}..."
+
+        kubectl apply -R -f "$MANIFESTS_PATH" $NS_FLAG
+
+    - name: Set deploy status
+      id: deploy
+      shell: bash
+      run: |
+        echo "status=deployed" >> $GITHUB_OUTPUT
