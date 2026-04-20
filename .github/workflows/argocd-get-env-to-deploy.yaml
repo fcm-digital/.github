@@ -45,13 +45,13 @@ jobs:
       - id: argocd-install
         if: inputs.argocd_cli_version != ''
         name: ArgoCD CLI Install
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@sc-32166-argocd-improvements
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-cli-install@v5
         with:
           argocd_cli_version: ${{ inputs.argocd_cli_version }}
 
       - id: get-env-to-deploy-on
         name: Get environment to deploy on
-        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-get-env-to-deploy-on-argocd-apps@sc-32166-argocd-improvements
+        uses: fcm-digital/.github/.github/actions/argocd-deployment/argocd-get-env-to-deploy-on-argocd-apps@v5
         with:
           allow_multiple_environments: ${{ inputs.allow_multiple_environments }}
           app_name: ${{ inputs.app_name }}
