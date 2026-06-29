@@ -33,6 +33,29 @@ on:
         required: false
         type: string
         description: "Target stage for the Docker build."
+      build_args:
+        required: false
+        type: string
+        description: "Build arguments for the docker image."
+      context:
+        required: false
+        type: string
+        default: "./"
+        description: "Context to build image (default: ./)."
+      pull:
+        required: false
+        type: string
+        default: "false"
+        description: "Whether to pull image from registry for cache building."
+      push:
+        required: false
+        type: string
+        default: "true"
+        description: "Whether to push image to registry, or build locally."
+      docker_secrets:
+        required: false
+        type: string
+        description: "Secrets to pass to the docker build process."
     secrets:
       gcp_wif_project_id:
         required: true
@@ -123,3 +146,8 @@ jobs:
           file: ${{ inputs.dockerfile_path }}
           target: ${{ inputs.target }}
           cache_type: ${{ inputs.cache_type }}
+          build_args: ${{ inputs.build_args }}
+          context: ${{ inputs.context }}
+          pull: ${{ inputs.pull }}
+          push: ${{ inputs.push }}
+          secrets: ${{ inputs.docker_secrets }}
