@@ -52,11 +52,10 @@ on:
         type: string
         default: "true"
         description: "Whether to push image to registry, or build locally."
+    secrets:
       docker_secrets:
         required: false
-        type: string
-        description: "Secrets to pass to the docker build process."
-    secrets:
+        description: "Secrets to pass to the docker build process (e.g. npm_token=...)."
       gcp_wif_project_id:
         required: true
         description: "GCP project ID for Workload Identity Federation."
@@ -150,4 +149,4 @@ jobs:
           context: ${{ inputs.context }}
           pull: ${{ inputs.pull }}
           push: ${{ inputs.push }}
-          secrets: ${{ inputs.docker_secrets }}
+          secrets: ${{ secrets.docker_secrets }}
