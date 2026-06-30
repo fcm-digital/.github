@@ -1,0 +1,128 @@
+---
+name: 'Configure GCloud SDK'
+description: 'Configure gcloud SDK based on the inputs provided.'
+
+inputs:
+  checkout-local-repository:
+    description: 'Whether to checkout the local repository.'
+    required: false
+    default: 'true'
+  configure-gke:
+    description: 'Whether to configure GKE.'
+    required: false
+    default: 'false'
+
+  gcp-json:
+    description: 'The Service Account that contains the permissions to GCP.'
+    required: false
+    default: ''
+
+  gcp-wif-project-id:
+    description: 'The GCP project ID to use for WIF authentication.'
+    required: false
+    default: '896400447443' #fcm-platform-stg-a3dc project
+  gcp-wif-pool:
+    description: 'The GCP WIF Pool to use for authentication.'
+    required: false
+    default: 'dynamic-staging-envs'
+  gcp-wif-provider:
+    description: 'The GCP WIF Provider to use for authentication.'
+    required: false
+    default: 'github-actions'
+  gcp-wif-service-account:
+    description: 'The GCP SA to use for authentication.'
+    required: false
+    default: 'dynamic-staging-envs@fcm-platform-stg-a3dc.iam.gserviceaccount.com'
+
+  gcp-project-id:
+    description: 'The GCP project ID. If provided, this will configure gcloud to use this project ID by default for commands.'
+    required: false
+    default: 'fcm-platform-stg-a3dc' #fcmp-stg project
+  gcloud-version:
+    description: 'The gcloud version to use.'
+    required: false
+    default: '522.0.0'
+  gcloud-command:
+    description: 'The gcloud command to execute.'
+    required: true
+
+  # -----------------------------
+  #   Additional configurations
+  # -----------------------------
+
+  # Kubectl
+  install-kubectl:
+    description: 'Whether to install kubectl.'
+    required: false
+    default: 'true'
+  kubectl-version:
+    description: 'The version of kubectl to install.'
+    required: false
+    default: 'v1.33.1'
+
+  cluster-name:
+    description: 'The name of the GKE cluster.'
+    required: false
+    default: 'fcm-platform-stg-euw1'
+  location:
+    description: 'The location of the GKE cluster.'
+    required: false
+    default: 'europe-west1'
+
+
+runs:
+  using: "composite"
+  steps:
+    - id: checkout
+      if: inputs.checkout-local-repository
+      name: Checkout Local Repository
+      uses: actions/checkout@v4
+
+    - id: setup-gcp-credentials
+      if: inputs.gcp-json != ''
+      name: 'Set Up Google Credentials'
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.gcp-json }}
+        project_id: ${{ inputs.gcp-project-id }}
+
+    - id: auth-gcp-wif
+      if: inputs.gcp-json == ''
+      name: Authenticate to GCP via WIF
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: "access_token"
+        workload_identity_provider: "projects/${{ inputs.gcp-wif-project-id }}/locations/global/workloadIdentityPools/${{ inputs.gcp-wif-pool }}/providers/${{ inputs.gcp-wif-provider }}"
+        service_account: ${{ inputs.gcp-wif-service-account }}
+
+    - id: generate-sdk-components
+      name: 'Generate SDK Components'
+      shell: bash
+      run: |
+        SDK_COMPONENTS=''
+        if [ '${{ inputs.configure-gke }}' == 'true' ]; then
+          SDK_COMPONENTS+='gke-gcloud-auth-plugin,'
+        fi
+        echo "install_components=$(echo "$SDK_COMPONENTS" | sed 's/,$//')" >> $GITHUB_ENV
+
+    - id: setup-gcloud-sdk
+      name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+      with:
+        version: '>= ${{ inputs.gcloud-version }}'
+        project_id: ${{ inputs.gcp-project-id }}
+        install_components: ${{ env.install_components }}
+
+    - id: get-credentials
+      if: inputs.configure-gke == 'true'
+      name: 'Get GKE Credentials'
+      uses: 'google-github-actions/get-gke-credentials@v2'
+      with:
+        cluster_name: ${{ inputs.cluster-name }}
+        location: ${{ inputs.location }}
+
+    - id: install-kubectl
+      if: inputs.install-kubectl == 'true' && inputs.configure-gke == 'true'
+      uses: azure/setup-kubectl@v4
+      with:
+        version: ${{ inputs.kubectl-version }}

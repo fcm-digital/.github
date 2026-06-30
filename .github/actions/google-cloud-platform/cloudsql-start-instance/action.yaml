@@ -1,0 +1,36 @@
+name: 'CloudSQL Start Instance'
+description: 'Start a CloudSQL instance.'
+
+inputs:
+  gcloud-sdk-configure:
+    description: 'Whether to configure GCloud SDK.'
+    required: false
+    default: 'false'
+  gcp-project-id:
+    description: 'The GCP project ID.'
+    required: true
+  instance:
+    description: 'The CloudSQL instance to start.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: gcloud-sdk-configure
+      if: inputs.gcloud-sdk-configure == 'true'
+      name: 'Configure GCloud SDK'
+      uses: fcm-digital/.github/.github/actions/google-cloud-platform/gcloud-sdk-configure@sc-23004-dynamic-staging-envs
+      with:
+        gcp-project-id: ${{ inputs.gcp-project-id }}
+
+    - id: start-instance
+      name: 'Start CloudSQL Instance'
+      shell: bash
+      run: |
+        echo "Starting CloudSQL instance...: ${{ inputs.instance }}"
+        gcloud sql instances patch ${{ inputs.instance }} --activation-policy=ALWAYS --project=${{ inputs.gcp-project-id }}
+        if [ $? -ne 0 ]; then
+          echo "Failed to start CloudSQL instance: ${{ inputs.instance }}"
+          exit 1
+        fi
+        echo "CloudSQL instance ${{ inputs.instance }} started successfully."

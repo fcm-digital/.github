@@ -1,0 +1,187 @@
+---
+name: 'Execute Terragrunt'
+description: 'Execute terragrunt command based on the inputs provided.'
+
+inputs:
+  gcp_wif_project_id:
+    description: 'The GCP project ID to use for WIF authentication.'
+    required: false
+    default: '896400447443' #fcm-platform-stg-a3dc project
+  gcp_wif_pool:
+    description: 'The GCP WIF Pool to use for authentication.'
+    required: false
+    default: 'dynamic-staging-envs'
+  gcp_wif_provider:
+    description: 'The GCP WIF Provider to use for authentication.'
+    required: false
+    default: 'github-actions'
+  gcp_wif_service_account:
+    description: 'The GCP SA to use for authentication.'
+    required: false
+    default: 'dynamic-staging-envs@fcm-platform-stg-a3dc.iam.gserviceaccount.com'
+
+  github_token:
+    description: 'The GitHub token.'
+    required: true
+  argocd_host:
+    description: 'The ArgoCD host.'
+    required: false
+    default: 'argocd-server.argocd.svc.cluster.local:443'
+  argocd_token:
+    description: 'The ArgoCD token.'
+    required: true
+  openpassword_host:
+    description: 'The 1Password host.'
+    required: false
+    default: 'http://onepassword-connect.1password-connect.svc.cluster.local:8080'
+  onepassword_token:
+    description: 'The 1Password token.'
+    required: true
+
+  terragrunt_path:
+    description: 'The terragrunt path to the target resources.'
+    required: true
+  terragrunt_command:
+    description: >
+      The terragrunt command to run. Valid values are: `apply`, `outputs` or `destroy`.
+      - `apply`: Apply the terragrunt resources.
+      - `output`: Output the terragrunt resources to the file specified by `terragrunt_output_file_name`.
+      - `destroy`: Destroy the specific terragrunt resources.
+    required: true
+  terragrunt_command_vars:
+    description: 'The variables to pass to the terragrunt command.'
+    required: false
+  terragrunt_output_file_name:
+    description: 'The name of the file to output the terragrunt outputs to.'
+    required: false
+    default: 'tg-outputs.json'
+
+  terragrunt_version:
+    description: 'The terragrunt version to use.'
+    required: true
+  terraform_version:
+    description: 'The terraform version to use.'
+    required: false
+    default: ''
+  opentofu_version:
+    description: 'The opentofu version to use.'
+    required: false
+    default: ''
+
+
+outputs:
+  cloudsql_instances:
+    description: 'The CloudSQL instances names.'
+    value: ${{ steps.get-tg-outputs.outputs.cloudsql_instances }}
+  redis_instances:
+    description: 'The Redis instances names.'
+    value: ${{ steps.get-gcp-resource-names.outputs.redis_instances }}
+  gcp_region:
+    description: 'The GCP region.'
+    value: ${{ steps.get-gcp-resource-names.outputs.gcp_region }}
+  gcp_zone:
+    description: 'The GCP zone.'
+    value: ${{ steps.get-gcp-resource-names.outputs.gcp_zone }}
+
+
+runs:
+  using: "composite"
+  steps:
+    - id: setup-versions
+      name: Setup versions
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.terraform_version }}" && -z "${{ inputs.opentofu_version }}" ]; then
+            echo "error: terraform_version or opentofu_version is required"
+            exit 1
+        fi
+
+        INPUT_COMMANDS=$(echo "${{ inputs.terragrunt_command_vars }}" | tr '\n' ' ')
+        if [ ! -z "$INPUT_COMMANDS" ]; then
+            for var in $INPUT_COMMANDS; do
+                COMMAND_VARS+="-var $var "
+            done
+            echo "command_vars=$COMMAND_VARS" >> $GITHUB_ENV
+        fi
+
+    - id: checkout-infrastructure-repository
+      name: Checkout Infrastructure Repository
+      uses: actions/checkout@v4
+      with:
+        repository: fcm-digital/infrastructure
+        ref: dynamic-performance-env #ToDo: update to `main` when PR is merged
+        path: infrastructure
+        token: ${{ inputs.github_token }}
+
+    - id: auth-gcp-wif
+      name: Authenticate to GCP via WIF
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: "access_token"
+        workload_identity_provider: "projects/${{ inputs.gcp_wif_project_id }}/locations/global/workloadIdentityPools/${{ inputs.gcp_wif_pool }}/providers/${{ inputs.gcp_wif_provider }}"
+        service_account: ${{ inputs.gcp_wif_service_account }}
+
+    - id: terragrunt-plan
+      if: inputs.terragrunt_command == 'plan'
+      name: Terragrunt Plan
+      uses: gruntwork-io/terragrunt-action@v2
+      env:
+        INPUT_PRE_EXEC_1: |
+          git config --global url."https://x-access-token:${{ inputs.github_token }}@github.com/fcm-digital/".insteadOf "ssh://git@github.com/fcm-digital/"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+        TG_NON_INTERACTIVE: true
+        OP_CONNECT_HOST: ${{ inputs.openpassword_host }}
+        OP_CONNECT_TOKEN: ${{ inputs.onepassword_token }}
+        ARGOCD_SERVER: ${{ inputs.argocd_host }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
+      with:
+        tg_version: ${{ inputs.terragrunt_version }}
+        tf_version: ${{ inputs.terraform_version || null }}
+        tofu_version: ${{ inputs.opentofu_version || null }}
+        tg_dir: ${{ inputs.terragrunt_path }}
+        tg_add_approve: 0
+        tg_command: plan ${{ env.command_vars }}
+
+    - id: terragrunt-apply
+      if: inputs.terragrunt_command == 'apply'
+      name: Terragrunt Apply
+      uses: gruntwork-io/terragrunt-action@v2
+      env:
+        INPUT_PRE_EXEC_1: |
+          git config --global url."https://x-access-token:${{ inputs.github_token }}@github.com/fcm-digital/".insteadOf "ssh://git@github.com/fcm-digital/"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+        TG_NON_INTERACTIVE: true
+        OP_CONNECT_HOST: ${{ inputs.openpassword_host }}
+        OP_CONNECT_TOKEN: ${{ inputs.onepassword_token }}
+        ARGOCD_SERVER: ${{ inputs.argocd_host }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
+      with:
+        tg_version: ${{ inputs.terragrunt_version }}
+        tf_version: ${{ inputs.terraform_version || null }}
+        tofu_version: ${{ inputs.opentofu_version || null }}
+        tg_dir: ${{ inputs.terragrunt_path }}
+        tg_add_approve: 1
+        tg_command: apply ${{ env.command_vars }}
+
+    - id: terragrunt-outputs
+      if: inputs.terragrunt_command == 'outputs'
+      name: Terragrunt Outputs
+      uses: gruntwork-io/terragrunt-action@v2
+      env:
+        INPUT_PRE_EXEC_1: |
+          git config --global url."https://x-access-token:${{ inputs.github_token }}@github.com/fcm-digital/".insteadOf "ssh://git@github.com/fcm-digital/"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+        INPUT_POST_EXEC_1: |
+          terragrunt output -json > ${{ inputs.terragrunt_output_file_name }}
+        TG_NON_INTERACTIVE: true
+        OP_CONNECT_HOST: ${{ inputs.openpassword_host }}
+        OP_CONNECT_TOKEN: ${{ inputs.onepassword_token }}
+        ARGOCD_SERVER: ${{ inputs.argocd_host }}
+        ARGOCD_AUTH_TOKEN: ${{ inputs.argocd_token }}
+      with:
+        tg_version: ${{ inputs.terragrunt_version }}
+        tf_version: ${{ inputs.terraform_version || null }}
+        tofu_version: ${{ inputs.opentofu_version || null }}
+        tg_dir: ${{ inputs.terragrunt_path }}
+        tg_add_approve: 0
+        tg_command: init ${{ env.command_vars }}
