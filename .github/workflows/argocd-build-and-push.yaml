@@ -44,13 +44,13 @@ on:
         description: "Context to build image (default: ./)."
       pull:
         required: false
-        type: string
-        default: "false"
+        type: boolean
+        default: false
         description: "Whether to pull image from registry for cache building."
       push:
         required: false
-        type: string
-        default: "true"
+        type: boolean
+        default: true
         description: "Whether to push image to registry, or build locally."
     secrets:
       docker_secrets:
